@@ -1,0 +1,155 @@
+name: Resource Replication Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'replication/**'
+
+env:
+  TF_VERSION: 1.8.0
+
+jobs:
+
+  discover-resources:
+    runs-on: ubuntu-latest
+
+    outputs:
+      resources: ${{ steps.discover.outputs.resources }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - id: discover
+        run: |
+          RESOURCES=$(find replication -mindepth 2 -maxdepth 2 -type d \
+            | sed 's|^replication/||' \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "resources=$RESOURCES" >> $GITHUB_OUTPUT
+
+
+  terraform-plan:
+    runs-on: ubuntu-latest
+    needs: discover-resources
+
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        resource: ${{ fromJson(needs.discover-resources.outputs.resources) }}
+
+    defaults:
+      run:
+        working-directory: replication/${{ matrix.resource }}
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=deploy-storage" \
+            -backend-config="key=${{ matrix.resource }}/terraform.tfstate" \
+            -backend-config="endpoint=${{ secrets.SUPABASE_S3_ENDPOINT }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="access_key=${{ secrets.SUPABASE_S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.SUPABASE_S3_SECRET_KEY }}" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="use_path_style=true"
+
+      - run: terraform validate
+
+      - run: terraform plan -out=tfplan
+
+      - name: Generate artifact name
+        id: artifact
+        run: |
+          echo "name=$(echo '${{ matrix.resource }}' | tr '/' '-')" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ steps.artifact.outputs.name }}
+          path: replication/${{ matrix.resource }}/tfplan
+
+  terraform-apply:
+    runs-on: ubuntu-latest
+    needs: 
+      - terraform-plan
+      - discover-resources
+
+    strategy:
+      fail-fast: false
+      matrix:
+        resource: ${{ fromJson(needs.discover-resources.outputs.resources) }}
+
+    defaults:
+      run:
+        working-directory: replication/${{ matrix.resource }}
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=deploy-storage" \
+            -backend-config="key=${{ matrix.resource }}/terraform.tfstate" \
+            -backend-config="endpoint=${{ secrets.SUPABASE_S3_ENDPOINT }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="access_key=${{ secrets.SUPABASE_S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.SUPABASE_S3_SECRET_KEY }}" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="use_path_style=true"
+
+      - name: Generate artifact name
+        id: artifact
+        run: |
+          echo "name=$(echo '${{ matrix.resource }}' | tr '/' '-')" >> $GITHUB_OUTPUT
+
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ steps.artifact.outputs.name }}
+          path: replication/${{ matrix.resource }}
+
+      - run: terraform apply -auto-approve tfplan

@@ -1,0 +1,119 @@
+# ============================================================
+# DaaS Generated values.yaml for test-rg
+# Override at deploy time with:
+#   helm upgrade --install test-rg ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "test-rg"
+  # Container registry base URL
+  registry: "daasdeployment.azurecr.io"
+  # Ingress hostname
+  ingressHost: ""
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "production"
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  backend:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "daasdeployment.azurecr.io/backend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "150m"
+        memory: "256Mi"
+      limits:
+        cpu: "150m"
+        memory: "256Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/actuator/health"
+    env:
+      
+  
+  frontend:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "daasdeployment.azurecr.io/frontend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "150m"
+        memory: "256Mi"
+      limits:
+        cpu: "150m"
+        memory: "256Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/"
+    env:
+      
+  
+
+# ── In-Cluster Database ──────────────────────────────────
+
+database:
+  enabled: true
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  port: 5432
+  storage:
+    size: "10Gi"
+    storageClassName: "default"
+  resources:
+    requests:
+      cpu: "150m"
+      memory: "256Mi"
+    limits:
+      cpu: "150m"
+      memory: "256Mi"
+  # Credentials are randomly generated at artifact creation time and stored
+  # in the Kubernetes Secret 'postgresql-db-secret'. Do NOT override
+  # these in CI — the Secret manifest already contains the real values.
+  auth:
+    
+    POSTGRES_DB: "post_bu48bz"
+    
+    POSTGRES_USER: "post_p3zv6z"
+    
+    POSTGRES_PASSWORD: "Hiyk#6B4FtvGSBc50TqqK#6A"
+    
+
+
+# ── Ingress ──────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: "azure/application-gateway"
+  host: ""
+  tls: false
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70

@@ -6,8 +6,8 @@
   "node_count": "2",
   "tags": {
     "environment": "dev",
-    "owner": "admin@example.com",
-    "project": "iaap"
+    "owner": "a",
+    "project": "b"
   },
   "_provider": "aws",
   "_resource_type": "eks_cluster"

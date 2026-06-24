@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "test-rg"
   # Container registry base URL
-  registry: "daasdeployment.azurecr.io"
+  registry: "azdaasdeployment.azurecr.io"
   # Ingress hostname
   ingressHost: ""
   # Deployment strategy: rolling | blue-green | canary
@@ -24,7 +24,7 @@ services:
     enabled: true
     replicaCount: 2
     image:
-      repository: "daasdeployment.azurecr.io/backend"
+      repository: "azdaasdeployment.azurecr.io/backend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -49,7 +49,7 @@ services:
     enabled: true
     replicaCount: 2
     image:
-      repository: "daasdeployment.azurecr.io/frontend"
+      repository: "azdaasdeployment.azurecr.io/frontend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -96,11 +96,11 @@ database:
   # these in CI — the Secret manifest already contains the real values.
   auth:
     
-    POSTGRES_DB: "post_bu48bz"
+    POSTGRES_DB: "post_myza18"
     
-    POSTGRES_USER: "post_p3zv6z"
+    POSTGRES_USER: "post_bgh1be"
     
-    POSTGRES_PASSWORD: "Hiyk#6B4FtvGSBc50TqqK#6A"
+    POSTGRES_PASSWORD: "ee!y3SXMx%unt60U97bculB0"
     
 
 

@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: daasdeployment.azurecr.io
+  REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: test-rg
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b58f2dd1-f2c7-41a7-a723-5626f62ffb8d/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iNThmMmRkMS1mMmM3LTQxYTctYTcyMy01NjI2ZjYyZmZiOGQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODIyODUzMzAsImV4cCI6MTc4MjI4ODkzMH0.oc1nHVAQkdZBB-FiKrxSWBNuaIM7RyAIndHPQFJe4hE"
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b58f2dd1-f2c7-41a7-a723-5626f62ffb8d/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iNThmMmRkMS1mMmM3LTQxYTctYTcyMy01NjI2ZjYyZmZiOGQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODIyODYyMjAsImV4cCI6MTc4MjI4OTgyMH0.9AWNAnYUWy6LMke82kqOCral7F5a7hCF83XUaqaxlro"
 
 jobs:
   build-and-push:

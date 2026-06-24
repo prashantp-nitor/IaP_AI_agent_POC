@@ -107,12 +107,12 @@ metadata:
 type: Opaque
 stringData:
   
-  POSTGRES_DB: "post_bu48bz"
+  POSTGRES_DB: "post_myza18"
   
-  POSTGRES_USER: "post_p3zv6z"
+  POSTGRES_USER: "post_bgh1be"
   
-  POSTGRES_PASSWORD: "Hiyk#6B4FtvGSBc50TqqK#6A"
+  POSTGRES_PASSWORD: "ee!y3SXMx%unt60U97bculB0"
   
   # Connection string for application services — constructed from above credential values
   # Your app services should read this via secretKeyRef
-  DATABASE_URL: "postgresql://post_p3zv6z:Hiyk#6B4FtvGSBc50TqqK#6A@postgresql-db:5432/post_bu48bz"
+  DATABASE_URL: "postgresql://post_bgh1be:ee!y3SXMx%unt60U97bculB0@postgresql-db:5432/post_myza18"

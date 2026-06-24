@@ -1,0 +1,6 @@
+{
+  "instance_name": "demo-ec2",
+  "region": "us-east-1",
+  "_provider": "aws",
+  "_resource_type": "ec2_instance"
+}

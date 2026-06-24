@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: test-rg
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b58f2dd1-f2c7-41a7-a723-5626f62ffb8d/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iNThmMmRkMS1mMmM3LTQxYTctYTcyMy01NjI2ZjYyZmZiOGQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODIyODYyMjAsImV4cCI6MTc4MjI4OTgyMH0.9AWNAnYUWy6LMke82kqOCral7F5a7hCF83XUaqaxlro"
+  NAMESPACE: demo-test
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b1c2915a-dfd8-4944-991c-dfcb1fdee4b8/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMWMyOTE1YS1kZmQ4LTQ5NDQtOTkxYy1kZmNiMWZkZWU0Yjgvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODIyOTEzNjMsImV4cCI6MTc4MjI5NDk2M30.q1TpDKkevkw2Pv2X93IYjjoGIIJkwOIJlloi_j5gsBc"
 
 jobs:
   build-and-push:
@@ -104,38 +104,6 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Install NGINX Ingress Controller
-        run: |
-          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-          helm repo update
-          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.service.externalTrafficPolicy=Local --timeout 10m0s
-
-      - name: Wait for NGINX Ingress LoadBalancer IP
-        run: |
-          echo "Waiting for NGINX Ingress Controller LoadBalancer external IP..."
-          INGRESS_IP=""
-          for i in {1..30}; do
-            INGRESS_IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-            if [ -z "$INGRESS_IP" ]; then
-              INGRESS_IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
-            fi
-            if [ ! -z "$INGRESS_IP" ]; then
-              echo "NGINX Ingress LoadBalancer IP/Hostname assigned: $INGRESS_IP"
-              break
-            fi
-            echo "Waiting for IP assignment (attempt $i/30)..."
-            sleep 10
-          done
-          if [ -z "$INGRESS_IP" ]; then
-            echo "Error: Ingress Controller IP assignment timed out."
-            echo "=== Ingress Controller Service Diagnostics ==="
-            kubectl describe svc ingress-nginx-controller -n ingress-nginx
-            echo "=== Ingress Controller Pods Diagnostics ==="
-            kubectl get pods -n ingress-nginx
-            kubectl describe pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx
-            exit 1
-          fi
-
       - name: Create ACR Pull Secret in AKS
         run: |
           kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
@@ -143,7 +111,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test-rg ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install demo-test ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -152,40 +120,64 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test-rg/helm/templates/database.yaml).
+          # (deployment-output/demo-test/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
-      - name: Retrieve Ingress Public IP & Report URL
+      - name: Wait for Frontend LoadBalancer IP
         run: |
-          echo "Retrieving Ingress public IP/hostname from NGINX controller..."
-          IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-          if [ -z "$IP" ]; then
-            IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+          echo "Waiting for Frontend LoadBalancer external IP..."
+          FRONTEND_SVC="frontend"
+          if [ -z "$FRONTEND_SVC" ]; then
+            echo "No frontend service found. Skipping LoadBalancer IP wait."
+          else
+            IP=""
+            for i in {1..30}; do
+              IP=$(kubectl get svc $FRONTEND_SVC -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+              if [ -z "$IP" ]; then
+                IP=$(kubectl get svc $FRONTEND_SVC -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+              fi
+              if [ ! -z "$IP" ]; then
+                echo "Frontend LoadBalancer IP/Hostname assigned: $IP"
+                break
+              fi
+              echo "Waiting for IP assignment (attempt $i/30)..."
+              sleep 10
+            done
+            if [ -z "$IP" ]; then
+              echo "Error: Frontend LoadBalancer IP assignment timed out."
+              kubectl describe svc $FRONTEND_SVC -n ${{ env.NAMESPACE }}
+              exit 1
+            fi
+          fi
+
+      - name: Retrieve Public IP & Report URL
+        run: |
+          echo "Retrieving public IP/hostname from frontend service..."
+          FRONTEND_SVC="frontend"
+          if [ -z "$FRONTEND_SVC" ]; then
+             echo "URL=None" >> $GITHUB_ENV
+             echo "### ⚠️ Deployment Completed (No Frontend)" >> $GITHUB_STEP_SUMMARY
+             exit 0
           fi
           
-          echo "=== Ingress Controller Status ==="
-          kubectl get svc ingress-nginx-controller -n ingress-nginx
-          echo "=== Application Ingress Status ==="
-          kubectl get ingress -n ${{ env.NAMESPACE }}
-          echo "=== Services Status ==="
-          kubectl get svc -n ${{ env.NAMESPACE }}
-
+          IP=$(kubectl get svc $FRONTEND_SVC -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
           if [ -z "$IP" ]; then
-            echo "Warning: Ingress IP/Hostname was not assigned."
+            IP=$(kubectl get svc $FRONTEND_SVC -n ${{ env.NAMESPACE }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+          fi
+          
+          if [ -z "$IP" ]; then
+            echo "Warning: Frontend IP/Hostname was not assigned."
             echo "URL=http://<pending-public-ip>" >> $GITHUB_ENV
-            echo "### ⚠️ Deployment Completed (Ingress Pending)" >> $GITHUB_STEP_SUMMARY
-            echo "The application was deployed successfully, but the public IP/hostname allocation is still in progress." >> $GITHUB_STEP_SUMMARY
+            echo "### ⚠️ Deployment Completed (IP Pending)" >> $GITHUB_STEP_SUMMARY
           else
             URL="http://$IP"
             echo "URL=$URL" >> $GITHUB_ENV
             echo "### 🚀 Deployment Successfully Exposed!" >> $GITHUB_STEP_SUMMARY
             echo "Your application is publicly reachable at: **[$URL]($URL)**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Resource | Name | Status | URL |" >> $GITHUB_STEP_SUMMARY
-            echo "| --- | --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
-            echo "| Ingress | test-rg-ingress | Exposed | [$URL]($URL) |" >> $GITHUB_STEP_SUMMARY
-            echo "| Path Routing | &#96;/api&#96; → Backend | Active | [$URL/api]($URL/api) |" >> $GITHUB_STEP_SUMMARY
-            echo "| Path Routing | &#96;/&#96; → Frontend | Active | [$URL]($URL) |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "*(Note: It might take a few moments for the Ingress Controller to fully propagate the routing rules)*" >> $GITHUB_STEP_SUMMARY
           fi
+
+      - name: Cleanup on Failed Deployment
+        if: failure()
+        run: |
+          echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
+          helm uninstall demo-test -n ${{ env.NAMESPACE }} || true

@@ -81,7 +81,7 @@ database:
   port: 5432
   storage:
     size: "10Gi"
-    storageClassName: "managed-csi"
+    storageClassName: "gp2"
   resources:
     requests:
       cpu: "150m"

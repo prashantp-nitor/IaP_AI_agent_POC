@@ -31,16 +31,3 @@ variable "resource_group_name" {
   type        = string
   default     = "rg1"
 }
-
-variable "administrator_login" {
-  description = "SQL server administrator login"
-  type        = string
-  default     = "sqladmin"
-}
-
-variable "administrator_login_password" {
-  description = "SQL server administrator password (override via TF_VAR or secret)"
-  type        = string
-  sensitive   = true
-  default     = "ChangeMe-please-1234!"
-}

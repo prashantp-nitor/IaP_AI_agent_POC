@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: fitcart-test
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/736ba18f-f7e9-4395-8fee-f6b1215c2457/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS83MzZiYTE4Zi1mN2U5LTQzOTUtOGZlZS1mNmIxMjE1YzI0NTcvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODIzMTA3MzUsImV4cCI6MTc4MjMxNDMzNX0.dn8veZdVhL4QJpnapABaIkWJ4dJFSqP16b-wrj6abxw"
+  NAMESPACE: test-1
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/2e60367a-7304-4573-beaa-0d1db7f6fd00/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8yZTYwMzY3YS03MzA0LTQ1NzMtYmVhYS0wZDFkYjdmNmZkMDAvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODIzNzE3MTUsImV4cCI6MTc4MjM3NTMxNX0.pCRcPoHTGWdwxoMispNz9j333l3UlB-5rCtB58jm7D4"
 
 jobs:
   build-and-push:
@@ -45,33 +45,317 @@ jobs:
       - name: Ensure ECR repositories exist
         run: |
           
-          aws ecr describe-repositories --repository-names backend --region ap-southeast-1 >/dev/null 2>&1 || \
-            aws ecr create-repository --repository-name backend --region ap-southeast-1
-          
           aws ecr describe-repositories --repository-names frontend --region ap-southeast-1 >/dev/null 2>&1 || \
             aws ecr create-repository --repository-name frontend --region ap-southeast-1
           
+          aws ecr describe-repositories --repository-names adservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name adservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names redis-cart --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name redis-cart --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names cartservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name cartservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names emailservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name emailservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names loadgenerator --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name loadgenerator --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names paymentservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name paymentservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names checkoutservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name checkoutservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names currencyservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name currencyservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names shippingservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name shippingservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names productcatalogservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name productcatalogservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names recommendationservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name recommendationservice --region ap-southeast-1
+          
+          aws ecr describe-repositories --repository-names shoppingassistantservice --region ap-southeast-1 >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name shoppingassistantservice --region ap-southeast-1
+          
 
-      
-      - name: Build and Push backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app/backend
-          file: ./app/backend/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/backend:${{ github.sha }}
-          
-          
-          
       
       - name: Build and Push frontend image
         uses: docker/build-push-action@v5
         with:
-          context: ./app/frontend
-          file: ./app/frontend/Dockerfile
+          context: ./app/./src/frontend
+          file: ./app/./src/frontend/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
           
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push adservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/adservice
+          file: ./app/./src/adservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/adservice:${{ github.sha }}
+          
+          
+            
+          
+          
+      
+      - name: Build and Push redis-cart image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/src/redis-cart
+          file: ./app/src/redis-cart/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/redis-cart:${{ github.sha }}
+          
+          
+          
+      
+      - name: Build and Push cartservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/cartservice/src
+          file: ./app/./src/cartservice/src/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/cartservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push emailservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/emailservice
+          file: ./app/./src/emailservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/emailservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push loadgenerator image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/loadgenerator
+          file: ./app/./src/loadgenerator/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/loadgenerator:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push paymentservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/paymentservice
+          file: ./app/./src/paymentservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/paymentservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push checkoutservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/checkoutservice
+          file: ./app/./src/checkoutservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/checkoutservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push currencyservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/currencyservice
+          file: ./app/./src/currencyservice/Dockerfile.fix
+          push: true
+          tags: ${{ env.REGISTRY }}/currencyservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push shippingservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/shippingservice
+          file: ./app/./src/shippingservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/shippingservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push productcatalogservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/productcatalogservice
+          file: ./app/./src/productcatalogservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/productcatalogservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push recommendationservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/recommendationservice
+          file: ./app/./src/recommendationservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/recommendationservice:${{ github.sha }}
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+          
+      
+      - name: Build and Push shoppingassistantservice image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/./src/shoppingassistantservice
+          file: ./app/./src/shoppingassistantservice/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/shoppingassistantservice:${{ github.sha }}
+          
+          
+            
+          
+            
           
           
       
@@ -134,27 +418,29 @@ jobs:
             --docker-password=$(aws ecr get-login-password --region ${{ steps.resolve_target.outputs.region }}) \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Install metrics-server
-        run: |
-          helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-          helm repo update
-          helm upgrade --install metrics-server metrics-server/metrics-server \
-            --namespace kube-system \
-            --set args[0]="--kubelet-insecure-tls" \
-            --wait --timeout 3m0s
-
       - name: Deploy via Helm
         run: |
-          helm upgrade --install fitcart-test ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-1 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
             --set global.deploymentStrategy=rolling \
-            --set services.backend.image.tag=${{ github.sha }} \
             --set services.frontend.image.tag=${{ github.sha }} \
+            --set services.adservice.image.tag=${{ github.sha }} \
+            --set services.redis-cart.image.tag=${{ github.sha }} \
+            --set services.cartservice.image.tag=${{ github.sha }} \
+            --set services.emailservice.image.tag=${{ github.sha }} \
+            --set services.loadgenerator.image.tag=${{ github.sha }} \
+            --set services.paymentservice.image.tag=${{ github.sha }} \
+            --set services.checkoutservice.image.tag=${{ github.sha }} \
+            --set services.currencyservice.image.tag=${{ github.sha }} \
+            --set services.shippingservice.image.tag=${{ github.sha }} \
+            --set services.productcatalogservice.image.tag=${{ github.sha }} \
+            --set services.recommendationservice.image.tag=${{ github.sha }} \
+            --set services.shoppingassistantservice.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/fitcart-test/helm/templates/database.yaml).
+          # (deployment-output/test-1/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -214,4 +500,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall fitcart-test -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-1 -n ${{ env.NAMESPACE }} || true

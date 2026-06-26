@@ -1,0 +1,3 @@
+cluster_name: test-rg
+provider: azure
+resource_group: rg-replication-test-target

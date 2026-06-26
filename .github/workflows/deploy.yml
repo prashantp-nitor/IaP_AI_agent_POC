@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: redis-app-test
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/d425753f-ca99-4f7c-bb0c-a7ecc29cd45d/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9kNDI1NzUzZi1jYTk5LTRmN2MtYmIwYy1hN2VjYzI5Y2Q0NWQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI0NTg2MDAsImV4cCI6MTc4MjQ2MjIwMH0.2QXn0E3BjB1D7LD-C3bOITyfD2FAoajzeUiAVG4bPVs"
+  NAMESPACE: redis-app
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/ebaf2d88-5b00-4865-b003-1913a8e1c196/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9lYmFmMmQ4OC01YjAwLTQ4NjUtYjAwMy0xOTEzYThlMWMxOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI0NjQ0MDcsImV4cCI6MTc4MjQ2ODAwN30.h_ki3zqQS4TPF1PnmFXUxfUGzw-4m2Iasr19sdoMC2g"
 
 jobs:
   build-and-push:
@@ -364,7 +364,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install redis-app-test ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install redis-app ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -384,7 +384,7 @@ jobs:
             --set services.shoppingassistantservice.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/redis-app-test/helm/templates/database.yaml).
+          # (deployment-output/redis-app/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -444,4 +444,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall redis-app-test -n ${{ env.NAMESPACE }} || true
+          helm uninstall redis-app -n ${{ env.NAMESPACE }} || true

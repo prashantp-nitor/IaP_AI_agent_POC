@@ -26,7 +26,7 @@ jobs:
 
       - id: discover
         run: |
-          RESOURCES=$(find replication -mindepth 2 -maxdepth 2 -type d \
+          RESOURCES=$(find replication -mindepth 1 -maxdepth 1 -type d \
             | sed 's|^replication/||' \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "resources=$RESOURCES" >> $GITHUB_OUTPUT

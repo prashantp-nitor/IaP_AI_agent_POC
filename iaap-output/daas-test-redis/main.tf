@@ -9,8 +9,6 @@ module "redis" {
   automatic_failover_enabled = var.automatic_failover_enabled
   multi_az_enabled = var.multi_az_enabled
   port = var.port
-  vpc_id = var.vpc_id
-  subnet_ids = var.subnet_ids
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
   tags = merge({
@@ -19,4 +17,5 @@ module "redis" {
     owner = "admin@example.com"
     project = "daas-test-project"
   }, var.extra_tags)
+  create_subnet_group = false
 }

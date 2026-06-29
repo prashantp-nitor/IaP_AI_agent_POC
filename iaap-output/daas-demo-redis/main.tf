@@ -15,6 +15,6 @@ module "redis" {
     ManagedBy = "IAAP"
     environment = "dev"
     owner = "admin@example.com"
-    project = "sample-daas-project"
+    project = "daas-test-project"
   }, var.extra_tags)
 }

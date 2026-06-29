@@ -6,7 +6,7 @@
   "tags": {
     "environment": "dev",
     "owner": "admin@example.com",
-    "project": "sample-daas-project"
+    "project": "daas-test-project"
   },
   "_provider": "aws",
   "_resource_type": "elasticache_redis"

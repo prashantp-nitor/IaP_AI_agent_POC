@@ -51,5 +51,5 @@
 # --- Import existing resource into state (idempotent on repeated apply) ---
 import {
   to = azurerm_redis_cache.redis
-  id = "/subscriptions/sub1/resourceGroups/rg1/providers/Microsoft.Cache/Redis/mycache"
+  id = "/subscriptions/s/resourceGroups/rg/providers/Microsoft.Cache/Redis/mycache"
 }

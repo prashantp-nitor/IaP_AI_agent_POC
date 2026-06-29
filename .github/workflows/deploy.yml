@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: boutique-test
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/e3d7b6ff-19f9-4aea-91ad-6621411a0211/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9lM2Q3YjZmZi0xOWY5LTRhZWEtOTFhZC02NjIxNDExYTAyMTEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI3MjEzMjMsImV4cCI6MTc4MjcyNDkyM30.b-d-c37HNqXqaK_8dG2JDnzMIUCnNEDKQ3oZXKByyzE"
+  NAMESPACE: test-demo
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/5fba2759-c817-45df-9e9b-f2a5d778dfd5/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS81ZmJhMjc1OS1jODE3LTQ1ZGYtOWU5Yi1mMmE1ZDc3OGRmZDUvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI3MzgzMzUsImV4cCI6MTc4Mjc0MTkzNX0.Cp5XTnOoPkv0T3uy0adMichZdeHxJnJJ4uCzmm3rPrY"
 
 jobs:
   build-and-push:
@@ -364,7 +364,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install boutique-test ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-demo ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -384,7 +384,7 @@ jobs:
             --set services.shoppingassistantservice.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/boutique-test/helm/templates/database.yaml).
+          # (deployment-output/test-demo/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -444,4 +444,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall boutique-test -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-demo -n ${{ env.NAMESPACE }} || true

@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: fitkart-de
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3bc0cda3-d0cc-4284-8eb2-27c64475dabd/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zYmMwY2RhMy1kMGNjLTQyODQtOGViMi0yN2M2NDQ3NWRhYmQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI3OTkyOTMsImV4cCI6MTc4MjgwMjg5M30.oIHiL6RCUR0IL8skLtIrwgctg5Y6dccWvk5sLpCbf50"
+  NAMESPACE: test-pp
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/805066d8-a158-4081-b37d-841b73335206/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS84MDUwNjZkOC1hMTU4LTQwODEtYjM3ZC04NDFiNzMzMzUyMDYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI4MDE4NDksImV4cCI6MTc4MjgwNTQ0OX0.qXnY65Eg9ASDsJH9EkNJi1RSQLLj4Aiy70aSBnbBnV8"
 
 jobs:
   build-and-push:
@@ -143,23 +143,9 @@ jobs:
             --set args[0]="--kubelet-insecure-tls" \
             --wait --timeout 3m0s
 
-      - name: Create StorageClass gp3
-        run: |
-          cat <<EOF | kubectl apply -f -
-          apiVersion: storage.k8s.io/v1
-          kind: StorageClass
-          metadata:
-            name: gp3
-          provisioner: ebs.csi.aws.com
-          volumeBindingMode: WaitForFirstConsumer
-          allowVolumeExpansion: true
-          parameters:
-            type: gp3
-          EOF
-
       - name: Deploy via Helm
         run: |
-          helm upgrade --install fitkart-de ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-pp ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -167,6 +153,9 @@ jobs:
             --set services.backend.image.tag=${{ github.sha }} \
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
+          # DB credentials are already embedded in the generated Secret manifest
+          # (deployment-output/test-pp/helm/templates/database.yaml).
+          # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
@@ -225,4 +214,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall fitkart-de -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-pp -n ${{ env.NAMESPACE }} || true

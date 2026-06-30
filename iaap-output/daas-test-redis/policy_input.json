@@ -1,8 +1,8 @@
 {
   "cluster_id": "daas-test-redis",
   "region": "us-east-1",
-  "node_type": "cache.t3.micro",
-  "num_cache_nodes": "1",
+  "node_type": "cache.t4g.micro (2 vCPU, 0.5 GB RAM)",
+  "engine_version": "7.1",
   "tags": {
     "environment": "dev",
     "owner": "admin@example.com",

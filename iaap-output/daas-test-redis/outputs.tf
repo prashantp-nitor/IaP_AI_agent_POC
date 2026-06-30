@@ -1,15 +1,11 @@
-output "replication_group_primary_endpoint_address" {
-  value = module.redis.replication_group_primary_endpoint_address
+output "elasticache_cluster_arn" {
+  value = module.elasticache.cluster_arn
 }
 
-output "replication_group_reader_endpoint_address" {
-  value = module.redis.replication_group_reader_endpoint_address
+output "elasticache_cache_nodes" {
+  value = module.elasticache.cluster_cache_nodes
 }
 
-output "replication_group_id" {
-  value = module.redis.replication_group_id
-}
-
-output "replication_group_arn" {
-  value = module.redis.replication_group_arn
+output "elasticache_engine_version" {
+  value = module.elasticache.cluster_engine_version_actual
 }

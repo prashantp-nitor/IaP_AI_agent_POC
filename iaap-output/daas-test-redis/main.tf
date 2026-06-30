@@ -1,16 +1,19 @@
-module "redis" {
+module "elasticache" {
   source  = "terraform-aws-modules/elasticache/aws"
-  version = "~> 1.0"
+  version = "~> 1.4"
 
-  replication_group_id = var.cluster_id
-  description = "Managed by IAAP"
+  cluster_id = var.cluster_id
+  create_cluster = true
+  create_replication_group = false
+  engine = "redis"
+  engine_version = var.engine_version
   node_type = var.node_type
-  num_cache_clusters = var.num_cache_nodes
-  automatic_failover_enabled = var.automatic_failover_enabled
-  multi_az_enabled = var.multi_az_enabled
+  num_cache_nodes = 1
   port = var.port
-  at_rest_encryption_enabled = true
   transit_encryption_enabled = true
+  apply_immediately = true
+  create_parameter_group = true
+  parameter_group_family = var.parameter_group_family
   tags = merge({
     ManagedBy = "IAAP"
     environment = "dev"

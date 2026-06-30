@@ -1,10 +1,10 @@
 region = "us-east-1"
 cluster_id = "daas-test-redis"
+node_type = "cache.t4g.micro"
+engine_version = "7.1"
+parameter_group_family = "redis7"
+port = 6379
 vpc_id = ""
 subnet_ids = []
-node_type = "cache.t3.micro"
-num_cache_nodes = 1
-automatic_failover_enabled = false
-multi_az_enabled = false
-port = 6379
+security_group_ids = []
 extra_tags = {}

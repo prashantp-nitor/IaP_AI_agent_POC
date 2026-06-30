@@ -5,51 +5,51 @@ variable "region" {
 }
 
 variable "cluster_id" {
-  description = "ElastiCache replication group ID"
+  description = "ElastiCache cluster identifier"
   type        = string
   default     = "daas-test-redis"
 }
 
+variable "node_type" {
+  description = "Cache node type"
+  type        = string
+  default     = "cache.t4g.micro"
+}
+
+variable "engine_version" {
+  description = "Redis engine version"
+  type        = string
+  default     = "7.1"
+}
+
+variable "parameter_group_family" {
+  description = "Cache parameter group family"
+  type        = string
+  default     = "redis7"
+}
+
+variable "port" {
+  description = "Port the cache listens on"
+  type        = number
+  default     = 6379
+}
+
 variable "vpc_id" {
-  description = "VPC ID for the security group"
+  description = "VPC ID for the cache security group"
   type        = string
   default     = ""
 }
 
 variable "subnet_ids" {
-  description = "Subnet IDs for the ElastiCache subnet group (comma-separated in the form)"
+  description = "Subnet IDs for the cache subnet group"
   type        = list(string)
   default     = []
 }
 
-variable "node_type" {
-  description = "ElastiCache node type (e.g. cache.t3.micro)"
-  type        = string
-  default     = "cache.t3.micro"
-}
-
-variable "num_cache_nodes" {
-  description = "Number of cache nodes (1 = single-node; 2+ enables replicas)"
-  type        = number
-  default     = 1
-}
-
-variable "automatic_failover_enabled" {
-  description = "Enable automatic failover (requires num_cache_nodes >= 2)"
-  type        = bool
-  default     = false
-}
-
-variable "multi_az_enabled" {
-  description = "Enable Multi-AZ deployment"
-  type        = bool
-  default     = false
-}
-
-variable "port" {
-  description = "Redis port"
-  type        = number
-  default     = 6379
+variable "security_group_ids" {
+  description = "Security group IDs to attach to the cache"
+  type        = list(string)
+  default     = []
 }
 
 variable "extra_tags" {

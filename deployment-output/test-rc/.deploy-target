@@ -1,0 +1,3 @@
+cluster_name: eks-test
+provider: aws
+region: ap-southeast-1

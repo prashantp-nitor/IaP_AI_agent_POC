@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: fitkart-app
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b232baf2-874f-4434-8e42-5027783251d4/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMjMyYmFmMi04NzRmLTQ0MzQtOGU0Mi01MDI3NzgzMjUxZDQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI3OTc1ODEsImV4cCI6MTc4MjgwMTE4MX0.QgIc9QEVE-6Hcqtb2kdKEM6fX294aj7cQZRzWB6PcRc"
+  NAMESPACE: fitkart-de
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3bc0cda3-d0cc-4284-8eb2-27c64475dabd/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zYmMwY2RhMy1kMGNjLTQyODQtOGViMi0yN2M2NDQ3NWRhYmQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI3OTkyOTMsImV4cCI6MTc4MjgwMjg5M30.oIHiL6RCUR0IL8skLtIrwgctg5Y6dccWvk5sLpCbf50"
 
 jobs:
   build-and-push:
@@ -159,7 +159,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install fitkart-app ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install fitkart-de ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -225,4 +225,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall fitkart-app -n ${{ env.NAMESPACE }} || true
+          helm uninstall fitkart-de -n ${{ env.NAMESPACE }} || true

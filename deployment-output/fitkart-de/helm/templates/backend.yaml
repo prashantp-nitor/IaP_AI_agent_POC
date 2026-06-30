@@ -1,0 +1,65 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: fitkart-de
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: backend
+          image: "{{ index .Values.services "backend" "image" "repository" }}:{{ index .Values.services "backend" "image" "tag" }}"
+          imagePullPolicy: "{{ index .Values.services "backend" "image" "pullPolicy" }}"
+          
+          ports:
+            
+            - containerPort: 8080
+              name: port-8080
+            
+          
+          env:
+            
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          
+          
+
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: fitkart-de
+  labels:
+    app: backend
+spec:
+  type: ClusterIP
+  ports:
+    
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http-8080
+    
+  selector:
+    app: backend
+    
+---

@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: test-pp
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/805066d8-a158-4081-b37d-841b73335206/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS84MDUwNjZkOC1hMTU4LTQwODEtYjM3ZC04NDFiNzMzMzUyMDYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI4MDE4NDksImV4cCI6MTc4MjgwNTQ0OX0.qXnY65Eg9ASDsJH9EkNJi1RSQLLj4Aiy70aSBnbBnV8"
+  NAMESPACE: test-fitcart
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/70c4cac0-2248-4021-8cdc-6df693f46791/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS83MGM0Y2FjMC0yMjQ4LTQwMjEtOGNkYy02ZGY2OTNmNDY3OTEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI4MDMyMzEsImV4cCI6MTc4MjgwNjgzMX0.CvJoXsqvygfV-GEId6xpp6J6jTdO7qwqqJupjHXlM0g"
 
 jobs:
   build-and-push:
@@ -145,7 +145,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test-pp ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-fitcart ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -154,7 +154,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test-pp/helm/templates/database.yaml).
+          # (deployment-output/test-fitcart/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -214,4 +214,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-pp -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-fitcart -n ${{ env.NAMESPACE }} || true

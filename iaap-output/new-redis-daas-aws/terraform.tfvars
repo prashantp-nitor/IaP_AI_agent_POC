@@ -1,0 +1,10 @@
+region = "us-east-1"
+cluster_id = "new-redis-daas-aws"
+node_type = "cache.t4g.micro"
+engine_version = "7.1"
+parameter_group_family = "redis7"
+port = 6379
+vpc_id = ""
+subnet_ids = []
+security_group_ids = []
+extra_tags = {}

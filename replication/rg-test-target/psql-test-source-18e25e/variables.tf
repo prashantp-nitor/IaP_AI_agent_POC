@@ -17,7 +17,7 @@ variable "region" {
 variable "sku_name" {
   description = "Compute SKU (e.g. B_Standard_B1ms, GP_Standard_D2s_v3)"
   type        = string
-  default     = "Standard_B1ms"
+  default     = "B_Standard_B1ms"
 }
 
 variable "pg_version" {
@@ -48,5 +48,5 @@ variable "administrator_password" {
   description = "PostgreSQL administrator password (override via TF_VAR or secret)"
   type        = string
   sensitive   = true
-  default     = "aa"
+  default     = "a"
 }

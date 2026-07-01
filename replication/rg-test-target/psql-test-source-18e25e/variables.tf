@@ -20,7 +20,7 @@ variable "sku_name" {
   default     = "Standard_B1ms"
 }
 
-variable "version" {
+variable "pg_version" {
   description = "PostgreSQL major version (e.g. 13, 14, 15, 16)"
   type        = string
   default     = "16"

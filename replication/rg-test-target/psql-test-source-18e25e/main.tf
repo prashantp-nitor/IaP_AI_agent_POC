@@ -26,7 +26,7 @@
               name                          = var.server_name
               resource_group_name           = data.azurerm_resource_group.rg.name
               location                      = data.azurerm_resource_group.rg.location
-              version                       = var.version
+              version                       = var.pg_version
               sku_name                      = var.sku_name
               storage_mb                    = var.storage_mb
               administrator_login           = var.administrator_login

@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: test-demo
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b0cdadef-43c8-4652-85c0-1385bfbc2201/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMGNkYWRlZi00M2M4LTQ2NTItODVjMC0xMzg1YmZiYzIyMDEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5ODE2MzYsImV4cCI6MTc4Mjk4NTIzNn0.uCrUcFcTYbaoDtoNAt77dkHf7bqmmM7AMarLkCyAOJw"
+  REGISTRY: acrdaassystemdefault.azurecr.io
+  NAMESPACE: sample-daas-demo-project
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/c00ccfe4-a0c4-4aac-9298-f98faa060de9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9jMDBjY2ZlNC1hMGM0LTRhYWMtOTI5OC1mOThmYWEwNjBkZTkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5ODI2NjMsImV4cCI6MTc4Mjk4NjI2M30.t6Yj7REkIgOim8t8DYzqNtwmXWUwkMIGpVkFGxmHsuo"
 
 jobs:
   build-and-push:
@@ -32,25 +32,12 @@ jobs:
           mkdir app
           unzip -q source.zip -d app
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-1
-
-      - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Ensure ECR repositories exist
-        run: |
-          
-          aws ecr describe-repositories --repository-names backend --region ap-southeast-1 >/dev/null 2>&1 || \
-            aws ecr create-repository --repository-name backend --region ap-southeast-1
-          
-          aws ecr describe-repositories --repository-names frontend --region ap-southeast-1 >/dev/null 2>&1 || \
-            aws ecr create-repository --repository-name frontend --region ap-southeast-1
-          
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
       
       - name: Build and Push backend image
@@ -83,14 +70,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Azure CLI Login
+        uses: azure/login@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-1
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
 
-      - name: Resolve Target Cluster
+      - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
           DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
@@ -99,24 +84,19 @@ jobs:
             exit 1
           fi
           CLUSTER_NAME=$(yq e '.cluster_name' $DEPLOY_TARGET_FILE)
-          CLUSTER_REGION=$(yq e '.region' $DEPLOY_TARGET_FILE)
-
+          RESOURCE_GROUP=$(yq e '.resource_group' $DEPLOY_TARGET_FILE)
+          
+          # Dynamically resolve Key Vault associated with resource group
+          KEY_VAULT_NAME=$(az keyvault list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
+          
           echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
-          echo "region=$CLUSTER_REGION" >> $GITHUB_OUTPUT
+          echo "resource_group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+          echo "key_vault_name=$KEY_VAULT_NAME" >> $GITHUB_OUTPUT
           echo "helm_dir=$(dirname $DEPLOY_TARGET_FILE)/helm" >> $GITHUB_OUTPUT
 
       - name: Set up Kubeconfig
         run: |
-          aws eks update-kubeconfig --name ${{ steps.resolve_target.outputs.cluster_name }} --region ${{ steps.resolve_target.outputs.region }}
-
-      - name: Verify cluster access
-        run: |
-          if ! kubectl auth can-i create deployments -n ${{ env.NAMESPACE }} >/dev/null 2>&1; then
-            echo "::error::CI principal cannot create workloads in the EKS cluster. Grant it an EKS access entry:"
-            echo "  aws eks create-access-entry --cluster-name ${{ steps.resolve_target.outputs.cluster_name }} --region ${{ steps.resolve_target.outputs.region }} --principal-arn <CI_PRINCIPAL_ARN>"
-            echo "  aws eks associate-access-policy --cluster-name ${{ steps.resolve_target.outputs.cluster_name }} --region ${{ steps.resolve_target.outputs.region }} --principal-arn <CI_PRINCIPAL_ARN> --access-scope type=cluster --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy"
-            exit 1
-          fi
+          az aks get-credentials --resource-group ${{ steps.resolve_target.outputs.resource_group }} --name ${{ steps.resolve_target.outputs.cluster_name }} --overwrite-existing
 
 
       - name: Install Helm
@@ -124,28 +104,16 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Create ECR Pull Secret in EKS
+      - name: Create ACR Pull Secret in AKS
         run: |
           kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret docker-registry regcred \
-            --namespace ${{ env.NAMESPACE }} \
-            --docker-server=${{ env.REGISTRY }} \
-            --docker-username=AWS \
-            --docker-password=$(aws ecr get-login-password --region ${{ steps.resolve_target.outputs.region }}) \
-            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret docker-registry acr-pull-secret             --namespace ${{ env.NAMESPACE }}             --docker-server=${{ env.REGISTRY }}             --docker-username=${{ secrets.REGISTRY_USERNAME }}             --docker-password=${{ secrets.REGISTRY_PASSWORD }}             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Install metrics-server
-        run: |
-          helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-          helm repo update
-          helm upgrade --install metrics-server metrics-server/metrics-server \
-            --namespace kube-system \
-            --set args[0]="--kubelet-insecure-tls" \
-            --wait --timeout 3m0s
+
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test-demo ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install sample-daas-demo-project ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -154,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test-demo/helm/templates/database.yaml).
+          # (deployment-output/sample-daas-demo-project/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -214,4 +182,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-demo -n ${{ env.NAMESPACE }} || true
+          helm uninstall sample-daas-demo-project -n ${{ env.NAMESPACE }} || true

@@ -1,0 +1,191 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkoutservice
+  namespace: boutique-app
+  labels:
+    app: checkoutservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checkoutservice
+  template:
+    metadata:
+      labels:
+        app: checkoutservice
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: checkoutservice
+          image: "{{ index .Values.services "checkoutservice" "image" "repository" }}:{{ index .Values.services "checkoutservice" "image" "tag" }}"
+          imagePullPolicy: "{{ index .Values.services "checkoutservice" "image" "pullPolicy" }}"
+          
+          ports:
+            
+            - containerPort: 5050
+              name: port-5050
+            
+          
+          env:
+            
+            - name: CART_SERVICE_ADDR
+              
+              value: "cartservice:7070"
+              
+            
+            - name: CURRENCY_SERVICE_ADDR
+              
+              value: "currencyservice:7000"
+              
+            
+            - name: EMAIL_SERVICE_ADDR
+              
+              value: "emailservice:5000"
+              
+            
+            - name: GOTRACEBACK
+              
+              value: "single"
+              
+            
+            - name: PAYMENT_SERVICE_ADDR
+              
+              value: "paymentservice:50051"
+              
+            
+            - name: PORT
+              
+              value: "5050"
+              
+            
+            - name: PRODUCT_CATALOG_SERVICE_ADDR
+              
+              value: "productcatalogservice:3550"
+              
+            
+            - name: SHIPPING_SERVICE_ADDR
+              
+              value: "shippingservice:50051"
+              
+            
+            - name: SKAFFOLD_GO_GCFLAGS
+              
+              value: "a"
+              
+            
+            - name: TARGETARCH
+              
+              value: "amd64"
+              
+            
+            - name: TARGETOS
+              
+              value: "linux"
+              
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+          
+          
+
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkoutservice
+  namespace: boutique-app
+  labels:
+    app: checkoutservice
+spec:
+  type: ClusterIP
+  ports:
+    
+    - port: 5050
+      targetPort: 5050
+      protocol: TCP
+      name: http-5050
+    
+  selector:
+    app: checkoutservice
+    
+---
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: checkoutservice-config
+  namespace: boutique-app
+data:
+  
+  CART_SERVICE_ADDR: "cartservice:7070"
+  
+  CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+  
+  EMAIL_SERVICE_ADDR: "emailservice:5000"
+  
+  GOTRACEBACK: "single"
+  
+  PAYMENT_SERVICE_ADDR: "paymentservice:50051"
+  
+  PORT: "5050"
+  
+  PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+  
+  SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+  
+  SKAFFOLD_GO_GCFLAGS: "a"
+  
+  TARGETARCH: "amd64"
+  
+  TARGETOS: "linux"

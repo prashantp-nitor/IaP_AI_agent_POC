@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: rs-test
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/ece08c07-1329-45ad-b06e-5814054d0bbf/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9lY2UwOGMwNy0xMzI5LTQ1YWQtYjA2ZS01ODE0MDU0ZDBiYmYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5ODM3NDUsImV4cCI6MTc4Mjk4NzM0NX0.BSbjEgOmgJGJH3e-nKqMdWQmg4xlnsmT7dDmbj3t-50"
+  NAMESPACE: test-fitcart-v3
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/c4e29877-1b1f-4264-ae09-d17981249d2a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9jNGUyOTg3Ny0xYjFmLTQyNjQtYWUwOS1kMTc5ODEyNDlkMmEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5ODgzMjMsImV4cCI6MTc4Mjk5MTkyM30.igvYRwrVx8jpoT1J4L7tf0223rgHfQwLX-AS7XJ3XZw"
 
 jobs:
   build-and-push:
@@ -143,9 +143,23 @@ jobs:
             --set args[0]="--kubelet-insecure-tls" \
             --wait --timeout 3m0s
 
+      - name: Create StorageClass gp3
+        run: |
+          cat <<EOF | kubectl apply -f -
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: gp3
+          provisioner: ebs.csi.aws.com
+          volumeBindingMode: WaitForFirstConsumer
+          allowVolumeExpansion: true
+          parameters:
+            type: gp3
+          EOF
+
       - name: Deploy via Helm
         run: |
-          helm upgrade --install rs-test ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-fitcart-v3 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -154,7 +168,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/rs-test/helm/templates/database.yaml).
+          # (deployment-output/test-fitcart-v3/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -214,4 +228,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall rs-test -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-fitcart-v3 -n ${{ env.NAMESPACE }} || true

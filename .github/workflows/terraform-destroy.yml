@@ -15,6 +15,9 @@ on:
 env:
   TF_VERSION: 1.8.0
 
+permissions:
+  contents: write
+
 jobs:
   destroy:
     name: Destroy Infrastructure - ${{ github.event.inputs.resource_name }}

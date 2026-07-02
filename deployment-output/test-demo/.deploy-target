@@ -1,3 +1,3 @@
-cluster_name: boutique-test
-provider: azure
-resource_group: AZET-RG-Daas-Platform
+cluster_name: eks-test-3tier
+provider: aws
+region: ap-southeast-1

@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: test-rc
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/6e132316-81ba-4eaa-acdf-67ba27aae04f/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS82ZTEzMjMxNi04MWJhLTRlYWEtYWNkZi02N2JhMjdhYWUwNGYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI4MDQ2NDEsImV4cCI6MTc4MjgwODI0MX0.2GvqVi9SgRvkzL7jLzPTcLrMzh854yVB60DxaSDgge0"
+  NAMESPACE: test-demo
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b45a1b25-d250-4cfd-be3d-ba4325962884/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iNDVhMWIyNS1kMjUwLTRjZmQtYmUzZC1iYTQzMjU5NjI4ODQvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5ODA3MTAsImV4cCI6MTc4Mjk4NDMxMH0.Op4E11bcqqLzKdwa3K5QH77rfcmBOJ_cMaVrzns8Ln8"
 
 jobs:
   build-and-push:
@@ -145,7 +145,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test-rc ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-demo ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -154,7 +154,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test-rc/helm/templates/database.yaml).
+          # (deployment-output/test-demo/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -214,4 +214,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-rc -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-demo -n ${{ env.NAMESPACE }} || true

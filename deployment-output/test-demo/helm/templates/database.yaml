@@ -53,10 +53,10 @@ spec:
               mountPath: /var/lib/postgresql/data
           resources:
             requests:
-              cpu: "150m"
+              cpu: "100m"
               memory: "256Mi"
             limits:
-              cpu: "150m"
+              cpu: "100m"
               memory: "256Mi"
           livenessProbe:
             tcpSocket:
@@ -108,12 +108,12 @@ metadata:
 type: Opaque
 stringData:
   
-  POSTGRES_DB: "post_dx72g9"
+  POSTGRES_DB: "post_rx1sqm"
   
-  POSTGRES_USER: "post_zrzerp"
+  POSTGRES_USER: "post_1ethkn"
   
-  POSTGRES_PASSWORD: "wng7pLG^ap8*lf&pJOmxJW6x"
+  POSTGRES_PASSWORD: "clWFxvhYz&t7bCCyr1o5#OZp"
   
   # Connection string for application services — constructed from above credential values
   # Your app services should read this via secretKeyRef
-  DATABASE_URL: "postgresql://post_zrzerp:wng7pLG^ap8*lf&pJOmxJW6x@postgresql-db:5432/post_dx72g9"
+  DATABASE_URL: "postgresql://post_1ethkn:clWFxvhYz&t7bCCyr1o5#OZp@postgresql-db:5432/post_rx1sqm"

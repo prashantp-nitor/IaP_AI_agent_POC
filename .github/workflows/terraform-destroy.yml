@@ -1,0 +1,158 @@
+name: Terraform Infra Destruction Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource_name:
+        description: 'The directory name under iaap-output/ (e.g., project-abc)'
+        required: true
+        type: string
+      cloud_provider:
+        description: 'Target cloud provider (aws, azure, gcp). Leave empty for auto-detection.'
+        required: false
+        type: string
+
+env:
+  TF_VERSION: 1.8.0
+
+jobs:
+  destroy:
+    name: Destroy Infrastructure - ${{ github.event.inputs.resource_name }}
+    runs-on: ubuntu-latest
+
+    # Set the working directory dynamically to the targeted project
+    defaults:
+      run:
+        working-directory: iaap-output/${{ github.event.inputs.resource_name }}
+
+    env:
+      # Export credentials for all providers (Terraform uses what it needs)
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
+      GOOGLE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history to allow checking out files from previous commits if deleted
+          fetch-depth: 0
+
+      # Fallback: Restore folder from git history if it has been deleted
+      - name: Restore folder if deleted
+        working-directory: .
+        run: |
+          TARGET_DIR="iaap-output/${{ github.event.inputs.resource_name }}"
+          if [ ! -d "$TARGET_DIR" ]; then
+            echo "Directory $TARGET_DIR not found in HEAD. Searching git history..."
+            LAST_COMMIT=$(git log -n 1 --pretty=format:%H -- "$TARGET_DIR")
+            if [ -n "$LAST_COMMIT" ]; then
+              echo "Restoring $TARGET_DIR from commit $LAST_COMMIT..."
+              git checkout "$LAST_COMMIT" -- "$TARGET_DIR"
+            else
+              echo "::error::Directory $TARGET_DIR not found in git history."
+              exit 1
+            fi
+          fi
+
+      - name: Detect cloud provider
+        id: provider
+        run: |
+          if [ -n "${{ github.event.inputs.cloud_provider }}" ]; then
+            P="${{ github.event.inputs.cloud_provider }}"
+          elif grep -rqiE 'hashicorp/aws|provider "aws"' --include='*.tf' .; then
+            P=aws
+          elif grep -rqiE 'hashicorp/google|provider "google"' --include='*.tf' .; then
+            P=gcp
+          elif grep -rqiE 'hashicorp/azurerm|provider "azurerm"' --include='*.tf' .; then
+            P=azure
+          else
+            echo "::error::Could not determine cloud provider for ${{ github.event.inputs.resource_name }}"
+            exit 1
+          fi
+          echo "provider=$P" >> "$GITHUB_OUTPUT"
+          echo "Detected provider: $P"
+
+      # Provider Authentications
+      - name: Azure login
+        if: steps.provider.outputs.provider == 'azure'
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Configure AWS credentials
+        if: steps.provider.outputs.provider == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Authenticate to Google Cloud
+        if: steps.provider.outputs.provider == 'gcp'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # Kubernetes pre-cleanup (specifically for EKS dynamic load balancers and ENIs)
+      - name: EKS Dynamic Resource Cleanup
+        if: steps.provider.outputs.provider == 'aws'
+        run: |
+          # Only run if it's an EKS deployment
+          if grep -rqiE 'aws_eks_cluster' --include='*.tf' .; then
+            CLUSTER_NAME=$(terraform output -raw cluster_name 2>/dev/null || echo "")
+            if [ -n "$CLUSTER_NAME" ]; then
+              echo "Configuring kubeconfig for EKS cluster: $CLUSTER_NAME"
+              aws eks update-kubeconfig --region ${{ vars.AWS_REGION || 'us-east-1' }} --name "$CLUSTER_NAME"
+              
+              echo "Deleting active Kubernetes Services, Ingresses, and PVCs..."
+              kubectl delete service,ingress,pvc --all --all-namespaces --ignore-not-found --timeout=90s || true
+              
+              echo "Waiting 60 seconds for cloud provider load balancers and network interfaces to detach..."
+              sleep 60
+            fi
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=deploy-storage" \
+            -backend-config="key=${{ github.event.inputs.resource_name }}/terraform.tfstate" \
+            -backend-config="endpoint=${{ secrets.SUPABASE_S3_ENDPOINT }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="access_key=${{ secrets.SUPABASE_S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.SUPABASE_S3_SECRET_KEY }}" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="use_path_style=true"
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
+
+      # Git cleanup - Commit the deletion of the project folder
+      - name: Clean up Git Repository Folder
+        working-directory: .
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          TARGET_DIR="iaap-output/${{ github.event.inputs.resource_name }}"
+          if [ -d "$TARGET_DIR" ] || git ls-files --error-unmatch "$TARGET_DIR" >/dev/null 2>&1; then
+            git rm -rf "$TARGET_DIR"
+            git commit -m "chore(infra): destroy and remove folder for ${{ github.event.inputs.resource_name }}"
+            git push
+          fi

@@ -14,10 +14,6 @@ provider "azurerm" {
   features {}
 }
 
-module "evhns-test-source-feef71" {
-  source = "./evhns-test-source-feef71"
-}
-
-module "psql-test-source-ff2718" {
-  source = "./psql-test-source-ff2718"
+module "milvus-zilliz-test" {
+  source = "./milvus-zilliz-test"
 }

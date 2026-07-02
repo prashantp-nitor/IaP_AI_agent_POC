@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "sample-daas-demo-project"
   # Container registry base URL
-  registry: "acrdaassystemdefault.azurecr.io"
+  registry: "azdaasdeployment.azurecr.io"
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
@@ -22,7 +22,7 @@ services:
     enabled: true
     replicaCount: 2
     image:
-      repository: "acrdaassystemdefault.azurecr.io/backend"
+      repository: "azdaasdeployment.azurecr.io/backend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -47,7 +47,7 @@ services:
     enabled: true
     replicaCount: 2
     image:
-      repository: "acrdaassystemdefault.azurecr.io/frontend"
+      repository: "azdaasdeployment.azurecr.io/frontend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -94,11 +94,11 @@ database:
   # these in CI — the Secret manifest already contains the real values.
   auth:
     
-    POSTGRES_DB: "post_hawjeu"
+    POSTGRES_DB: "post_xc1j9u"
     
-    POSTGRES_USER: "post_y55qnl"
+    POSTGRES_USER: "post_yz4k3m"
     
-    POSTGRES_PASSWORD: "%MdHkg&kB7m%vweM%C9kdg^P"
+    POSTGRES_PASSWORD: "nv1k0!P#Vhgb4FqZ&3^^kMap"
     
 
 

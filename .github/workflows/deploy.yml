@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: eks-test-v4
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/23de65ec-8d8b-433e-b818-f8f4072a8d31/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8yM2RlNjVlYy04ZDhiLTQzM2UtYjgxOC1mOGY0MDcyYThkMzEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5OTAyNjIsImV4cCI6MTc4Mjk5Mzg2Mn0.VdhggPE21jaSxHvUp3OLOsrJ518ucFVlmyXttH0ww5Q"
+  NAMESPACE: fitcart-demo1
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/fba95e11-b68a-4073-b334-dac16ab38fbc/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9mYmE5NWUxMS1iNjhhLTQwNzMtYjMzNC1kYWMxNmFiMzhmYmMvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5OTQ4NzEsImV4cCI6MTc4Mjk5ODQ3MX0.GChp6fllFSQAFIyUhErfnSMqpFIEiJ0QzCq2QFiatIw"
 
 jobs:
   build-and-push:
@@ -159,7 +159,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install eks-test-v4 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install fitcart-demo1 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -168,7 +168,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/eks-test-v4/helm/templates/database.yaml).
+          # (deployment-output/fitcart-demo1/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -228,4 +228,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall eks-test-v4 -n ${{ env.NAMESPACE }} || true
+          helm uninstall fitcart-demo1 -n ${{ env.NAMESPACE }} || true

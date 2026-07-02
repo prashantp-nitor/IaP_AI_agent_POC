@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-db
+  namespace: fitcart-demo1
+  labels:
+    app: postgresql-db
+    managed-by: daas
+spec:
+  serviceName: postgresql-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-db
+  template:
+    metadata:
+      labels:
+        app: postgresql-db
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: db
+          env:
+            
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+            
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+            
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+            
+            
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 10
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: "gp3"
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-db
+  namespace: fitcart-demo1
+  labels:
+    app: postgresql-db
+spec:
+  # Headless service — StatefulSet pods get stable DNS names
+  clusterIP: None
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: db
+  selector:
+    app: postgresql-db
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-db-secret
+  namespace: fitcart-demo1
+  annotations:
+    daas/secret-type: "database-credentials"
+    daas/engine: "postgresql"
+type: Opaque
+stringData:
+  
+  POSTGRES_DB: "post_ka6gea"
+  
+  POSTGRES_USER: "post_4oikj2"
+  
+  POSTGRES_PASSWORD: "*EA&4RSCnzhABKmJnJuWh2UX"
+  
+  # Connection string for application services — constructed from above credential values
+  # Your app services should read this via secretKeyRef
+  DATABASE_URL: "postgresql://post_4oikj2:*EA&4RSCnzhABKmJnJuWh2UX@postgresql-db:5432/post_ka6gea"

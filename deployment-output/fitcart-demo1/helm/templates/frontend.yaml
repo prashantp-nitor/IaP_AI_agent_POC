@@ -1,0 +1,65 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: fitcart-demo1
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: frontend
+          image: "{{ index .Values.services "frontend" "image" "repository" }}:{{ index .Values.services "frontend" "image" "tag" }}"
+          imagePullPolicy: "{{ index .Values.services "frontend" "image" "pullPolicy" }}"
+          
+          ports:
+            
+            - containerPort: 80
+              name: port-80
+            
+          
+          env:
+            
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+          
+          
+
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: fitcart-demo1
+  labels:
+    app: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http-80
+    
+  selector:
+    app: frontend
+    
+---

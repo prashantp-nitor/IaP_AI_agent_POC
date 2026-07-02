@@ -1,3 +1,0 @@
-cluster_name: boutique-test
-provider: azure
-resource_group: AZET-RG-Daas-Platform

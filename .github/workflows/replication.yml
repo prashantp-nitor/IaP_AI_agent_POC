@@ -153,3 +153,10 @@ jobs:
           path: replication/${{ matrix.resource }}
 
       - run: terraform apply -auto-approve tfplan
+
+      - name: Run Database Data Replication
+        if: success()
+        run: |
+          if [ -f "db_replication_metadata.json" ]; then
+            python $GITHUB_WORKSPACE/replication/replicate_db_data.py
+          fi

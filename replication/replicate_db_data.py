@@ -95,8 +95,8 @@ def create_firewall_rule(
         cmd = [
             "az", "postgres", "flexible-server", "firewall-rule", "create",
             "--resource-group", rg,
-            "--name", server,
-            "--rule-name", rule_name,
+            "--server-name", server,
+            "--name", rule_name,
             "--start-ip-address", ip,
             "--end-ip-address", ip,
         ]
@@ -104,8 +104,8 @@ def create_firewall_rule(
         cmd = [
             "az", "mysql", "flexible-server", "firewall-rule", "create",
             "--resource-group", rg,
-            "--name", server,
-            "--rule-name", rule_name,
+            "--server-name", server,
+            "--name", rule_name,
             "--start-ip-address", ip,
             "--end-ip-address", ip,
         ]
@@ -135,16 +135,16 @@ def delete_firewall_rule(
         cmd = [
             "az", "postgres", "flexible-server", "firewall-rule", "delete",
             "--resource-group", rg,
-            "--name", server,
-            "--rule-name", rule_name,
+            "--server-name", server,
+            "--name", rule_name,
             "--yes",
         ]
     elif db_type == "mysql":
         cmd = [
             "az", "mysql", "flexible-server", "firewall-rule", "delete",
             "--resource-group", rg,
-            "--name", server,
-            "--rule-name", rule_name,
+            "--server-name", server,
+            "--name", rule_name,
             "--yes",
         ]
     else:

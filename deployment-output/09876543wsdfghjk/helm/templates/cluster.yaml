@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: 09876543wsdfghjk-sa
+  namespace: 09876543wsdfghjk
+  annotations:
+
+    azure.workload.identity/client-id: "PLACEHOLDER_MANAGED_IDENTITY_CLIENT_ID"

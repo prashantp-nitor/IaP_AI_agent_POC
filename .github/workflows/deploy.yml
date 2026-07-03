@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: boutique-app
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/55810546-a137-49c8-a7c0-a6275933ba6c/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS81NTgxMDU0Ni1hMTM3LTQ5YzgtYTdjMC1hNjI3NTkzM2JhNmMvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODI5OTk1NDMsImV4cCI6MTc4MzAwMzE0M30.mKJsXWgGQB6w0aFnolWSGlPiRWvYqk7QC6mhPOYERrc"
+  NAMESPACE: test-boutique-1
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/4a367ead-8bbe-48fc-9424-00d14b1d9a19/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS80YTM2N2VhZC04YmJlLTQ4ZmMtOTQyNC0wMGQxNGIxZDlhMTkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwNTg4NTEsImV4cCI6MTc4MzA2MjQ1MX0.NTg67MOmTHS-ceso02i9cHfo43Uv_6Bki_wDYfSmr7c"
 
 jobs:
   build-and-push:
@@ -443,7 +443,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install boutique-app ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-boutique-1 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -463,7 +463,7 @@ jobs:
             --set services.shoppingassistantservice.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/boutique-app/helm/templates/database.yaml).
+          # (deployment-output/test-boutique-1/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -523,4 +523,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall boutique-app -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-boutique-1 -n ${{ env.NAMESPACE }} || true

@@ -21,3 +21,7 @@ module "evhns-test-source-feef71" {
 module "psql-test-source-18e25e" {
   source = "./psql-test-source-18e25e"
 }
+
+module "testresource-vnet" {
+  source = "./testresource-vnet"
+}

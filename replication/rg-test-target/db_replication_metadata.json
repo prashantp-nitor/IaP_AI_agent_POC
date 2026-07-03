@@ -11,7 +11,7 @@
       "source_admin_login": "pgadmin",
       "source_admin_password": "ChangeMe123!",
       "target_admin_login": "pgadmin",
-      "target_admin_password": "Admin23@"
+      "target_admin_password": "Admin@23"
     }
   ]
 }

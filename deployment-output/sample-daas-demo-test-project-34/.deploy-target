@@ -1,0 +1,3 @@
+cluster_name: test-demo-pp
+provider: azure
+resource_group: AZET-RG-Daas-Platform

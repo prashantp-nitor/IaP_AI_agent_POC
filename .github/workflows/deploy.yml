@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: 09876543wsdfghjk
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/31bd52d5-8213-4cb5-89ab-edf36ae3419f/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zMWJkNTJkNS04MjEzLTRjYjUtODlhYi1lZGYzNmFlMzQxOWYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwNjE4MjgsImV4cCI6MTc4MzA2NTQyOH0.cJ5ssf2_BU7StJCWU1SHZaBeLA0v4DLWTfN4R-RRoRg"
+  NAMESPACE: sample-daas-demo-test-project-34
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/1ede66bb-118e-4104-b0d4-8087277ddc50/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8xZWRlNjZiYi0xMThlLTQxMDQtYjBkNC04MDg3Mjc3ZGRjNTAvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwNjY5MTUsImV4cCI6MTc4MzA3MDUxNX0.Nkl26MQmAeTs_X393NC2GtdKfmtgS03rE9KdAx5nQPA"
 
 jobs:
   build-and-push:
@@ -39,6 +39,28 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      
+      - name: Build and Push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/backend
+          file: ./app/backend/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/backend:${{ github.sha }}
+          
+          
+          
+      
+      - name: Build and Push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/frontend
+          file: ./app/frontend/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
+          
+          
+          
       
 
   deploy-to-kubernetes:
@@ -91,17 +113,22 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install 09876543wsdfghjk ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install sample-daas-demo-test-project-34 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
             --set global.deploymentStrategy=rolling \
+            --set services.backend.image.tag=${{ github.sha }} \
+            --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
+          # DB credentials are already embedded in the generated Secret manifest
+          # (deployment-output/sample-daas-demo-test-project-34/helm/templates/database.yaml).
+          # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
-          FRONTEND_SVC=""
+          FRONTEND_SVC="frontend"
           if [ -z "$FRONTEND_SVC" ]; then
             echo "No frontend service found. Skipping LoadBalancer IP wait."
           else
@@ -128,7 +155,7 @@ jobs:
       - name: Retrieve Public IP & Report URL
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
-          FRONTEND_SVC=""
+          FRONTEND_SVC="frontend"
           if [ -z "$FRONTEND_SVC" ]; then
              echo "URL=None" >> $GITHUB_ENV
              echo "### ⚠️ Deployment Completed (No Frontend)" >> $GITHUB_STEP_SUMMARY
@@ -155,4 +182,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall 09876543wsdfghjk -n ${{ env.NAMESPACE }} || true
+          helm uninstall sample-daas-demo-test-project-34 -n ${{ env.NAMESPACE }} || true

@@ -48,5 +48,5 @@ variable "administrator_password" {
   description = "PostgreSQL administrator password (override via TF_VAR or secret)"
   type        = string
   sensitive   = true
-  default     = "a"
+  default     = "Admin23@"
 }

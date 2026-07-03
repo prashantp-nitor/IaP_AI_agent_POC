@@ -1,0 +1,6 @@
+{
+  "migrate_db_data": true,
+  "source_rg": "rg-test-source",
+  "target_rg": "rg-test-target",
+  "databases": []
+}

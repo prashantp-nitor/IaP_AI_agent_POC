@@ -236,9 +236,17 @@ def replicate_postgresql(db: dict[str, str]) -> None:
         "-h", f"{target_server}.postgres.database.azure.com",
         "-U", target_user,
         "-d", db_name,
+        "-O",
+        "-x",
         dump_file,
     ]
-    run_command(import_cmd, env={"PGPASSWORD": target_pass})
+    try:
+        run_command(import_cmd, env={"PGPASSWORD": target_pass})
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 1:
+            print("pg_restore completed with non-fatal warnings/errors (exit code 1). Continuing...")
+        else:
+            raise
 
 
 def replicate_mysql(db: dict[str, str]) -> None:

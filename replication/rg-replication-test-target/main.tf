@@ -14,22 +14,6 @@ provider "azurerm" {
   features {}
 }
 
-module "kv-rep-test-src1-62cc6f" {
-  source = "./kv-rep-test-src1-62cc6f"
-}
-
-module "sampleakscluster-vnet" {
-  source = "./sampleakscluster-vnet"
-}
-
-module "sampletestaks-vnet" {
-  source = "./sampletestaks-vnet"
-}
-
-module "sql-replicatest-266140668-fe2308" {
-  source = "./sql-replicatest-266140668-fe2308"
-}
-
-module "streplicationtestsrcfc16" {
-  source = "./streplicationtestsrcfc16"
+module "daastest-1e55e9" {
+  source = "./daastest-1e55e9"
 }

@@ -14,14 +14,10 @@ provider "azurerm" {
   features {}
 }
 
-module "evhns-test-source-feef71" {
-  source = "./evhns-test-source-feef71"
+module "daascosmostest-142ad5" {
+  source = "./daascosmostest-142ad5"
 }
 
-module "psql-test-source-18e25e" {
-  source = "./psql-test-source-18e25e"
-}
-
-module "testresource-vnet" {
-  source = "./testresource-vnet"
+module "myopenairesource-8b59ee" {
+  source = "./myopenairesource-8b59ee"
 }

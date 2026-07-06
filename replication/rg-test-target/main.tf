@@ -14,8 +14,8 @@ provider "azurerm" {
   features {}
 }
 
-module "daascosmostest-142ad5" {
-  source = "./daascosmostest-142ad5"
+module "daascosmostest-1749fd" {
+  source = "./daascosmostest-1749fd"
 }
 
 module "myopenairesource-8b59ee" {

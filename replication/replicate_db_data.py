@@ -59,7 +59,7 @@ def run_command(
             cmd,
             env=run_env,
             stdin=stdin_file,
-            stdout=stdout_file,
+            stdout=stdout_file if stdout_file else subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             check=True,

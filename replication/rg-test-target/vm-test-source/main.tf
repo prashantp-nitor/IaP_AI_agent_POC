@@ -57,6 +57,28 @@ resource "azurerm_network_interface" "nic" {
                       }
                     }
 
+# --- VM State Replication ---
+
+resource "azurerm_snapshot" "vm_os_snapshot" {
+  name                = "vm-test-source-os-snapshot"
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  create_option       = "Copy"
+  source_uri          = "/subscriptions/37edf351-2797-441e-8f2a-b27c5a9ed9e2/resourceGroups/rg-test-source/providers/Microsoft.Compute/disks/vm-test-source_OsDisk_1_a67dcad5ae40467e92ffbd0c3d309cff"
+}
+
+resource "azurerm_image" "vm_custom_image" {
+  name                = "vm-test-source-custom-image"
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  hyper_v_generation  = "V2"
+
+  os_disk {
+    os_type  = "Linux"
+    os_state = "Generalized"
+    managed_disk_id = azurerm_snapshot.vm_os_snapshot.id
+  }
+}
 # --- Virtual Machine ---
 
             resource "azurerm_linux_virtual_machine" "vm" {
@@ -72,12 +94,7 @@ resource "azurerm_network_interface" "nic" {
                 storage_account_type = "Premium_LRS"
               }
 
-            source_image_reference {
-  publisher = var.os_image_publisher
-  offer     = var.os_image_offer
-  sku       = var.os_image_sku
-  version   = "latest"
-}
+            source_image_id = azurerm_image.vm_custom_image.id
 
             admin_username                  = var.admin_username
 admin_password                  = var.admin_password

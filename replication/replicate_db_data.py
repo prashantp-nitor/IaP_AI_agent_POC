@@ -80,16 +80,25 @@ def create_firewall_rule(
     server: str,
     rule_name: str,
     ip: str,
+    allow_azure_services: bool = False,
 ) -> list[str]:
     """Generate and execute Azure CLI command to create a firewall rule."""
+    if allow_azure_services:
+        start_ip = "0.0.0.0"
+        end_ip = "0.0.0.0"
+        rule_name = "AllowAllAzureServices"
+    else:
+        start_ip = ip
+        end_ip = ip
+
     if db_type == "sql_server":
         cmd = [
             "az", "sql", "server", "firewall-rule", "create",
             "--resource-group", rg,
             "--server", server,
             "--name", rule_name,
-            "--start-ip-address", ip,
-            "--end-ip-address", ip,
+            "--start-ip-address", start_ip,
+            "--end-ip-address", end_ip,
         ]
     elif db_type == "postgresql":
         cmd = [
@@ -97,8 +106,8 @@ def create_firewall_rule(
             "--resource-group", rg,
             "--server-name", server,
             "--name", rule_name,
-            "--start-ip-address", ip,
-            "--end-ip-address", ip,
+            "--start-ip-address", start_ip,
+            "--end-ip-address", end_ip,
         ]
     elif db_type == "mysql":
         cmd = [
@@ -106,8 +115,8 @@ def create_firewall_rule(
             "--resource-group", rg,
             "--server-name", server,
             "--name", rule_name,
-            "--start-ip-address", ip,
-            "--end-ip-address", ip,
+            "--start-ip-address", start_ip,
+            "--end-ip-address", end_ip,
         ]
     else:
         raise ValueError(f"Unsupported database type: {db_type}")
@@ -348,6 +357,20 @@ def main() -> int:
                 })
                 existing_rule_set.add(source_key)
 
+            # Add source AllowAllAzureServices rule if PostgreSQL
+            if db_type == "postgresql":
+                source_azure_key = (db_type, source_rg, source_server, "AllowAllAzureServices")
+                if source_azure_key not in existing_rule_set:
+                    print(f"Creating source 'AllowAllAzureServices' firewall rule on server '{source_server}'...")
+                    create_firewall_rule(db_type, source_rg, source_server, "", "", allow_azure_services=True)
+                    created_rules.append({
+                        "type": db_type,
+                        "rg": source_rg,
+                        "server": source_server,
+                        "rule_name": "AllowAllAzureServices",
+                    })
+                    existing_rule_set.add(source_azure_key)
+
             # Add target firewall rule
             target_key = (db_type, target_rg, target_server)
             if target_key not in existing_rule_set:
@@ -361,6 +384,20 @@ def main() -> int:
                     "rule_name": rule_name,
                 })
                 existing_rule_set.add(target_key)
+
+            # Add target AllowAllAzureServices rule if PostgreSQL
+            if db_type == "postgresql":
+                target_azure_key = (db_type, target_rg, target_server, "AllowAllAzureServices")
+                if target_azure_key not in existing_rule_set:
+                    print(f"Creating target 'AllowAllAzureServices' firewall rule on server '{target_server}'...")
+                    create_firewall_rule(db_type, target_rg, target_server, "", "", allow_azure_services=True)
+                    created_rules.append({
+                        "type": db_type,
+                        "rg": target_rg,
+                        "server": target_server,
+                        "rule_name": "AllowAllAzureServices",
+                    })
+                    existing_rule_set.add(target_azure_key)
 
             # Run replication
             print(f"Replicating database '{db_name}' ({db_type})...")

@@ -85,7 +85,7 @@ resource "azurerm_image" "vm_custom_image" {
 
   os_disk {
     os_type  = "Linux"
-    os_state = "Generalized"
+    os_state = "Specialized"
     managed_disk_id = azurerm_managed_disk.vm_os_disk.id
   }
 }
@@ -105,9 +105,5 @@ resource "azurerm_image" "vm_custom_image" {
               }
 
             source_image_id = azurerm_image.vm_custom_image.id
-
-            admin_username                  = var.admin_username
-admin_password                  = var.admin_password
-disable_password_authentication = false
 
             }

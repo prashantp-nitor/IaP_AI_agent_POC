@@ -14,6 +14,6 @@ provider "azurerm" {
   features {}
 }
 
-module "vm-test-source" {
-  source = "./vm-test-source"
+module "psql-test-source-18e25e" {
+  source = "./psql-test-source-18e25e"
 }

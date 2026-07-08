@@ -11,13 +11,13 @@ variable "cluster_name" {
 variable "region" {
   description = "Azure region for all resources"
   type        = string
-  default     = "southindia"
+  default     = "eastus"
 }
 
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
-  default     = "dr-chrono-demo-rg"
+  default     = "AZET-RG-Daas-Platform"
 }
 
 variable "kubernetes_version" {
@@ -71,5 +71,5 @@ variable "os_disk_size_gb" {
 # variable "acr_resource_group" {
 #   description = "Resource group name of the Azure Container Registry"
 #   type        = string
-#   default     = "dr-chrono-demo-rg"
+#   default     = "AZET-RG-Daas-Platform"
 # }

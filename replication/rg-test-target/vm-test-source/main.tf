@@ -86,7 +86,7 @@ resource "azurerm_virtual_machine" "vm" {
   network_interface_ids = [azurerm_network_interface.nic.id]
 
   storage_os_disk {
-    name              = "vm-test-source-os-disk-attached"
+    name              = "vm-test-source-os-disk"
     caching           = "ReadWrite"
     create_option     = "Attach"
     managed_disk_id   = azurerm_managed_disk.vm_os_disk.id

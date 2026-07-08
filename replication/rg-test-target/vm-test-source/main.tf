@@ -76,34 +76,21 @@ resource "azurerm_managed_disk" "vm_os_disk" {
   source_resource_id   = azurerm_snapshot.vm_os_snapshot.id
   os_type              = "Linux"
 }
-
-resource "azurerm_image" "vm_custom_image" {
-  name                = "vm-test-source-custom-image"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
-  hyper_v_generation  = "V2"
-
-  os_disk {
-    os_type  = "Linux"
-    os_state = "Specialized"
-    managed_disk_id = azurerm_managed_disk.vm_os_disk.id
-  }
-}
 # --- Virtual Machine ---
 
-            resource "azurerm_linux_virtual_machine" "vm" {
-              name                = var.vm_name
-              location            = data.azurerm_resource_group.rg.location
-              resource_group_name = data.azurerm_resource_group.rg.name
-              size                = var.vm_size
+resource "azurerm_virtual_machine" "vm" {
+  name                = var.vm_name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  vm_size             = var.vm_size
+  network_interface_ids = [azurerm_network_interface.nic.id]
 
-              network_interface_ids = [azurerm_network_interface.nic.id]
+  storage_os_disk {
+    name              = "vm-test-source-os-disk-attached"
+    caching           = "ReadWrite"
+    create_option     = "Attach"
+    managed_disk_id   = azurerm_managed_disk.vm_os_disk.id
+    os_type           = "Linux"
+  }
 
-              os_disk {
-                caching              = "ReadWrite"
-                storage_account_type = "Premium_LRS"
-              }
-
-            source_image_id = azurerm_image.vm_custom_image.id
-
-            }
+}

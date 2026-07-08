@@ -1,0 +1,268 @@
+name: Terraform Networking Deployment Pipeline
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - 'iaap-output/virtual_network/**'
+      - 'iaap-output/networking/**'
+
+concurrency:
+  group: terraform-networking-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TF_VERSION: 1.8.0
+
+jobs:
+  detect-changes:
+    name: Detect Changed Network Directories
+    runs-on: ubuntu-latest
+    outputs:
+      directories: ${{ steps.set-matrix.outputs.directories }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed networking subdirectories
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual run: plan/apply every networking directory under iaap-output/
+            DIRS=$(ls -d iaap-output/*vnet* iaap-output/*network* 2>/dev/null \
+              | awk -F/ '{print $2}' \
+              | sort -u \
+              | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            # Push run: detect only changed directories matches
+            DIRS=$(git diff --name-only HEAD~1 HEAD \
+              | grep -E '^iaap-output/(virtual_network|networking|.*vnet.*)/' \
+              | awk -F/ '{print $2}' \
+              | sort -u \
+              | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          fi
+          if [ -z "$DIRS" ] || [ "$DIRS" = "[]" ]; then
+            echo "directories=[]" >> $GITHUB_OUTPUT
+            echo "No networking directories detected."
+          else
+            echo "directories=$DIRS" >> $GITHUB_OUTPUT
+            echo "Detected networking directories: $DIRS"
+          fi
+
+  terraform-plan:
+    name: Terraform Network Plan - ${{ matrix.directory }}
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.directories != '[]' && needs.detect-changes.outputs.directories != '' }}
+
+    strategy:
+      matrix:
+        directory: ${{ fromJson(needs.detect-changes.outputs.directories) }}
+      fail-fast: false
+
+    defaults:
+      run:
+        working-directory: iaap-output/${{ matrix.directory }}
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
+      GOOGLE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Detect cloud provider
+        id: provider
+        run: |
+          if grep -rqiE 'hashicorp/aws|provider "aws"' --include='*.tf' .; then
+            P=aws
+          elif grep -rqiE 'hashicorp/google|provider "google"' --include='*.tf' .; then
+            P=gcp
+          elif grep -rqiE 'hashicorp/azurerm|provider "azurerm"' --include='*.tf' .; then
+            P=azure
+          else
+            echo "::error::Could not determine cloud provider for ${{ matrix.directory }}"
+            exit 1
+          fi
+          echo "provider=$P" >> "$GITHUB_OUTPUT"
+          echo "Detected provider for ${{ matrix.directory }}: $P"
+
+      - name: Azure login
+        if: steps.provider.outputs.provider == 'azure'
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Configure AWS credentials
+        if: steps.provider.outputs.provider == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Authenticate to Google Cloud
+        if: steps.provider.outputs.provider == 'gcp'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=deploy-storage" \
+            -backend-config="key=${{ matrix.directory }}/terraform.tfstate" \
+            -backend-config="endpoint=${{ secrets.SUPABASE_S3_ENDPOINT }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="access_key=${{ secrets.SUPABASE_S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.SUPABASE_S3_SECRET_KEY }}" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="use_path_style=true"
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-networking-${{ matrix.directory }}
+          path: iaap-output/${{ matrix.directory }}/tfplan
+
+  terraform-apply:
+    name: Terraform Network Apply - ${{ matrix.directory }}
+    runs-on: ubuntu-latest
+    needs: [detect-changes, terraform-plan]
+
+    environment:
+      name: dev
+
+    strategy:
+      matrix:
+        directory: ${{ fromJson(needs.detect-changes.outputs.directories) }}
+      fail-fast: false
+
+    defaults:
+      run:
+        working-directory: iaap-output/${{ matrix.directory }}
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
+      GOOGLE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Detect cloud provider
+        id: provider
+        run: |
+          if grep -rqiE 'hashicorp/aws|provider "aws"' --include='*.tf' .; then
+            P=aws
+          elif grep -rqiE 'hashicorp/google|provider "google"' --include='*.tf' .; then
+            P=gcp
+          elif grep -rqiE 'hashicorp/azurerm|provider "azurerm"' --include='*.tf' .; then
+            P=azure
+          else
+            echo "::error::Could not determine cloud provider for ${{ matrix.directory }}"
+            exit 1
+          fi
+          echo "provider=$P" >> "$GITHUB_OUTPUT"
+          echo "Detected provider for ${{ matrix.directory }}: $P"
+
+      - name: Azure login
+        if: steps.provider.outputs.provider == 'azure'
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Configure AWS credentials
+        if: steps.provider.outputs.provider == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Authenticate to Google Cloud
+        if: steps.provider.outputs.provider == 'gcp'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-networking-${{ matrix.directory }}
+          path: iaap-output/${{ matrix.directory }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=deploy-storage" \
+            -backend-config="key=${{ matrix.directory }}/terraform.tfstate" \
+            -backend-config="endpoint=${{ secrets.SUPABASE_S3_ENDPOINT }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="access_key=${{ secrets.SUPABASE_S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.SUPABASE_S3_SECRET_KEY }}" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true" \
+            -backend-config="skip_requesting_account_id=true" \
+            -backend-config="use_path_style=true"
+
+      - name: Terraform Apply
+        run: |
+          set +e
+          terraform apply -auto-approve tfplan 2>&1 | tee apply.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          exit $EXIT_CODE
+
+      - name: Clear Terraform Lock on Failure
+        if: failure()
+        run: |
+          if [ -f apply.log ]; then
+            LOCK_ID=$(grep -oE "ID:\s+[0-9a-fA-F-]+" apply.log | awk '{print $2}')
+            if [ ! -z "$LOCK_ID" ]; then
+              echo "Networking deploy failed. Clearing Terraform lock: $LOCK_ID"
+              terraform force-unlock -force "$LOCK_ID"
+            fi
+          fi

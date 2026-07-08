@@ -417,6 +417,9 @@ def main() -> int:
         print("Cleaning up firewall rules...")
         # Clean up in reverse order
         for rule in reversed(created_rules):
+            if rule["rule_name"] == "AllowAllAzureServices":
+                print(f"Skipping deletion of rule 'AllowAllAzureServices' on server '{rule['server']}' to retain Azure Services access.")
+                continue
             try:
                 print(f"Deleting firewall rule '{rule['rule_name']}' on server '{rule['server']}'...")
                 delete_firewall_rule(rule["type"], rule["rg"], rule["server"], rule["rule_name"])

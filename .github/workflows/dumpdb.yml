@@ -1,0 +1,44 @@
+name: Export Supabase Database
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export-db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Export Supabase database
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          pg_dump \
+            -h "${{ secrets.SUPABASE_DB_HOST }}" \
+            -p "${{ secrets.SUPABASE_DB_PORT }}" \
+            -U "${{ secrets.SUPABASE_DB_USER }}" \
+            -d "${{ secrets.SUPABASE_DB_NAME }}" \
+            -Fc \
+            -f backups/supabase.dump
+
+      - name: Commit dump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add backups/supabase.dump
+
+          git diff --cached --quiet && exit 0
+
+          git commit -m "Database export $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          git push

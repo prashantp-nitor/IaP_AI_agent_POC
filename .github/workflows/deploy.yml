@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: sample-daas-demo-test-project-36
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/65e6c885-5639-4602-975a-68306924bf00/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS82NWU2Yzg4NS01NjM5LTQ2MDItOTc1YS02ODMwNjkyNGJmMDAvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODMwNjg2NTMsImV4cCI6MTc4MzA3MjI1M30.V-xyPhs0D26h0gKTlJQf-LvkXXD9uQD3QcEU3YnWbWE"
+  NAMESPACE: dr-chrono-demo
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/d8b0038e-b77a-4ee1-8ddd-3fce0e8bebfa/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9kOGIwMDM4ZS1iNzdhLTRlZTEtOGRkZC0zZmNlMGU4YmViZmEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODM1NzU2MzEsImV4cCI6MTc4MzU3OTIzMX0.N7SXvyzFE-KfNvicxhhuz4DwUA51yoyiWe1vhmxBkzE"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install sample-daas-demo-test-project-36 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install dr-chrono-demo ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/sample-daas-demo-test-project-36/helm/templates/database.yaml).
+          # (deployment-output/dr-chrono-demo/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,4 +182,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall sample-daas-demo-test-project-36 -n ${{ env.NAMESPACE }} || true
+          helm uninstall dr-chrono-demo -n ${{ env.NAMESPACE }} || true

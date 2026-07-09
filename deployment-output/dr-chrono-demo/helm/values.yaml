@@ -1,0 +1,110 @@
+# ============================================================
+# DaaS Generated values.yaml for dr-chrono-demo
+# Override at deploy time with:
+#   helm upgrade --install dr-chrono-demo ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "dr-chrono-demo"
+  # Container registry base URL
+  registry: "azdaasdeployment.azurecr.io"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "production"
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  backend:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "azdaasdeployment.azurecr.io/backend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1024Mi"
+      limits:
+        cpu: "500m"
+        memory: "1024Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/actuator/health"
+    env:
+      
+  
+  frontend:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "azdaasdeployment.azurecr.io/frontend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1024Mi"
+      limits:
+        cpu: "500m"
+        memory: "1024Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/"
+    env:
+      
+  
+
+# ── In-Cluster Database ──────────────────────────────────
+
+database:
+  enabled: true
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  port: 5432
+  storage:
+    size: "10Gi"
+    storageClassName: "managed-csi"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1024Mi"
+    limits:
+      cpu: "500m"
+      memory: "1024Mi"
+  # Credentials are randomly generated at artifact creation time and stored
+  # in the Kubernetes Secret 'postgresql-db-secret'. Do NOT override
+  # these in CI — the Secret manifest already contains the real values.
+  auth:
+    
+    POSTGRES_DB: "post_lm8swc"
+    
+    POSTGRES_USER: "post_la1xh8"
+    
+    POSTGRES_PASSWORD: "1*fdLOgvANQ9s1KY9&Raxa3p"
+    
+
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70

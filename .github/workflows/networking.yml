@@ -3,7 +3,7 @@ name: Terraform Networking Deployment Pipeline
 on:
   push:
     branches:
-      - main
+      - networking
     paths:
       - 'iaap-output/virtual_network/**'
       - 'iaap-output/networking/**'

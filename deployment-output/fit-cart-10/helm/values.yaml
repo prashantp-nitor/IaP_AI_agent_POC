@@ -1,0 +1,110 @@
+# ============================================================
+# DaaS Generated values.yaml for fit-cart-10
+# Override at deploy time with:
+#   helm upgrade --install fit-cart-10 ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "fit-cart-10"
+  # Container registry base URL
+  registry: "231733667519.dkr.ecr.ap-southeast-1.amazonaws.com"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "production"
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  backend:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "231733667519.dkr.ecr.ap-southeast-1.amazonaws.com/backend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "150Mi"
+      limits:
+        cpu: "100m"
+        memory: "150Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/actuator/health"
+    env:
+      
+  
+  frontend:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: "231733667519.dkr.ecr.ap-southeast-1.amazonaws.com/frontend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "150Mi"
+      limits:
+        cpu: "100m"
+        memory: "150Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/"
+    env:
+      
+  
+
+# ── In-Cluster Database ──────────────────────────────────
+
+database:
+  enabled: true
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  port: 5432
+  storage:
+    size: "10Gi"
+    storageClassName: "gp3"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "150Mi"
+    limits:
+      cpu: "100m"
+      memory: "150Mi"
+  # Credentials are randomly generated at artifact creation time and stored
+  # in the Kubernetes Secret 'postgresql-db-secret'. Do NOT override
+  # these in CI — the Secret manifest already contains the real values.
+  auth:
+    
+    POSTGRES_DB: "post_zvfqk6"
+    
+    POSTGRES_USER: "post_3gy6mj"
+    
+    POSTGRES_PASSWORD: "gW&139mx2pX0#Zq6E2EFZ9ea"
+    
+
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70

@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: 231733667519.dkr.ecr.ap-southeast-1.amazonaws.com
-  NAMESPACE: fitcart-demo-test
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/e8d7e943-fdc4-4cdc-95b3-14571486c118/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9lOGQ3ZTk0My1mZGM0LTRjZGMtOTViMy0xNDU3MTQ4NmMxMTgvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODM2NjM3MjQsImV4cCI6MTc4MzY2NzMyNH0.zG268_-z__yjSsz8uBIImY2WoaFma1zpjyye1ePnYls"
+  NAMESPACE: fitcart-test-11
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/29a4f787-bc2c-4c80-934d-bf3e73dab739/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8yOWE0Zjc4Ny1iYzJjLTRjODAtOTM0ZC1iZjNlNzNkYWI3Mzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODM2NjQ2NzcsImV4cCI6MTc4MzY2ODI3N30.Jm5BPSAnZXKpjpm1VjVnxDcShbTt3IKXLbpPO_pIzEk"
 
 jobs:
   build-and-push:
@@ -159,7 +159,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install fitcart-demo-test ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install fitcart-test-11 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -168,7 +168,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/fitcart-demo-test/helm/templates/database.yaml).
+          # (deployment-output/fitcart-test-11/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -228,4 +228,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall fitcart-demo-test -n ${{ env.NAMESPACE }} || true
+          helm uninstall fitcart-test-11 -n ${{ env.NAMESPACE }} || true

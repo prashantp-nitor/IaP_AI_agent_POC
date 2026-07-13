@@ -130,7 +130,9 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="container_name=deploy-storage" \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}" \
             -backend-config="key=${{ matrix.directory }}/terraform.tfstate"
 
       - name: Terraform Validate
@@ -230,7 +232,9 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="container_name=deploy-storage" \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}" \
             -backend-config="key=${{ matrix.directory }}/terraform.tfstate"
 
       - name: Terraform Apply

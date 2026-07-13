@@ -31,6 +31,7 @@ jobs:
     env:
       # Export credentials for all providers (Terraform uses what it needs)
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
@@ -131,9 +132,10 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="container_name=deploy-storage" \
-            -backend-config="key=${{ github.event.inputs.resource_name }}/terraform.tfstate" \
-            -backend-config="connection_string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}" \
+            -backend-config="key=${{ github.event.inputs.resource_name }}/terraform.tfstate"
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve

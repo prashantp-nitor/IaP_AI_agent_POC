@@ -5,7 +5,7 @@
 variable "vnet_name" {
   description = "Name of the Azure Virtual Network"
   type        = string
-  default     = "boutique-app-vnet"
+  default     = "boutique"
 }
 
 variable "region" {

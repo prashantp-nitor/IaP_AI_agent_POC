@@ -4,7 +4,7 @@ on:
   workflow_dispatch: {}
   push:
     branches:
-      - networking
+      - main
     paths:
       - 'iaap-output/virtual_network/**'
       - 'iaap-output/networking/**'
@@ -70,6 +70,7 @@ jobs:
 
     env:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
@@ -130,8 +131,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="container_name=deploy-storage" \
-            -backend-config="key=${{ matrix.directory }}/terraform.tfstate" \
-            -backend-config="connection_string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+            -backend-config="key=${{ matrix.directory }}/terraform.tfstate"
 
       - name: Terraform Validate
         run: terraform validate
@@ -164,6 +164,7 @@ jobs:
 
     env:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
@@ -230,8 +231,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="container_name=deploy-storage" \
-            -backend-config="key=${{ matrix.directory }}/terraform.tfstate" \
-            -backend-config="connection_string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+            -backend-config="key=${{ matrix.directory }}/terraform.tfstate"
 
       - name: Terraform Apply
         run: |

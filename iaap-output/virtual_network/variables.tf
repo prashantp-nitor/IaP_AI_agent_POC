@@ -5,13 +5,13 @@
 variable "vnet_name" {
   description = "Name of the Azure Virtual Network"
   type        = string
-  default     = "production-network"
+  default     = "boutique-app"
 }
 
 variable "region" {
   description = "Azure region for all resources"
   type        = string
-  default     = "eastus"
+  default     = "centralindia"
 }
 
 variable "address_space" {
@@ -29,5 +29,5 @@ variable "subnet_prefix" {
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
-  default     = "rg-test-source"
+  default     = "AZET-RG-Daas-Platform"
 }

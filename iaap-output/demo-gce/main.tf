@@ -5,7 +5,7 @@
                   version = "~> 5.0"
                 }
               }
-              backend "s3" {}
+              backend "azurerm" {}
             }
 
             provider "google" {

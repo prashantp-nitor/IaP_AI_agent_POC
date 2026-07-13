@@ -19,7 +19,7 @@ jobs:
       - name: Terraform Init
         working-directory: iaap-output/myapp
         env:
-          PG_CONN_STR: ${{ secrets.SUPABASE_DB_URL }}
+          ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
         run: terraform init
 
       - name: Terraform Plan
@@ -29,7 +29,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          PG_CONN_STR: ${{ secrets.SUPABASE_DB_URL }}
+          ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
         run: terraform plan
 
       - name: Terraform Apply
@@ -39,5 +39,5 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          PG_CONN_STR: ${{ secrets.SUPABASE_DB_URL }}
+          ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
         run: terraform apply -auto-approve

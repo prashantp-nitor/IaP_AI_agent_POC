@@ -12,7 +12,7 @@
                 }
               }
 
-              backend "s3" {}
+              backend "azurerm" {}
             }
 
             provider "azurerm" {

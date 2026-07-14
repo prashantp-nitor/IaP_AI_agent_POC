@@ -34,15 +34,22 @@ jobs:
         id: set-matrix
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Manual run: plan/apply every resource directory under iaap-output/.
-            DIRS=$(ls -d iaap-output/*/ 2>/dev/null \
-              | awk -F/ '{print $2}' \
+            # Manual run: find every directory containing .tf files under iaap-output/
+            # Supports both flat (iaap-output/<resource>/) and nested
+            # (iaap-output/<project>/<resource>/) project structures.
+            DIRS=$(find iaap-output -name "*.tf" -exec dirname {} \; 2>/dev/null \
+              | sed 's|^iaap-output/||' \
               | sort -u \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           else
+            # Push run: detect changed paths and derive the containing TF directory.
+            # awk rules:
+            #   NF==2 → flat:   iaap-output/<resource>/file  → print <resource>
+            #   NF==3 → nested: iaap-output/<project>/<resource>/file → print <project>/<resource>
             DIRS=$(git diff --name-only HEAD~1 HEAD \
               | grep '^iaap-output/' \
-              | awk -F/ '{print $2}' \
+              | sed 's|^iaap-output/||' \
+              | awk -F/ 'NF==2{print $1} NF>=3{print $1"/"$2}' \
               | sort -u \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
@@ -62,6 +69,7 @@ jobs:
 
     defaults:
       run:
+        # matrix.directory is either "<resource>" (flat) or "<project>/<resource>" (nested)
         working-directory: iaap-output/${{ matrix.directory }}
 
     # Credentials for ALL providers are exported; Terraform only consumes the set
@@ -127,9 +135,17 @@ jobs:
 
       - name: Terraform Init
         run: |
+          # Derive tfstate key: nested paths (project/resource) share a
+          # project-level state; flat paths keep their own key.
+          MATRIX_DIR="${{ matrix.directory }}"
+          if echo "$MATRIX_DIR" | grep -q '/'; then
+            TFSTATE_KEY="$(echo "$MATRIX_DIR" | cut -d'/' -f1)/terraform.tfstate"
+          else
+            TFSTATE_KEY="${MATRIX_DIR}/terraform.tfstate"
+          fi
           terraform init \
             -backend-config="container_name=deploy-storage" \
-            -backend-config="key=${{ matrix.directory }}/terraform.tfstate" \
+            -backend-config="key=${TFSTATE_KEY}" \
             -backend-config="connection_string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
       - name: Terraform Validate
@@ -159,6 +175,7 @@ jobs:
 
     defaults:
       run:
+        # matrix.directory is either "<resource>" (flat) or "<project>/<resource>" (nested)
         working-directory: iaap-output/${{ matrix.directory }}
 
     env:
@@ -233,9 +250,17 @@ jobs:
 
       - name: Terraform Init
         run: |
+          # Derive tfstate key: nested paths (project/resource) share a
+          # project-level state; flat paths keep their own key.
+          MATRIX_DIR="${{ matrix.directory }}"
+          if echo "$MATRIX_DIR" | grep -q '/'; then
+            TFSTATE_KEY="$(echo "$MATRIX_DIR" | cut -d'/' -f1)/terraform.tfstate"
+          else
+            TFSTATE_KEY="${MATRIX_DIR}/terraform.tfstate"
+          fi
           terraform init \
             -backend-config="container_name=deploy-storage" \
-            -backend-config="key=${{ matrix.directory }}/terraform.tfstate" \
+            -backend-config="key=${TFSTATE_KEY}" \
             -backend-config="connection_string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
       - name: Terraform Apply

@@ -7,9 +7,8 @@ on:
       - networking
     paths:
       - 'iaap-output/**'
-    paths-ignore:
-      - 'iaap-output/*-vpc/**'
-      - 'iaap-output/*-vnet/**'
+      - '!iaap-output/*-vpc/**'
+      - '!iaap-output/*-vnet/**'
 
 concurrency:
   group: terraform-${{ github.ref }}

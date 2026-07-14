@@ -30,28 +30,24 @@ jobs:
       - name: Detect changed networking subdirectories
         id: set-matrix
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Manual run: plan/apply every networking directory under iaap-output/
-            DIRS=$(ls -d iaap-output/*vnet* iaap-output/*network* 2>/dev/null \
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual run: include all VPC/VNet directories
+            DIRS=$(find iaap-output -maxdepth 1 -type d \
+              \( -name "*-vpc" -o -name "*-vnet" \) \
               | awk -F/ '{print $2}' \
               | sort -u \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          else
-            # Push run: detect only changed directories matches
+            else
+            # Push: include only changed VPC/VNet directories
             DIRS=$(git diff --name-only HEAD~1 HEAD \
-              | grep -E '^iaap-output/(virtual_network|networking|.*vnet.*)/' \
+              | grep -E '^iaap-output/[^/]+-(vpc|vnet)/' \
               | awk -F/ '{print $2}' \
               | sort -u \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          fi
-          if [ -z "$DIRS" ] || [ "$DIRS" = "[]" ]; then
-            echo "directories=[]" >> $GITHUB_OUTPUT
-            echo "No networking directories detected."
-          else
-            echo "directories=$DIRS" >> $GITHUB_OUTPUT
-            echo "Detected networking directories: $DIRS"
-          fi
+            fi
 
+            echo "directories=$DIRS" >> "$GITHUB_OUTPUT"
+            echo "Detected directories: $DIRS"
   terraform-plan:
     name: Terraform Network Plan - ${{ matrix.directory }}
     runs-on: ubuntu-latest

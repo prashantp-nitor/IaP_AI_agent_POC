@@ -7,7 +7,7 @@
   "tags": {
     "environment": "dev",
     "owner": "admin@example.com",
-    "project": "fitcart-test"
+    "project": "iaap"
   },
   "_provider": "aws",
   "_resource_type": "eks_cluster"

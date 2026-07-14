@@ -7,7 +7,7 @@ variable "region" {
 variable "vpc_name" {
   description = "Name prefix for the VPC and all sub-resources"
   type        = string
-  default     = "production-network"
+  default     = "boutique-vpc"
 }
 
 variable "cidr_block" {

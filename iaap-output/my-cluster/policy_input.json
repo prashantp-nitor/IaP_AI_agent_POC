@@ -1,6 +1,0 @@
-{
-  "cluster_name": "my-cluster",
-  "region": "us-east-1",
-  "_provider": "aws",
-  "_resource_type": "kubernetes_cluster"
-}

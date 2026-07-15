@@ -1,0 +1,3 @@
+cluster_name: api-demo-ec2
+provider: aws
+region: us-west-1

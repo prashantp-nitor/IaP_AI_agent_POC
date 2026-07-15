@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-testing-sa
+  namespace: api-testing
+  annotations:
+    # AWS: set this to your IRSA role ARN after provisioning (only used if IRSA is adopted)
+    eks.amazonaws.com/role-arn: "PLACEHOLDER_IRSA_ROLE_ARN"

@@ -14,6 +14,34 @@ provider "azurerm" {
   features {}
 }
 
+module "daascosmostest-142ad5" {
+  source = "./daascosmostest-142ad5"
+}
+
+module "evhns-test-source-feef71" {
+  source = "./evhns-test-source-feef71"
+}
+
+module "myopenairesource-8b59ee" {
+  source = "./myopenairesource-8b59ee"
+}
+
+module "production-network" {
+  source = "./production-network"
+}
+
+module "psql-test-source-18e25e" {
+  source = "./psql-test-source-18e25e"
+}
+
+module "testresource-vnet" {
+  source = "./testresource-vnet"
+}
+
 module "vm-test-source" {
   source = "./vm-test-source"
+}
+
+module "vm-test-sourceNSG" {
+  source = "./vm-test-sourceNSG"
 }

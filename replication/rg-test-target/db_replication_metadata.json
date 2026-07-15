@@ -1,6 +1,27 @@
 {
-  "migrate_db_data": false,
+  "migrate_db_data": true,
   "source_rg": "rg-test-source",
   "target_rg": "rg-test-target",
-  "databases": []
+  "databases": [
+    {
+      "type": "postgresql",
+      "source_server_name": "psql-test-source",
+      "target_server_name": "psql-test-source-18e25e",
+      "db_name": "postgres",
+      "source_admin_login": "pgadmin",
+      "source_admin_password": "aaK124123421ghkg",
+      "target_admin_login": "pgadmin",
+      "target_admin_password": "aa@#$asGfsd12245"
+    },
+    {
+      "type": "postgresql",
+      "source_server_name": "psql-test-source",
+      "target_server_name": "psql-test-source-18e25e",
+      "db_name": "sampledb",
+      "source_admin_login": "pgadmin",
+      "source_admin_password": "aaK124123421ghkg",
+      "target_admin_login": "pgadmin",
+      "target_admin_password": "aa@#$asGfsd12245"
+    }
+  ]
 }

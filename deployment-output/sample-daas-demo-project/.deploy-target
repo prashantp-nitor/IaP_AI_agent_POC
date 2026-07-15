@@ -1,3 +1,0 @@
-cluster_name: sample-daas-demo-project-compute
-provider: azure
-resource_group: AZET-RG-Daas-Platform

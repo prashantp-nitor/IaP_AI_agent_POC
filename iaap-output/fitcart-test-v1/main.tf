@@ -27,9 +27,6 @@ module "vpc" {
   }
   tags = merge({
     ManagedBy = "IAAP"
-    environment = "dev"
-    owner = "admin@example.com"
-    project = "iaap"
   }, var.extra_tags)
 }
 
@@ -68,9 +65,6 @@ module "eks" {
   }
   tags = merge({
     ManagedBy = "IAAP"
-    environment = "dev"
-    owner = "admin@example.com"
-    project = "iaap"
   }, var.extra_tags)
 }
 

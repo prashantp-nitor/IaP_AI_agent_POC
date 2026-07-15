@@ -45,5 +45,5 @@
 # --- Import existing resource into state (idempotent on repeated apply) ---
 import {
   to = azurerm_mssql_database.db
-  id = "/subscriptions/sub1/resourceGroups/rg1/providers/Microsoft.Sql/servers/mysrv/databases/mydb"
+  id = "/subscriptions/s/resourceGroups/rg/providers/Microsoft.Sql/servers/srv/databases/mydb"
 }

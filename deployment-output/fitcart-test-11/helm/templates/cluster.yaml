@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: fitcart-test-11-sa
-  namespace: fitcart-test-11
-  annotations:
-    # AWS: set this to your IRSA role ARN after provisioning (only used if IRSA is adopted)
-    eks.amazonaws.com/role-arn: "PLACEHOLDER_IRSA_ROLE_ARN"

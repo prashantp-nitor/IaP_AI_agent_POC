@@ -12,7 +12,7 @@
                 }
               }
 
-              backend "azurerm" {}
+              backend "s3" {}
             }
 
             provider "azurerm" {
@@ -92,9 +92,3 @@
             output "app_fqdn" {
               value = azurerm_container_app.app.latest_revision_fqdn
             }
-
-# --- Import existing resource into state (idempotent on repeated apply) ---
-import {
-  to = azurerm_container_app.app
-  id = "/subscriptions/s/resourceGroups/rg/providers/Microsoft.App/containerApps/myapp"
-}

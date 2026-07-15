@@ -1,8 +1,8 @@
 {
   "instance_name": "api-demo-ec2",
-  "region": "ap-southeast-1",
+  "region": "us-west-1",
   "instance_type": "t3.micro (2 vCPU, 1 GB RAM)",
-  "ami_id": "ami-03ad130dfbe94dc2e",
+  "ami_id": "ami-03ad130dfbe94dc2e  ",
   "key_pair_name": "daas-test",
   "tags": {
     "environment": "dev",

@@ -1,7 +1,7 @@
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = "ap-southeast-1"
+  default     = "us-west-1"
 }
 
 variable "instance_name" {
@@ -14,6 +14,12 @@ variable "instance_type" {
   description = "EC2 instance type"
   type        = string
   default     = "t3.micro"
+}
+
+variable "iam_instance_profile" {
+  description = "IAM Instance Profile"
+  type        = string
+  default     = ""
 }
 
 variable "ami_id" {

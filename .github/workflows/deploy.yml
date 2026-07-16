@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: test-fitkart-rythemx
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/6fff5c9b-4969-4071-a58c-08ce75206003/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS82ZmZmNWM5Yi00OTY5LTQwNzEtYTU4Yy0wOGNlNzUyMDYwMDMvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTQwMDYsImV4cCI6MTc4NDE5NzYwNn0.atlRHaeztRKx_vfqV30GwbG29jeRVBQ6M0bxajgAXQ8"
+  NAMESPACE: test-123
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/4192aaa1-eeb3-49ef-b117-bed98a53bbac/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS80MTkyYWFhMS1lZWIzLTQ5ZWYtYjExNy1iZWQ5OGE1M2JiYWMvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTkyMzcsImV4cCI6MTc4NDIwMjgzN30.Ndhjx2hytFkvei2Ji7iDrK2yIivnvvgdZl23WSp7d5Y"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test-fitkart-rythemx ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test-123 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test-fitkart-rythemx/helm/templates/database.yaml).
+          # (deployment-output/test-123/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,4 +182,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-fitkart-rythemx -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-123 -n ${{ env.NAMESPACE }} || true

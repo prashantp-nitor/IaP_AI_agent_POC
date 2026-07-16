@@ -10,7 +10,7 @@
 #   workflow_dispatch: {}
 
 # env:
-#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3855f953-2738-4de4-9b7a-8f92bf5e0a96/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zODU1Zjk1My0yNzM4LTRkZTQtOWI3YS04ZjkyYmY1ZTBhOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxODI5MjEsImV4cCI6MTc4NDE4NjUyMX0.6HJSnRrrc_miU2RGkU-tBDKnwHaBOVkwMj2YkaXx8rg"
+#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3855f953-2738-4de4-9b7a-8f92bf5e0a96/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zODU1Zjk1My0yNzM4LTRkZTQtOWI3YS04ZjkyYmY1ZTBhOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxODM4NTUsImV4cCI6MTc4NDE4NzQ1NX0.bzVWoKJyIRDB-VyINtR48oTb-ZmCW_W6vuwepoWKEKA"
 
 # jobs:
 #   build-and-deploy:

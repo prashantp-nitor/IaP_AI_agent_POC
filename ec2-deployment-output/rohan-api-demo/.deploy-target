@@ -1,0 +1,4 @@
+cluster_name: rohan-api-demo
+ec2_host: 54.153.13.145
+provider: aws
+region: us-west-1

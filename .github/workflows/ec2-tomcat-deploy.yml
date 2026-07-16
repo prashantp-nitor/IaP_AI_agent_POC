@@ -13,7 +13,7 @@ permissions:
   contents: read
  
 env:
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b93ecc2d-55ba-421e-b32f-af469eba6a95/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iOTNlY2MyZC01NWJhLTQyMWUtYjMyZi1hZjQ2OWViYTZhOTUvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQyMDYwMTAsImV4cCI6MTc4NDIwOTYxMH0.tmzAXiiqaLLwQLMaNsg-XEMT87Q63fL8W3H0g9uDJJ4"
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/55c647e2-e58d-4240-9f7b-91e484820eec/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS81NWM2NDdlMi1lNThkLTQyNDAtOWY3Yi05MWU0ODQ4MjBlZWMvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQyMTAzNDcsImV4cCI6MTc4NDIxMzk0N30.H6s4O9AEU125u8tCDgwSqvyt_xbnbuJOLRmSnDJ7Uzo"
  
 jobs:
  
@@ -308,7 +308,7 @@ jobs:
  
           echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Application | http://${{ steps.target.outputs.host }}:8080${{ steps.target.outputs.context }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Application | http://${{ steps.target.outputs.host }}:8080/${{ steps.target.outputs.context }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Host | ${{ steps.target.outputs.host }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Region | ${{ steps.target.outputs.region }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY

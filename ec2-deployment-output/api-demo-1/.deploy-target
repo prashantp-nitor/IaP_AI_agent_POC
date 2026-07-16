@@ -1,0 +1,4 @@
+cluster_name: khush-demo
+ec2_host: 3.101.22.247
+provider: aws
+region: us-west-1

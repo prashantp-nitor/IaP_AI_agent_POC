@@ -399,10 +399,13 @@ jobs:
 
       - name: Download Tomcat Install Script
         run: |
-          # -f flag ensures curl fails if the file is not found (e.g., 404)
-          # Using the GitHub API is more reliable for private repos and automatically targets the default branch (main/master)
+          if [ -z "${{ secrets.POC_REPO_PAT }}" ]; then
+            echo "Error: POC_REPO_PAT secret is empty or not set!"
+            exit 1
+          fi
+          # -f flag ensures curl fails if the file is not found
           curl -f -L \
-            -H "Authorization: token ${{ secrets.POC_REPO_PAT }}" \
+            -H "Authorization: Bearer ${{ secrets.POC_REPO_PAT }}" \
             -H "Accept: application/vnd.github.v3.raw" \
             -o install_tomcat.sh \
             https://api.github.com/repos/prashantp-nitor/IaP_AI_agent_POC/contents/install_tomcat.sh

@@ -10,7 +10,7 @@
 #   workflow_dispatch: {}
 
 # env:
-#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3855f953-2738-4de4-9b7a-8f92bf5e0a96/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zODU1Zjk1My0yNzM4LTRkZTQtOWI3YS04ZjkyYmY1ZTBhOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxODQwNjMsImV4cCI6MTc4NDE4NzY2M30.Z3dcKq7wc1denm9h0Co909su0XDo58cLAymNF7-3fgg"
+#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3855f953-2738-4de4-9b7a-8f92bf5e0a96/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zODU1Zjk1My0yNzM4LTRkZTQtOWI3YS04ZjkyYmY1ZTBhOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxODQyNjYsImV4cCI6MTc4NDE4Nzg2Nn0.Pk7FPyjBH-JnJBZymljphICOCHmQcs1MKXiYGpVAv4g"
 
 # jobs:
 #   build-and-deploy:
@@ -216,7 +216,7 @@ permissions:
   contents: read
  
 env:
-  SOURCE_ZIP_URL: https://YOUR-SUPABASE-URL/source.zip
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3855f953-2738-4de4-9b7a-8f92bf5e0a96/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zODU1Zjk1My0yNzM4LTRkZTQtOWI3YS04ZjkyYmY1ZTBhOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxODQyNjYsImV4cCI6MTc4NDE4Nzg2Nn0.Pk7FPyjBH-JnJBZymljphICOCHmQcs1MKXiYGpVAv4g"
  
 jobs:
  

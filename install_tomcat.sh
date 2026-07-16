@@ -12,7 +12,7 @@ set -euo pipefail
 # Configurable variables
 # ----------------------------
 TOMCAT_MAJOR="10"                 # Tomcat major version (9 or 10)
-TOMCAT_VERSION="10.1.28"          # Full version to install - update as needed
+TOMCAT_VERSION="10.1.57"          # Full version to install - update as needed
 TOMCAT_USER="tomcat"
 INSTALL_DIR="/opt/tomcat"
 

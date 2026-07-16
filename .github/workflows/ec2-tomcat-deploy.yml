@@ -10,7 +10,7 @@
 #   workflow_dispatch: {}
 
 # env:
-#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTI1ODksImV4cCI6MTc4NDE5NjE4OX0.OhKvS2H8VcO_SaG2WXAQISVx-Bud-fjDhK1XP5rfDyw"
+#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTM4OTQsImV4cCI6MTc4NDE5NzQ5NH0.JGrAHMgFhVHFYFCIopjQEsSi05t_-4B4h8uBLrwqC9c"
 
 # jobs:
 #   build-and-deploy:
@@ -216,7 +216,7 @@ permissions:
   contents: read
  
 env:
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTI1ODksImV4cCI6MTc4NDE5NjE4OX0.OhKvS2H8VcO_SaG2WXAQISVx-Bud-fjDhK1XP5rfDyw"
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTM4OTQsImV4cCI6MTc4NDE5NzQ5NH0.JGrAHMgFhVHFYFCIopjQEsSi05t_-4B4h8uBLrwqC9c"
  
 jobs:
  
@@ -409,9 +409,7 @@ jobs:
  
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
  
-          source: |
-            ${{ steps.project.outputs.project }}/deploy/*
-            tomcat_install.sh
+          source: "${{ steps.project.outputs.project }}/deploy/*,tomcat_install.sh"
  
           target: /tmp/deployment
  

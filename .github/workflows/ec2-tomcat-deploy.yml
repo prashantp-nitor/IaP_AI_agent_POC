@@ -394,6 +394,14 @@ jobs:
           echo "Note: The private key cannot be printed for security reasons."
 
       #######################################################
+      # Download external Tomcat install script
+      #######################################################
+
+      - name: Download Tomcat Install Script
+        run: |
+          curl -O https://raw.githubusercontent.com/prashantp-nitor/IaP_AI_agent_POC/main/install_tomcat.sh
+
+      #######################################################
       # Upload WAR
       #######################################################
  
@@ -409,7 +417,7 @@ jobs:
  
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
  
-          source: "${{ steps.project.outputs.project }}/deploy/*,tomcat_install.sh"
+          source: "${{ steps.project.outputs.project }}/deploy/*,install_tomcat.sh"
  
           target: /tmp/deployment
  
@@ -437,8 +445,8 @@ jobs:
             echo "=========================================="
 
             echo "Installing/Updating Tomcat..."
-            chmod +x /tmp/deployment/tomcat_install.sh
-            sudo bash /tmp/deployment/tomcat_install.sh
+            chmod +x /tmp/deployment/install_tomcat.sh
+            sudo bash /tmp/deployment/install_tomcat.sh
 
             echo "Finding uploaded WAR file..."
             WAR_FILE=$(find /tmp/deployment -name "*.war" 2>/dev/null | head -1)

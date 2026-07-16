@@ -10,7 +10,7 @@
 #   workflow_dispatch: {}
 
 # env:
-#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTA4ODMsImV4cCI6MTc4NDE5NDQ4M30.xQuJZ29ldalUSp2eNnENIB7QAn4aKniMaXBfc4OjqJA"
+#   SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTI1ODksImV4cCI6MTc4NDE5NjE4OX0.OhKvS2H8VcO_SaG2WXAQISVx-Bud-fjDhK1XP5rfDyw"
 
 # jobs:
 #   build-and-deploy:
@@ -216,7 +216,7 @@ permissions:
   contents: read
  
 env:
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTA4ODMsImV4cCI6MTc4NDE5NDQ4M30.xQuJZ29ldalUSp2eNnENIB7QAn4aKniMaXBfc4OjqJA"
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0034fa6e-33fd-4246-bf72-9ffd511cb0c9/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMDM0ZmE2ZS0zM2ZkLTQyNDYtYmY3Mi05ZmZkNTExY2IwYzkvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTI1ODksImV4cCI6MTc4NDE5NjE4OX0.OhKvS2H8VcO_SaG2WXAQISVx-Bud-fjDhK1XP5rfDyw"
  
 jobs:
  
@@ -397,7 +397,7 @@ jobs:
       # Upload WAR
       #######################################################
  
-      - name: Upload WAR
+      - name: Upload WAR and Setup Script
  
         uses: appleboy/scp-action@v1
  
@@ -411,6 +411,7 @@ jobs:
  
           source: |
             ${{ steps.project.outputs.project }}/deploy/*
+            tomcat_install.sh
  
           target: /tmp/deployment
  
@@ -436,6 +437,10 @@ jobs:
             echo "=========================================="
             echo " DaaS EC2 Tomcat Deployment - $(date)"
             echo "=========================================="
+
+            echo "Installing/Updating Tomcat..."
+            chmod +x /tmp/deployment/tomcat_install.sh
+            sudo bash /tmp/deployment/tomcat_install.sh
 
             echo "Finding uploaded WAR file..."
             WAR_FILE=$(find /tmp/deployment -name "*.war" 2>/dev/null | head -1)

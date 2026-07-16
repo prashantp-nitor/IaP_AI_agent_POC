@@ -1,0 +1,4 @@
+cluster_name: api-demo-ec2
+ec2_host: 54.176.37.47
+provider: aws
+region: us-west-1

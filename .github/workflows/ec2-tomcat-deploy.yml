@@ -1,0 +1,200 @@
+name: Build and Deploy to EC2 (Tomcat)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ec2-deployment-output/**"
+
+  workflow_dispatch: {}
+
+env:
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/3855f953-2738-4de4-9b7a-8f92bf5e0a96/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8zODU1Zjk1My0yNzM4LTRkZTQtOWI3YS04ZjkyYmY1ZTBhOTYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxODA0NDEsImV4cCI6MTc4NDE4NDA0MX0.BqkbLZqUUQmTi7YVSrnmnF2j3SfHEYqASt4zFwK8zEQ"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ─────────────────────────────────────────────────────────────────
+      # Step 1: Checkout the repository
+      # ─────────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 2: Resolve EC2 target from .deploy-target metadata file
+      # Written by the DaaS backend when the user selects an EC2 instance
+      # ─────────────────────────────────────────────────────────────────
+      - name: Resolve EC2 target
+        id: target
+        run: |
+          TARGET_FILE=$(find ec2-deployment-output -name ".deploy-target" | head -1)
+          if [ -z "$TARGET_FILE" ]; then
+            echo "::error::No .deploy-target file found under ec2-deployment-output/"
+            exit 1
+          fi
+          echo "Reading target from: $TARGET_FILE"
+          INSTANCE_NAME=$(yq e '.cluster_name' "$TARGET_FILE")
+          REGION=$(yq e '.region' "$TARGET_FILE")
+          EC2_HOST=$(yq e '.ec2_host' "$TARGET_FILE")
+          
+          if [ "$EC2_HOST" == "null" ] || [ -z "$EC2_HOST" ]; then
+            echo "::error::ec2_host not found in .deploy-target"
+            exit 1
+          fi
+          
+          echo "instance_name=$INSTANCE_NAME" >> $GITHUB_OUTPUT
+          echo "region=$REGION"               >> $GITHUB_OUTPUT
+          echo "ec2_host=$EC2_HOST"           >> $GITHUB_OUTPUT
+          echo "Deploying to EC2 instance: $INSTANCE_NAME (Host: $EC2_HOST, region: $REGION)"
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 3: Download the user's application source from Supabase
+      # ─────────────────────────────────────────────────────────────────
+      - name: Download source code
+        run: |
+          curl --fail --location --retry 3 \
+            "${{ env.SOURCE_ZIP_URL }}" \
+            -o source.zip
+          mkdir -p app
+          unzip -q source.zip -d app
+          echo "Source extracted. Contents:"
+          ls -lh app/
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 4: Set up Java 17 (required for Maven build)
+      # ─────────────────────────────────────────────────────────────────
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 5: Build the WAR file with Maven
+      # ─────────────────────────────────────────────────────────────────
+      - name: Build WAR with Maven
+        working-directory: app
+        run: mvn clean package -DskipTests
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 6: Verify the WAR was generated successfully
+      # ─────────────────────────────────────────────────────────────────
+      - name: Verify WAR file
+        working-directory: app
+        run: |
+          echo "Generated artifacts:"
+          ls -lh target/*.war
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 7: Copy the WAR file to the EC2 instance via SCP
+      # ─────────────────────────────────────────────────────────────────
+      - name: Copy WAR to Tomcat
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ steps.target.outputs.ec2_host }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          source: "app/target/*.war"
+          target: "/tmp/"
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 8: SSH into EC2 to deploy the WAR and restart Tomcat
+      # ─────────────────────────────────────────────────────────────────
+      - name: Deploy and Restart Tomcat Service
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ steps.target.outputs.ec2_host }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            echo "=========================================="
+            echo " DaaS EC2 Tomcat Deployment - $(date)"
+            echo "=========================================="
+
+            echo "Finding uploaded WAR file..."
+            WAR_FILE=$(find /tmp/app/target -name "*.war" 2>/dev/null | head -1)
+
+            if [ -z "$WAR_FILE" ]; then
+              echo "::error::WAR file not found in /tmp/app/target/"
+              exit 1
+            fi
+
+            echo "WAR file found: $WAR_FILE"
+
+            echo "Stopping Tomcat..."
+            sudo systemctl stop tomcat
+
+            echo "Removing previous deployment..."
+            sudo rm -rf /opt/tomcat/webapps/myapp
+            sudo rm -f /opt/tomcat/webapps/myapp.war
+
+            echo "Deploying new WAR..."
+            sudo cp "$WAR_FILE" /opt/tomcat/webapps/myapp.war
+            sudo chown tomcat:tomcat /opt/tomcat/webapps/myapp.war
+
+            echo "Starting Tomcat..."
+            sudo systemctl start tomcat
+
+            echo "Checking Tomcat status..."
+            sudo systemctl status tomcat --no-pager
+
+            echo ""
+            echo "Deployment completed successfully"
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 9: Health check — poll until the app responds
+      # ─────────────────────────────────────────────────────────────────
+      - name: Health check
+        run: |
+          echo "Waiting for Tomcat to come up..."
+          sleep 15
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              "http://${{ steps.target.outputs.ec2_host }}:8080/myapp" || echo "000")
+            if [ "$STATUS" == "200" ] || [ "$STATUS" == "302" ]; then
+              echo "✅ Application is reachable (HTTP $STATUS)"
+              break
+            fi
+            echo "Attempt $i/10: HTTP $STATUS — retrying in 10s..."
+            sleep 10
+            if [ $i -eq 10 ]; then
+              echo "::error::Health check failed after 10 attempts. Last HTTP status: $STATUS"
+              exit 1
+            fi
+          done
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 10: Write live URL to GitHub Actions Step Summary
+      # ─────────────────────────────────────────────────────────────────
+      - name: Report deployment URL
+        if: success()
+        run: |
+          echo "### 🚀 EC2 Tomcat Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Application | http://${{ steps.target.outputs.ec2_host }}:8080/myapp |" >> $GITHUB_STEP_SUMMARY
+          echo "| Instance | ${{ steps.target.outputs.instance_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+
+      # ─────────────────────────────────────────────────────────────────
+      # Step 11: Rollback on failure — attempt to restart Tomcat
+      # ─────────────────────────────────────────────────────────────────
+      - name: Rollback on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ steps.target.outputs.ec2_host }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "::warning::Deployment failed — attempting Tomcat rollback..."
+            sudo systemctl restart tomcat || true
+            sudo systemctl status tomcat --no-pager || true
+            echo "Rollback attempted. Manual intervention may be required."

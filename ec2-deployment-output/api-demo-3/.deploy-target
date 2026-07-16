@@ -1,0 +1,4 @@
+cluster_name: api_demo_3
+ec2_host: 54.183.17.171
+provider: aws
+region: us-west-1

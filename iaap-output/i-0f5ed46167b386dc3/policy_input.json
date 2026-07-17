@@ -1,6 +1,6 @@
 {
   "instance_name": "i-0f5ed46167b386dc3",
-  "region": "ap-southeast-1",
+  "region": "us-west-1",
   "_provider": "aws",
   "_resource_type": "ec2_instance"
 }

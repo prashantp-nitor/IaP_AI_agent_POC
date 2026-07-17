@@ -256,7 +256,7 @@ jobs:
         shell: bash
         run: |
           SAFE_NAME=$(echo "${{ matrix.directory }}" | tr '/' '-')
-          echo "SAFE_NAME=$SAFE_ENV" >> $GITHUB_ENV
+          echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
           
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
@@ -265,19 +265,21 @@ jobs:
           path: iaap-output/${{ matrix.directory }}
 
       - name: Terraform Init
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
         run: |
-          # Derive tfstate key: nested paths (project/resource) share a
-          # project-level state; flat paths keep their own key.
           MATRIX_DIR="${{ matrix.directory }}"
           if echo "$MATRIX_DIR" | grep -q '/'; then
-            TFSTATE_KEY="$(echo "$MATRIX_DIR" | cut -d'/' -f1)/terraform.tfstate"
+          TFSTATE_KEY="$(echo "$MATRIX_DIR" | cut -d'/' -f1)/terraform.tfstate"
           else
-            TFSTATE_KEY="${MATRIX_DIR}/terraform.tfstate"
+          TFSTATE_KEY="${MATRIX_DIR}/terraform.tfstate"
           fi
+
           terraform init \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             -backend-config="container_name=deploy-storage" \
-            -backend-config="key=${TFSTATE_KEY}" \
-            -backend-config="connection_string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+            -backend-config="key=${TFSTATE_KEY}"
 
       - name: Terraform Apply
         id: tf_apply

@@ -134,6 +134,8 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Init
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
         run: |
           # Derive tfstate key: nested paths (project/resource) share a
           # project-level state; flat paths keep their own key.
@@ -144,8 +146,8 @@ jobs:
             TFSTATE_KEY="${MATRIX_DIR}/terraform.tfstate"
           fi
           terraform init \
-            -backend-config="resource_group_name=${{ vars.AZURE_RESOURCE_GROUP }}" \
-            -backend-config="storage_account_name=${{ vars.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             -backend-config="container_name=deploy-storage" \
             -backend-config="key=${TFSTATE_KEY}"
 

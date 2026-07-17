@@ -179,6 +179,7 @@ jobs:
       name: dev
 
     strategy:
+      max-parallel: 1      
       matrix:
         directory: ${{ fromJson(needs.detect-changes.outputs.directories) }}
       fail-fast: false

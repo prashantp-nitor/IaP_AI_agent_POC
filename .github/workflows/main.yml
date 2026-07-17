@@ -255,7 +255,7 @@ jobs:
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
-          name: tfplan-${{ matrix.directory }}
+          name: tfplan-${{ env.SAFE_NAME }}
           path: iaap-output/${{ matrix.directory }}
 
       - name: Terraform Init

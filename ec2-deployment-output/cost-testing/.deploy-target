@@ -1,0 +1,4 @@
+cluster_name: cost-testing-ec2
+ec2_host: 13.57.225.73
+provider: aws
+region: us-west-1

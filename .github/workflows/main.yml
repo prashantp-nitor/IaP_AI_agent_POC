@@ -158,10 +158,16 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
+      - name: Generate artifact name
+        shell: bash
+        run: |
+            SAFE_NAME=$(echo "${{ matrix.directory }}" | tr '/' '-')
+            echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
+
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ matrix.directory }}
+          name: tfplan-${{ env.SAFE_NAME }}
           path: iaap-output/${{ matrix.directory }}/tfplan
 
   terraform-apply:

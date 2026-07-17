@@ -251,7 +251,13 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
+          
+      - name: Generate safe artifact name
+        shell: bash
+        run: |
+          SAFE_NAME=$(echo "${{ matrix.directory }}" | tr '/' '-')
+          echo "SAFE_NAME=$SAFE_ENV" >> $GITHUB_ENV
+          
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:

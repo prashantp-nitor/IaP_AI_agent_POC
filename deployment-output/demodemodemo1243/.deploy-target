@@ -1,5 +1,5 @@
 cluster_name: rhythmx-demo
-resource_group: daas-rg
+resource_group: AZET-RG-Daas-Platform
 region: westeurope
 cloud_provider: azure
 namespace: demodemodemo1243

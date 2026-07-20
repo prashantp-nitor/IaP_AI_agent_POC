@@ -11,13 +11,13 @@ variable "db_name" {
 variable "server_name" {
   description = "Logical SQL server name"
   type        = string
-  default     = "srv"
+  default     = "mysrv"
 }
 
 variable "sku_name" {
   description = "Database service tier (e.g. S0, GP_Gen5_2, BC_Gen5_4)"
   type        = string
-  default     = "GP_Gen5_8"
+  default     = "S0"
 }
 
 variable "region" {
@@ -29,5 +29,5 @@ variable "region" {
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
-  default     = "rg"
+  default     = "rg1"
 }

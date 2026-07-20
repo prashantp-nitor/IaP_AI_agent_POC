@@ -11,7 +11,7 @@ variable "redis_name" {
 variable "sku_name" {
   description = "Redis SKU token: C0-C6 (Standard) or P1-P5 (Premium)"
   type        = string
-  default     = "P2"
+  default     = "C1"
 }
 
 variable "region" {
@@ -23,5 +23,5 @@ variable "region" {
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
-  default     = "rg"
+  default     = "rg1"
 }

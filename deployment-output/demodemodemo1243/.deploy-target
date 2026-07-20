@@ -1,0 +1,5 @@
+cluster_name: rhythmx-demo
+resource_group: daas-rg
+region: westeurope
+cloud_provider: azure
+namespace: demodemodemo1243

@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: test-123
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/4192aaa1-eeb3-49ef-b117-bed98a53bbac/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS80MTkyYWFhMS1lZWIzLTQ5ZWYtYjExNy1iZWQ5OGE1M2JiYWMvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQxOTkyMzcsImV4cCI6MTc4NDIwMjgzN30.Ndhjx2hytFkvei2Ji7iDrK2yIivnvvgdZl23WSp7d5Y"
+  REGISTRY: acrdaassystemdefault.azurecr.io
+  NAMESPACE: ci-test
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/55b6b0f1-8186-40e9-b824-446e928fc61a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS81NWI2YjBmMS04MTg2LTQwZTktYjgyNC00NDZlOTI4ZmM2MWEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ1MzI0ODQsImV4cCI6MTc4NDUzNjA4NH0.l87l8f6W6HOoG8pKmT_0CxuOa_WNuVnX71UfMIrWzXc"
 
 jobs:
   build-and-push:
@@ -31,6 +31,13 @@ jobs:
         run: |
           mkdir app
           unzip -q source.zip -d app
+
+      - name: Scan source for secrets (gitleaks)
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/app:/scan" \
+            zricethezav/gitleaks:v8.18.4 \
+            detect --source=/scan --no-git --redact --verbose --exit-code=1
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -113,7 +120,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test-123 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install ci-test ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +129,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test-123/helm/templates/database.yaml).
+          # (deployment-output/ci-test/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,4 +189,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-123 -n ${{ env.NAMESPACE }} || true
+          helm uninstall ci-test -n ${{ env.NAMESPACE }} || true

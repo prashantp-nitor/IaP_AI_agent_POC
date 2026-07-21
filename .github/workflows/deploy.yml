@@ -14,7 +14,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: trivy-fitcart
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b2b5281c-381f-439b-bba1-50924e09e38a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMmI1MjgxYy0zODFmLTQzOWItYmJhMS01MDkyNGUwOWUzOGEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ2MjQ3ODQsImV4cCI6MTc4NDYyODM4NH0.0ukXsk2E9lBUAMnTuoZ5Oq1FCeCuIQ-oGMMxX00rz1A"
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b2b5281c-381f-439b-bba1-50924e09e38a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMmI1MjgxYy0zODFmLTQzOWItYmJhMS01MDkyNGUwOWUzOGEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ2MjUyNjgsImV4cCI6MTc4NDYyODg2OH0.yQqNXSGTpXEjDlRRf_Q5o5LtbooOLMY8TDGQojntx3A"
 
 jobs:
   build-and-push:
@@ -41,10 +41,13 @@ jobs:
 
       - name: Scan dependencies for vulnerabilities (trivy)
         run: |
+          mkdir -p "$GITHUB_WORKSPACE/trivy-reports"
           docker run --rm \
-            -v "$GITHUB_WORKSPACE/app:/scan" \
+            -v "$GITHUB_WORKSPACE:/workspace" \
             aquasec/trivy:0.55.0 \
-            fs /scan --scanners vuln --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 --no-progress
+            fs /workspace/app --scanners vuln --severity CRITICAL,HIGH --ignore-unfixed --no-progress \
+            --format template --template "@/contrib/html.tpl" \
+            --output /workspace/trivy-reports/dependencies.html --exit-code 1
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -68,10 +71,14 @@ jobs:
 
       - name: Scan backend image for vulnerabilities (trivy)
         run: |
+          mkdir -p "$GITHUB_WORKSPACE/trivy-reports"
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$GITHUB_WORKSPACE:/workspace" \
             aquasec/trivy:0.55.0 \
-            image ${{ env.REGISTRY }}/backend:${{ github.sha }} --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 --no-progress
+            image ${{ env.REGISTRY }}/backend:${{ github.sha }} --severity CRITICAL,HIGH --ignore-unfixed --no-progress \
+            --format template --template "@/contrib/html.tpl" \
+            --output /workspace/trivy-reports/image-backend.html --exit-code 1
 
       - name: Push backend image
         run: |
@@ -91,15 +98,27 @@ jobs:
 
       - name: Scan frontend image for vulnerabilities (trivy)
         run: |
+          mkdir -p "$GITHUB_WORKSPACE/trivy-reports"
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$GITHUB_WORKSPACE:/workspace" \
             aquasec/trivy:0.55.0 \
-            image ${{ env.REGISTRY }}/frontend:${{ github.sha }} --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 --no-progress
+            image ${{ env.REGISTRY }}/frontend:${{ github.sha }} --severity CRITICAL,HIGH --ignore-unfixed --no-progress \
+            --format template --template "@/contrib/html.tpl" \
+            --output /workspace/trivy-reports/image-frontend.html --exit-code 1
 
       - name: Push frontend image
         run: |
           docker push ${{ env.REGISTRY }}/frontend:${{ github.sha }}
       
+
+      - name: Upload Trivy vulnerability reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: trivy-reports/
+          if-no-files-found: ignore
 
   deploy-to-kubernetes:
     needs: build-and-push

@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: testtesttets
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/6b4560c8-c931-41ed-9188-5529790df698/source.zip?se=2026-07-21T07%3A33%3A32Z&sp=r&sv=2026-06-06&sr=b&sig=43aI9fRC5/4Uwole9ml3PkQjBezr4oQ%2BjgdoIoWBd1w%3D"
+  NAMESPACE: hash12test
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/ed66606b-ba08-4c1e-a23f-1af2525a5967/source.zip?se=2026-07-21T10%3A24%3A00Z&sp=r&sv=2026-06-06&sr=b&sig=T02p39zXPIqfYvT5bALNgW4RayBJxJsHSRYpCFUKxRQ%3D"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install testtesttets ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install hash12test ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/testtesttets/helm/templates/database.yaml).
+          # (deployment-output/hash12test/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,7 +182,7 @@ jobs:
         if: always()
         run: |
           curl -X POST "${{ secrets.DAAS_API_URL || 'http://localhost:8000' }}/api/v1/deploy/outputs"             -H "Content-Type: application/json"             -d '{
-              "job_id": "6b4560c8-c931-41ed-9188-5529790df698",
+              "job_id": "ed66606b-ba08-4c1e-a23f-1af2525a5967",
               "deployment_outputs": {
                 "public_url": "'"$URL"'"
               }
@@ -192,4 +192,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall testtesttets -n ${{ env.NAMESPACE }} || true
+          helm uninstall hash12test -n ${{ env.NAMESPACE }} || true

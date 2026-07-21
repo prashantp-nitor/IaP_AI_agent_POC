@@ -1,0 +1,6 @@
+{
+  "cluster_name": "my-eks-cluster",
+  "region": "ap-southeast-1",
+  "_provider": "aws",
+  "_resource_type": "kubernetes_cluster"
+}

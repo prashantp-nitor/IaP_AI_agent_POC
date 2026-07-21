@@ -14,7 +14,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: testtesttets
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/6b4560c8-c931-41ed-9188-5529790df698/source.zip?se=2026-07-21T07%3A12%3A54Z&sp=r&sv=2026-06-06&sr=b&sig=4cjFpG6Bbdt3nJiMymY6oTgJvetix%2B4cHIQUqlBceY0%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/6b4560c8-c931-41ed-9188-5529790df698/source.zip?se=2026-07-21T07%3A33%3A32Z&sp=r&sv=2026-06-06&sr=b&sig=43aI9fRC5/4Uwole9ml3PkQjBezr4oQ%2BjgdoIoWBd1w%3D"
 
 jobs:
   build-and-push:
@@ -177,6 +177,16 @@ jobs:
             echo "### 🚀 Deployment Successfully Exposed!" >> $GITHUB_STEP_SUMMARY
             echo "Your application is publicly reachable at: **[$URL]($URL)**" >> $GITHUB_STEP_SUMMARY
           fi
+
+      - name: Post Execution Outputs to DaaS Backend
+        if: always()
+        run: |
+          curl -X POST "${{ secrets.DAAS_API_URL || 'http://localhost:8000' }}/api/v1/deploy/outputs"             -H "Content-Type: application/json"             -d '{
+              "job_id": "6b4560c8-c931-41ed-9188-5529790df698",
+              "deployment_outputs": {
+                "public_url": "'"$URL"'"
+              }
+            }' || true
 
       - name: Cleanup on Failed Deployment
         if: failure()

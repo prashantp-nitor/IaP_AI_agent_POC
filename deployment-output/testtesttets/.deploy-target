@@ -1,0 +1,5 @@
+cluster_name: aks-cluster-1-demo
+resource_group: AZET-RG-Daas-Platform
+region: eastus
+cloud_provider: azure
+namespace: testtesttets

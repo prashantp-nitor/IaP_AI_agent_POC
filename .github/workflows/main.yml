@@ -291,40 +291,6 @@ jobs:
           echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
           exit $EXIT_CODE
 
-      - name: Post Infrastructure Execution Outputs to DaaS Backend
-        if: always()
-        run: |
-          echo "Capturing Terraform infrastructure outputs..."
-          TF_OUTPUTS=$(terraform output -json 2>/dev/null || echo '{}')
-          
-          PAYLOAD=$(cat <<EOF
-          {
-            "job_id": "${{ matrix.directory }}",
-            "infra_details": {
-              "provider": "${{ steps.provider.outputs.provider }}",
-              "directory": "${{ matrix.directory }}"
-            },
-            "infra_outputs": ${TF_OUTPUTS},
-            "deployment_details": {
-              "commit_sha": "${{ github.sha }}",
-              "github_run_id": "${{ github.run_id }}"
-            },
-            "deployment_outputs": {
-              "status": "${{ job.status }}"
-            }
-          }
-          EOF
-          )
-          
-          DAAS_URL="${{ secrets.DAAS_API_URL }}"
-          if [ -n "$DAAS_URL" ]; then
-            curl -X POST "$DAAS_URL/api/v1/deploy/outputs" \
-              -H "Content-Type: application/json" \
-              -d "$PAYLOAD" || echo "Warning: Failed to report infrastructure outputs to backend"
-          else
-            echo "DAAS_API_URL secret not set. Skipping remote POST callback."
-          fi
-
       - name: Clear Terraform Lock on Failure
         if: failure()
         run: |

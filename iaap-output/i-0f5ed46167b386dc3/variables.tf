@@ -16,12 +16,6 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "iam_instance_profile" {
-  description = "IAM Instance Profile"
-  type        = string
-  default     = ""
-}
-
 variable "extra_tags" {
   description = "Additional tags applied to all resources"
   type        = map(string)

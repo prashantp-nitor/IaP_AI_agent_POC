@@ -5,7 +5,7 @@
 variable "account_name" {
   description = "Globally unique storage account name"
   type        = string
-  default     = "storagetesttest123"
+  default     = "storageretest"
 }
 
 variable "region" {

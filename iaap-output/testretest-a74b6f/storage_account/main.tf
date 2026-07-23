@@ -27,7 +27,7 @@
 
             # --- Storage Account ---
 
-            resource "azurerm_storage_account" "storage" {
+            resource "azurerm_storage_account" "main" {
               name                     = var.account_name
               location                 = data.azurerm_resource_group.rg.location
               resource_group_name      = data.azurerm_resource_group.rg.name

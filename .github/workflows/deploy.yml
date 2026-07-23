@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: rhythmx-demo
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/5fd1eb33-29bb-44a5-b13c-167cdc9f59d8/source.zip?se=2026-07-22T14%3A24%3A31Z&sp=r&sv=2026-06-06&sr=b&sig=5eF5DzGHmhfNCZ79RAT6SCKxMygl0D4R0H22wcZrr0E%3D"
+  NAMESPACE: rhythmx-demo-2
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/45776def-3dad-4aa1-9f6b-c36134223f07/source.zip?se=2026-07-23T04%3A54%3A11Z&sp=r&sv=2026-06-06&sr=b&sig=HQNkVh1CGgpmgHWADN1SSvCkIHCKSw30IvbrX4pmZe8%3D"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install rhythmx-demo ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install rhythmx-demo-2 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/rhythmx-demo/helm/templates/database.yaml).
+          # (deployment-output/rhythmx-demo-2/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,7 +182,7 @@ jobs:
         if: always()
         run: |
           curl -X POST "${{ secrets.DAAS_API_URL || 'http://localhost:8000' }}/api/v1/deploy/outputs"             -H "Content-Type: application/json"             -d '{
-              "job_id": "5fd1eb33-29bb-44a5-b13c-167cdc9f59d8",
+              "job_id": "45776def-3dad-4aa1-9f6b-c36134223f07",
               "deployment_outputs": {
                 "public_url": "'"$URL"'"
               }
@@ -192,4 +192,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall rhythmx-demo -n ${{ env.NAMESPACE }} || true
+          helm uninstall rhythmx-demo-2 -n ${{ env.NAMESPACE }} || true

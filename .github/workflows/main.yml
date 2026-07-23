@@ -291,39 +291,83 @@ jobs:
           echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
           exit $EXIT_CODE
 
-      - name: Post Infrastructure Execution Outputs to DaaS Backend
+      - name: Save Execution Outputs Directly to Azure Postgres DB
         if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.AZURE_POSTGRES_URL }}
+          JOB_ID: ${{ matrix.directory }}
+          PROVIDER: ${{ steps.provider.outputs.provider }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          JOB_STATUS: ${{ job.status }}
         run: |
           echo "Capturing Terraform infrastructure outputs..."
           TF_OUTPUTS=$(terraform output -json 2>/dev/null || echo '{}')
           
-          PAYLOAD=$(cat <<EOF
-          {
-            "job_id": "${{ matrix.directory }}",
-            "infra_details": {
-              "provider": "${{ steps.provider.outputs.provider }}",
-              "directory": "${{ matrix.directory }}"
-            },
-            "infra_outputs": ${TF_OUTPUTS},
-            "deployment_details": {
-              "commit_sha": "${{ github.sha }}",
-              "github_run_id": "${{ github.run_id }}"
-            },
-            "deployment_outputs": {
-              "status": "${{ job.status }}"
-            }
-          }
-          EOF
-          )
-          
-          DAAS_URL="${{ secrets.DAAS_API_URL }}"
-          if [ -n "$DAAS_URL" ]; then
-            curl -X POST "$DAAS_URL/api/v1/deploy/outputs" \
-              -H "Content-Type: application/json" \
-              -d "$PAYLOAD" || echo "Warning: Failed to report infrastructure outputs to backend"
-          else
-            echo "DAAS_API_URL secret not set. Skipping remote POST callback."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is not set. Skipping direct DB update."
+            exit 0
           fi
+
+          python3 -m pip install --quiet psycopg2-binary 2>/dev/null || true
+
+          python3 -c "
+          import os, json, psycopg2
+
+          db_url = os.environ.get('DATABASE_URL')
+          job_id = os.environ.get('JOB_ID')
+          provider = os.environ.get('PROVIDER') or 'azure'
+          commit_sha = os.environ.get('COMMIT_SHA')
+          run_id = os.environ.get('RUN_ID')
+          job_status = os.environ.get('JOB_STATUS')
+          tf_outputs_raw = '''$TF_OUTPUTS'''
+
+          try:
+              tf_outputs = json.loads(tf_outputs_raw)
+          except Exception:
+              tf_outputs = {}
+
+          infra_details = {
+              'provider': provider,
+              'directory': job_id
+          }
+          deployment_details = {
+              'commit_sha': commit_sha,
+              'github_run_id': run_id
+          }
+          deployment_outputs = {
+              'status': job_status
+          }
+
+          try:
+              conn = psycopg2.connect(db_url)
+              cur = conn.cursor()
+
+              sql = '''
+              INSERT INTO deployment_execution_outputs (job_id, infra_details, infra_outputs, deployment_details, deployment_outputs, created_at, updated_at)
+              VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+              ON CONFLICT (job_id) DO UPDATE SET
+                  infra_details = EXCLUDED.infra_details,
+                  infra_outputs = EXCLUDED.infra_outputs,
+                  deployment_details = EXCLUDED.deployment_details,
+                  deployment_outputs = EXCLUDED.deployment_outputs,
+                  updated_at = NOW();
+              '''
+
+              cur.execute(sql, (
+                  job_id,
+                  json.dumps(infra_details),
+                  json.dumps(tf_outputs),
+                  json.dumps(deployment_details),
+                  json.dumps(deployment_outputs)
+              ))
+              conn.commit()
+              cur.close()
+              conn.close()
+              print(f'Successfully saved deployment_execution_outputs directly to Azure Postgres for job_id: {job_id}')
+          except Exception as exc:
+              print(f'Direct DB update error: {exc}')
+          "
 
       - name: Clear Terraform Lock on Failure
         if: failure()

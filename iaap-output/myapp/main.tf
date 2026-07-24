@@ -78,23 +78,3 @@
                 environment = "managed-by-iaap"
               }
             }
-
-            # --- Outputs ---
-
-            output "app_name" {
-              value = azurerm_container_app.app.name
-            }
-
-            output "resource_group" {
-              value = data.azurerm_resource_group.rg.name
-            }
-
-            output "app_fqdn" {
-              value = azurerm_container_app.app.latest_revision_fqdn
-            }
-
-# --- Import existing resource into state (idempotent on repeated apply) ---
-import {
-  to = azurerm_container_app.app
-  id = "/subscriptions/s/resourceGroups/rg/providers/Microsoft.App/containerApps/myapp"
-}

@@ -3,9 +3,8 @@ Deployment Execution Outputs Saver
 Reads environment variables provided by GitHub Actions runner and records
 execution state into the primary database via psycopg2.
 """
-import json
 import os
-
+import json
 
 def main() -> None:
     db_url = os.environ.get("DATABASE_URL")
@@ -103,7 +102,6 @@ def main() -> None:
         print(f"Successfully saved deployment execution outputs directly to database for job_id: {job_id}")
     except Exception as exc:
         print(f"Direct DB update error: {exc}")
-
 
 if __name__ == "__main__":
     main()

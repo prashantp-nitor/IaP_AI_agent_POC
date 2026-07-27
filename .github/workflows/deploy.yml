@@ -14,7 +14,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: testsample
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/129a404c-1efe-42af-8ab0-178c19c79cd9/source.zip?se=2026-07-27T07%3A04%3A06Z&sp=r&sv=2026-06-06&sr=b&sig=w%2B%2B8NQF3/R4WPbWLNKQ0678p0IjG66djq3SzoIQiOu0%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/129a404c-1efe-42af-8ab0-178c19c79cd9/source.zip?se=2026-07-27T07%3A21%3A36Z&sp=r&sv=2026-06-06&sr=b&sig=kF//Qr%2BX7VkdNEAPSI4GLvhpTOf5M8WJX3OIz%2BPljlY%3D"
 
 jobs:
   build-and-push:
@@ -193,7 +193,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_zl5r4o", "POSTGRES_PASSWORD": "a\u0026Hufc10zn%m4a*1pmBwgkmS", "POSTGRES_USER": "post_jbyz4f"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_fd21ul", "POSTGRES_PASSWORD": "iD#9fpe3P1XX2bHeIr!WVc2R", "POSTGRES_USER": "post_pcdgz1"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -203,78 +203,7 @@ jobs:
 
           python3 -m pip install --quiet psycopg2-binary 2>/dev/null || true
 
-          python3 -c '
-          import os, json, psycopg2
-
-          db_url = os.environ.get("DATABASE_URL")
-          job_id = os.environ.get("JOB_ID")
-          provider = os.environ.get("PROVIDER") or "azure"
-          region = os.environ.get("REGION") or ""
-          namespace = os.environ.get("NAMESPACE") or "default"
-          project_name = os.environ.get("PROJECT_NAME") or "default"
-          deployment_strategy = os.environ.get("DEPLOYMENT_STRATEGY") or "canary"
-          commit_sha = os.environ.get("COMMIT_SHA") or ""
-          run_id = os.environ.get("RUN_ID") or ""
-          job_status = os.environ.get("JOB_STATUS") or "completed"
-          public_url = os.environ.get("PUBLIC_URL") or ""
-
-          infra_details = {
-              "provider": provider,
-              "region": region,
-              "namespace": namespace
-          }
-          try:
-              infra_outputs = json.loads(os.environ.get("INFRA_OUTPUTS_JSON") or "{"endpoints": []}")
-          except Exception:
-              infra_outputs = {"endpoints": []}
-
-          try:
-              db_config = json.loads(os.environ.get("DB_CONFIG_JSON") or "{}")
-          except Exception:
-              db_config = {}
-
-          deployment_details = {
-              "project_name": project_name,
-              "deployment_strategy": deployment_strategy,
-              "commit_sha": commit_sha,
-              "github_run_id": run_id
-          }
-          deployment_outputs = {
-              "public_url": public_url,
-              "status": job_status,
-              "db_config": db_config
-          }
-
-          try:
-              conn = psycopg2.connect(db_url)
-              cur = conn.cursor()
-
-              sql = "INSERT INTO deployment_execution_outputs (job_id, infra_details, infra_outputs, deployment_details, deployment_outputs, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) ON CONFLICT (job_id) DO UPDATE SET infra_details = EXCLUDED.infra_details, infra_outputs = EXCLUDED.infra_outputs, deployment_details = EXCLUDED.deployment_details, deployment_outputs = EXCLUDED.deployment_outputs, updated_at = NOW();"
-
-              cur.execute(sql, (
-                  job_id,
-                  json.dumps(infra_details),
-                  json.dumps(infra_outputs),
-                  json.dumps(deployment_details),
-                  json.dumps(deployment_outputs)
-              ))
-              conn.commit()
-
-              # Also update requests table if job_id corresponds to a request
-              if public_url and not public_url.startswith("http://<pending"):
-                  try:
-                      update_req_sql = "UPDATE requests SET status = "completed", updated_at = NOW() WHERE request_id = %s OR id = %s;"
-                      cur.execute(update_req_sql, (job_id, job_id))
-                      conn.commit()
-                  except Exception as req_e:
-                      print(f"Warning updating requests table: {req_e}")
-
-              cur.close()
-              conn.close()
-              print(f"Successfully saved deployment execution outputs directly to database for job_id: {job_id}")
-          except Exception as exc:
-              print(f"Direct DB update error: {exc}")
-          '
+          python3 .github/scripts/save_outputs.py
 
       - name: Cleanup on Failed Deployment
         if: failure()

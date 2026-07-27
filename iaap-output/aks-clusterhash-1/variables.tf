@@ -23,19 +23,19 @@ variable "resource_group_name" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the AKS cluster"
   type        = string
-  default     = "1.30"
+  default     = "1.34.4"
 }
 
 variable "node_count" {
   description = "Number of nodes in the default node pool"
   type        = number
-  default     = "current_node_count + 1"
+  default     = 1
 }
 
 variable "node_vm_size" {
   description = "VM size for default node pool nodes"
   type        = string
-  default     = "Standard_D4s_v3"
+  default     = "Standard_D2s_v3"
 }
 
 variable "network_plugin" {
@@ -59,7 +59,7 @@ variable "enable_rbac" {
 variable "os_disk_size_gb" {
   description = "OS disk size in GB for each node in the default node pool"
   type        = number
-  default     = 128
+  default     = 30
 }
 
 # variable "acr_name" {

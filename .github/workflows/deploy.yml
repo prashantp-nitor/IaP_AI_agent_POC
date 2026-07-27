@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: sampleproject
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/6c989910-2c8f-4b8c-aeaf-6938d5790a5c/source.zip?se=2026-07-24T11%3A35%3A33Z&sp=r&sv=2026-06-06&sr=b&sig=WkmZtk4jakzSasLGi65SfIr2naw9ZOCulzvzRs1KZcE%3D"
+  NAMESPACE: testsample
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/129a404c-1efe-42af-8ab0-178c19c79cd9/source.zip?se=2026-07-27T06%3A50%3A15Z&sp=r&sv=2026-06-06&sr=b&sig=JXYxsMTPoq4/Pt/ElleMX%2BGskaqzprWaN5CphRhqOZM%3D"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install sampleproject ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install testsample ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/sampleproject/helm/templates/database.yaml).
+          # (deployment-output/testsample/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -178,55 +178,125 @@ jobs:
             echo "Your application is publicly reachable at: **[$URL]($URL)**" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Post Execution Outputs to DaaS Backend
+      - name: Save Execution Outputs Directly to Database
         if: always()
+        env:
+          DATABASE_URL: $${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
+          JOB_ID: "129a404c-1efe-42af-8ab0-178c19c79cd9"
+          PROVIDER: "azure"
+          REGION: "eastus"
+          NAMESPACE: $${{ env.NAMESPACE }}
+          PROJECT_NAME: "testsample"
+          DEPLOYMENT_STRATEGY: "rolling"
+          COMMIT_SHA: $${{ github.sha }}
+          RUN_ID: $${{ github.run_id }}
+          JOB_STATUS: $${{ job.status }}
+          PUBLIC_URL: ${URL:-http://<pending-public-ip>}
         run: |
-          echo "Reporting deployment execution outputs to DaaS server..."
-          PAYLOAD=$(cat <<EOF
-          {
-            "job_id": "6c989910-2c8f-4b8c-aeaf-6938d5790a5c",
-            "infra_details": {
-              "provider": "azure",
-              "region": "eastus",
-              "namespace": "${{ env.NAMESPACE }}"
-            },
-            "infra_outputs": {
-              "frontend_ip": "${IP:-pending}",
-              "endpoints": [
+          echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is not set. Skipping direct DB update."
+            exit 0
+          fi
+
+          python3 -m pip install --quiet psycopg2-binary 2>/dev/null || true
+
+          python3 -c "
+          import os, json, psycopg2
+
+          db_url = os.environ.get('DATABASE_URL')
+          job_id = os.environ.get('JOB_ID')
+          provider = os.environ.get('PROVIDER') or 'azure'
+          region = os.environ.get('REGION') or ''
+          namespace = os.environ.get('NAMESPACE') or 'default'
+          project_name = os.environ.get('PROJECT_NAME') or 'default'
+          deployment_strategy = os.environ.get('DEPLOYMENT_STRATEGY') or 'canary'
+          commit_sha = os.environ.get('COMMIT_SHA') or ''
+          run_id = os.environ.get('RUN_ID') or ''
+          job_status = os.environ.get('JOB_STATUS') or 'completed'
+          public_url = os.environ.get('PUBLIC_URL') or ''
+
+          infra_details = {
+              'provider': provider,
+              'region': region,
+              'namespace': namespace
+          }
+          infra_outputs = {
+              'endpoints': [
                 
                 {
-                  "name": "backend",
-                  "is_frontend": false,
-                  "ports": [8080]
+                  'name': 'backend',
+                  'is_frontend': false,
+                  'ports': [8080]
                 },
                 
                 {
-                  "name": "frontend",
-                  "is_frontend": true,
-                  "ports": [80]
+                  'name': 'frontend',
+                  'is_frontend': true,
+                  'ports': [80]
                 }
                 
               ]
-            },
-            "deployment_details": {
-              "project_name": "sampleproject",
-              "deployment_strategy": "rolling",
-              "commit_sha": "${{ github.sha }}",
-              "github_run_id": "${{ github.run_id }}"
-            },
-            "deployment_outputs": {
-              "public_url": "${URL:-http://<pending-public-ip>}",
-              "status": "${{ job.status }}",
-              "db_config": {"POSTGRES_DB": "post_4g247s", "POSTGRES_PASSWORD": "gWC^CyKw4Ia\u00266l0KA%4Htzvx", "POSTGRES_USER": "post_7ve3q4"}
-            }
           }
-          EOF
-          )
-          
-          curl -X POST "${{ secrets.DAAS_API_URL || 'http://localhost:8000' }}/api/v1/deploy/outputs"             -H "Content-Type: application/json"             -d "$PAYLOAD" || echo "Warning: Failed to report execution outputs to backend"
+          deployment_details = {
+              'project_name': project_name,
+              'deployment_strategy': deployment_strategy,
+              'commit_sha': commit_sha,
+              'github_run_id': run_id
+          }
+          deployment_outputs = {
+              'public_url': public_url,
+              'status': job_status,
+              'db_config': {"POSTGRES_DB": "post_p73kt6", "POSTGRES_PASSWORD": "cAP#KlYm1\u0026d^bB3Gt1kggJ2L", "POSTGRES_USER": "post_4fjv69"}
+          }
+
+          try:
+              conn = psycopg2.connect(db_url)
+              cur = conn.cursor()
+
+              sql = '''
+              INSERT INTO deployment_execution_outputs (job_id, infra_details, infra_outputs, deployment_details, deployment_outputs, created_at, updated_at)
+              VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+              ON CONFLICT (job_id) DO UPDATE SET
+                  infra_details = EXCLUDED.infra_details,
+                  infra_outputs = EXCLUDED.infra_outputs,
+                  deployment_details = EXCLUDED.deployment_details,
+                  deployment_outputs = EXCLUDED.deployment_outputs,
+                  updated_at = NOW();
+              '''
+
+              cur.execute(sql, (
+                  job_id,
+                  json.dumps(infra_details),
+                  json.dumps(infra_outputs),
+                  json.dumps(deployment_details),
+                  json.dumps(deployment_outputs)
+              ))
+              conn.commit()
+
+              # Also update requests table if job_id corresponds to a request
+              if public_url and not public_url.startswith('http://<pending'):
+                  try:
+                      update_req_sql = '''
+                      UPDATE requests
+                      SET status = 'completed',
+                          updated_at = NOW()
+                      WHERE request_id = %s OR id = %s;
+                      '''
+                      cur.execute(update_req_sql, (job_id, job_id))
+                      conn.commit()
+                  except Exception as req_e:
+                      print(f'Warning updating requests table: {req_e}')
+
+              cur.close()
+              conn.close()
+              print(f'Successfully saved deployment execution outputs directly to database for job_id: {job_id}')
+          except Exception as exc:
+              print(f'Direct DB update error: {exc}')
+          "
 
       - name: Cleanup on Failed Deployment
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall sampleproject -n ${{ env.NAMESPACE }} || true
+          helm uninstall testsample -n ${{ env.NAMESPACE }} || true

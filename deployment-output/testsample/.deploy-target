@@ -1,0 +1,5 @@
+cluster_name: aks-cluster-1
+resource_group: AZET-RG-Daas-Platform
+region: westeurope
+cloud_provider: azure
+namespace: testsample

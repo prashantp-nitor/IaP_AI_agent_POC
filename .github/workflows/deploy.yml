@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: testsample
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/129a404c-1efe-42af-8ab0-178c19c79cd9/source.zip?se=2026-07-27T07%3A21%3A36Z&sp=r&sv=2026-06-06&sr=b&sig=kF//Qr%2BX7VkdNEAPSI4GLvhpTOf5M8WJX3OIz%2BPljlY%3D"
+  NAMESPACE: agentic-requests-test
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/162c5ff8-f908-4f2e-b92c-4370363dd3b5/source.zip?se=2026-07-28T19%3A24%3A13Z&sp=r&sv=2026-06-06&sr=b&sig=Xpq/vRXi4oPDOP3KXLcpx6hGpzreFqHpaEzhkmsHE2k%3D"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install testsample ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install agentic-requests-test ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/testsample/helm/templates/database.yaml).
+          # (deployment-output/agentic-requests-test/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,18 +182,18 @@ jobs:
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
-          JOB_ID: "129a404c-1efe-42af-8ab0-178c19c79cd9"
+          JOB_ID: "162c5ff8-f908-4f2e-b92c-4370363dd3b5"
           PROVIDER: "azure"
           REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "testsample"
+          PROJECT_NAME: "agentic-requests-test"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_fd21ul", "POSTGRES_PASSWORD": "iD#9fpe3P1XX2bHeIr!WVc2R", "POSTGRES_USER": "post_pcdgz1"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_7308j1", "POSTGRES_PASSWORD": "38nZsK1^KNRtrogNQ*BCjnAM", "POSTGRES_USER": "post_yph1uu"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -209,4 +209,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall testsample -n ${{ env.NAMESPACE }} || true
+          helm uninstall agentic-requests-test -n ${{ env.NAMESPACE }} || true

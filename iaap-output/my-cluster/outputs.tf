@@ -37,11 +37,3 @@ output "node_role_arn" {
 output "vpc_id" {
   value = module.vpc.vpc_id
 }
-
-output "installed_addons" {
-  value = []
-}
-
-output "deployed_applications" {
-  value = []
-}

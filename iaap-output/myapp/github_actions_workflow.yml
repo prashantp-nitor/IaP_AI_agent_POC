@@ -9,8 +9,10 @@ permissions:
   contents: read
 
 jobs:
-  terraform:
+  plan:
     runs-on: ubuntu-latest
+    outputs:
+      requires_approval: ${{ steps.detect.outputs.requires_approval }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,24 +23,111 @@ jobs:
         env:
           ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
         run: |
-          terraform init                         -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}"                         -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"                         -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}"                         -backend-config="key=myapp/terraform.tfstate"
+          terraform init \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}" \
+            -backend-config="key=myapp/terraform.tfstate"
 
       - name: Terraform Plan
         working-directory: iaap-output/myapp
         env:
+          ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        run: terraform plan -no-color -out=tfplan
+
+      - name: Terraform Show (JSON)
+        working-directory: iaap-output/myapp
+        run: terraform show -json tfplan > plan.json
+
+      - name: Detect Replacement
+        id: detect
+        working-directory: iaap-output/myapp
+        run: |
+          if jq -e '.resource_changes[]? | select((.change.actions | contains(["delete"])) and (.change.actions | contains(["create"])))' plan.json > /dev/null 2>&1; then
+            echo "requires_approval=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "requires_approval=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-myapp
+          path: iaap-output/myapp/tfplan
+
+  apply_auto:
+    needs: plan
+    if: needs.plan.outputs.requires_approval != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-myapp
+          path: iaap-output/myapp
+
+      - name: Terraform Init
+        working-directory: iaap-output/myapp
+        env:
           ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-        run: terraform plan
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}" \
+            -backend-config="key=myapp/terraform.tfstate"
 
       - name: Terraform Apply
         working-directory: iaap-output/myapp
         env:
+          ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        run: terraform apply tfplan
+
+  apply_gated:
+    needs: plan
+    if: needs.plan.outputs.requires_approval == 'true'
+    runs-on: ubuntu-latest
+    environment: terraform-apply-approval
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-myapp
+          path: iaap-output/myapp
+
+      - name: Terraform Init
+        working-directory: iaap-output/myapp
+        env:
           ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-        run: terraform apply -auto-approve
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.AZURE_STORAGE_CONTAINER_NAME || 'deploy-storage' }}" \
+            -backend-config="key=myapp/terraform.tfstate"
+
+      - name: Terraform Apply
+        working-directory: iaap-output/myapp
+        env:
+          ARM_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        run: terraform apply tfplan

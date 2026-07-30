@@ -29,13 +29,13 @@ variable "image" {
 variable "cpu" {
   description = "vCPU cores allocated to the container"
   type        = number
-  default     = 0.5
+  default     = "0.25"
 }
 
 variable "memory" {
   description = "Memory allocated to the container (e.g. 1Gi)"
   type        = string
-  default     = "1Gi"
+  default     = "0.5Gi"
 }
 
 variable "target_port" {
@@ -53,7 +53,7 @@ variable "min_replicas" {
 variable "max_replicas" {
   description = "Maximum number of replicas"
   type        = number
-  default     = 3
+  default     = "5"
 }
 
 variable "ingress_external" {

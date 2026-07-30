@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: trivy-fitcart
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b2b5281c-381f-439b-bba1-50924e09e38a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMmI1MjgxYy0zODFmLTQzOWItYmJhMS01MDkyNGUwOWUzOGEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU0MDgwMTcsImV4cCI6MTc4NTQxMTYxN30.uW2sz-U1TlgYJzbTGrFUckzaXm6pcmRwdO_304AfXP8"
+  NAMESPACE: kart
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0325b5f2-fb13-4622-a5bd-aecbeb43af51/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMzI1YjVmMi1mYjEzLTQ2MjItYTViZC1hZWNiZWI0M2FmNTEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU0MjM5NTcsImV4cCI6MTc4NTQyNzU1N30.TOvm28VFR-lmtm7ao5iFnhKQ9UHqFCM7BXNQZAxZbBo"
 
 jobs:
   build-and-push:
@@ -61,7 +61,7 @@ jobs:
             -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
             -v "$GITHUB_WORKSPACE/app:/usr/src" \
             sonarsource/sonar-scanner-cli:11 \
-            -Dsonar.projectKey=trivy-fitcart \
+            -Dsonar.projectKey=kart \
             -Dsonar.sources=. \
             -Dsonar.qualitygate.wait=false
 
@@ -153,7 +153,7 @@ jobs:
             -v "$GITHUB_WORKSPACE/owasp-reports:/report" \
             owasp/dependency-check:10.0.4 \
             --scan /src \
-            --project "trivy-fitcart" \
+            --project "kart" \
             --format HTML --format JSON \
             --out /report \
             --failOnCVSS 11 \
@@ -217,7 +217,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install trivy-fitcart ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install kart ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -226,7 +226,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/trivy-fitcart/helm/templates/database.yaml).
+          # (deployment-output/kart/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -286,4 +286,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall trivy-fitcart -n ${{ env.NAMESPACE }} || true
+          helm uninstall kart -n ${{ env.NAMESPACE }} || true

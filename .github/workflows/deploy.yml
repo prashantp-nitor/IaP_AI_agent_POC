@@ -14,7 +14,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: trivy-fitcart
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b2b5281c-381f-439b-bba1-50924e09e38a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMmI1MjgxYy0zODFmLTQzOWItYmJhMS01MDkyNGUwOWUzOGEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODUzNDcwMTgsImV4cCI6MTc4NTM1MDYxOH0.PKQp4LPl_ZyA42MyHhAPnYpAYutwh7LCUcE25sbJinI"
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/b2b5281c-381f-439b-bba1-50924e09e38a/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9iMmI1MjgxYy0zODFmLTQzOWItYmJhMS01MDkyNGUwOWUzOGEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU0MDgwMTcsImV4cCI6MTc4NTQxMTYxN30.uW2sz-U1TlgYJzbTGrFUckzaXm6pcmRwdO_304AfXP8"
 
 jobs:
   build-and-push:
@@ -64,37 +64,6 @@ jobs:
             -Dsonar.projectKey=trivy-fitcart \
             -Dsonar.sources=. \
             -Dsonar.qualitygate.wait=false
-
-      - name: Cache OWASP Dependency-Check NVD data
-        uses: actions/cache@v4
-        with:
-          path: dependency-check-data
-          key: dependency-check-data-${{ runner.os }}
-
-      - name: Scan dependencies with OWASP Dependency-Check (report only)
-        continue-on-error: true
-        run: |
-          mkdir -p "$GITHUB_WORKSPACE/owasp-reports" "$GITHUB_WORKSPACE/dependency-check-data"
-          docker run --rm \
-            -u $(id -u):$(id -g) \
-            -v "$GITHUB_WORKSPACE/app:/src" \
-            -v "$GITHUB_WORKSPACE/dependency-check-data:/usr/share/dependency-check/data" \
-            -v "$GITHUB_WORKSPACE/owasp-reports:/report" \
-            owasp/dependency-check:10.0.4 \
-            --scan /src \
-            --project "trivy-fitcart" \
-            --format HTML --format JSON \
-            --out /report \
-            --failOnCVSS 11 \
-            ${{ secrets.NVD_API_KEY != '' && format('--nvdApiKey {0}', secrets.NVD_API_KEY) || '' }}
-
-      - name: Upload OWASP Dependency-Check report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: owasp-dependency-check-report
-          path: owasp-reports/
-          if-no-files-found: ignore
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -165,6 +134,37 @@ jobs:
         with:
           name: trivy-reports
           path: trivy-reports/
+          if-no-files-found: ignore
+
+      - name: Cache OWASP Dependency-Check NVD data
+        uses: actions/cache@v4
+        with:
+          path: dependency-check-data
+          key: dependency-check-data-${{ runner.os }}
+
+      - name: Scan dependencies with OWASP Dependency-Check (report only)
+        continue-on-error: true
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/owasp-reports" "$GITHUB_WORKSPACE/dependency-check-data"
+          docker run --rm \
+            -u $(id -u):$(id -g) \
+            -v "$GITHUB_WORKSPACE/app:/src" \
+            -v "$GITHUB_WORKSPACE/dependency-check-data:/usr/share/dependency-check/data" \
+            -v "$GITHUB_WORKSPACE/owasp-reports:/report" \
+            owasp/dependency-check:10.0.4 \
+            --scan /src \
+            --project "trivy-fitcart" \
+            --format HTML --format JSON \
+            --out /report \
+            --failOnCVSS 11 \
+            ${{ secrets.NVD_API_KEY != '' && format('--nvdApiKey {0}', secrets.NVD_API_KEY) || '' }}
+
+      - name: Upload OWASP Dependency-Check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-dependency-check-report
+          path: owasp-reports/
           if-no-files-found: ignore
 
   deploy-to-kubernetes:

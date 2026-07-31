@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: kart
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0325b5f2-fb13-4622-a5bd-aecbeb43af51/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMzI1YjVmMi1mYjEzLTQ2MjItYTViZC1hZWNiZWI0M2FmNTEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU0MjM5NTcsImV4cCI6MTc4NTQyNzU1N30.TOvm28VFR-lmtm7ao5iFnhKQ9UHqFCM7BXNQZAxZbBo"
+  NAMESPACE: kart1
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0325b5f2-fb13-4622-a5bd-aecbeb43af51/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMzI1YjVmMi1mYjEzLTQ2MjItYTViZC1hZWNiZWI0M2FmNTEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU0NzYwOTIsImV4cCI6MTc4NTQ3OTY5Mn0.u43HBhmWq02buvobPIcStOf3V-g2Kn_p7ZL0hb2_l3o"
 
 jobs:
   build-and-push:
@@ -56,14 +56,57 @@ jobs:
             echo "SONAR_HOST_URL not configured — skipping SonarQube scan."
             exit 0
           fi
+
+          # SonarQube's Java analyzer refuses to run on .java sources without compiled
+          # classes, so compile first when the project is Maven/Gradle based.
+          SONAR_EXTRA=""
+          if find app -name '*.java' -print -quit | grep -q .; then
+            if find app -name pom.xml -print -quit | grep -q .; then
+              echo "Java sources with Maven build detected — compiling for SonarQube."
+              mkdir -p "$GITHUB_WORKSPACE/.m2"
+              docker run --rm \
+                -u $(id -u):$(id -g) \
+                -v "$GITHUB_WORKSPACE/app:/usr/src/app" \
+                -v "$GITHUB_WORKSPACE/.m2:/var/maven/.m2" \
+                -e MAVEN_CONFIG=/var/maven/.m2 \
+                -w /usr/src/app \
+                maven:3.9-eclipse-temurin-17 \
+                mvn -B -q -DskipTests -Duser.home=/var/maven compile \
+                || echo "Maven compile failed — Java sources will be excluded from the scan."
+            elif find app \( -name 'build.gradle' -o -name 'build.gradle.kts' \) -print -quit | grep -q .; then
+              echo "Java sources with Gradle build detected — compiling for SonarQube."
+              mkdir -p "$GITHUB_WORKSPACE/.gradle"
+              docker run --rm \
+                -u $(id -u):$(id -g) \
+                -v "$GITHUB_WORKSPACE/app:/usr/src/app" \
+                -v "$GITHUB_WORKSPACE/.gradle:/tmp/gradle-home" \
+                -e GRADLE_USER_HOME=/tmp/gradle-home \
+                -w /usr/src/app \
+                gradle:8-jdk17 \
+                gradle --no-daemon classes \
+                || echo "Gradle compile failed — Java sources will be excluded from the scan."
+            fi
+
+            BINARIES=$(find app -type d \( -path '*/target/classes' -o -path '*/build/classes/java/main' \) -printf '%P,' 2>/dev/null | sed 's/,$//')
+            if [ -n "$BINARIES" ]; then
+              echo "Using sonar.java.binaries=$BINARIES"
+              SONAR_EXTRA="-Dsonar.java.binaries=$BINARIES"
+            else
+              echo "No compiled classes found — excluding Java sources from the scan."
+              SONAR_EXTRA="-Dsonar.exclusions=**/*.java"
+            fi
+          fi
+
+          set -f  # keep **/*.java from being glob-expanded when $SONAR_EXTRA is split
           docker run --rm \
             -e SONAR_HOST_URL="${{ secrets.SONAR_HOST_URL }}" \
             -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
             -v "$GITHUB_WORKSPACE/app:/usr/src" \
             sonarsource/sonar-scanner-cli:11 \
-            -Dsonar.projectKey=kart \
+            -Dsonar.projectKey=kart1 \
             -Dsonar.sources=. \
-            -Dsonar.qualitygate.wait=false
+            -Dsonar.qualitygate.wait=false \
+            $SONAR_EXTRA
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -153,7 +196,7 @@ jobs:
             -v "$GITHUB_WORKSPACE/owasp-reports:/report" \
             owasp/dependency-check:10.0.4 \
             --scan /src \
-            --project "kart" \
+            --project "kart1" \
             --format HTML --format JSON \
             --out /report \
             --failOnCVSS 11 \
@@ -217,7 +260,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install kart ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install kart1 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -226,7 +269,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/kart/helm/templates/database.yaml).
+          # (deployment-output/kart1/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -286,4 +329,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall kart -n ${{ env.NAMESPACE }} || true
+          helm uninstall kart1 -n ${{ env.NAMESPACE }} || true

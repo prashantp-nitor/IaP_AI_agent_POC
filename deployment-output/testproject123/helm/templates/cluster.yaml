@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: testproject123-sa
+  namespace: testproject123
+  annotations:
+    # Azure: set this to your managed identity client ID after provisioning
+    azure.workload.identity/client-id: "PLACEHOLDER_MANAGED_IDENTITY_CLIENT_ID"

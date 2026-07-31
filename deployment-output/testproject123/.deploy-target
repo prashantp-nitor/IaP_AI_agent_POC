@@ -1,0 +1,5 @@
+cluster_name: sample-aks-cluster-1
+resource_group: AZET-RG-Daas-Platform
+region: westus
+cloud_provider: azure
+namespace: testproject123

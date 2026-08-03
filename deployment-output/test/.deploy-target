@@ -1,0 +1,5 @@
+cluster_name: agentic-requests-cluster
+resource_group: AZET-RG-Daas-Platform
+region: eastus
+cloud_provider: azure
+namespace: test

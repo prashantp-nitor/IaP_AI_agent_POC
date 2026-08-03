@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: testproject123
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/b40afd50-f63f-4ba3-80a1-d2db81843a94/source.zip?se=2026-07-31T07%3A26%3A11Z&sp=r&sv=2026-06-06&sr=b&sig=jjuk/t6hmsQGhzmkvdsHlC7W05i9y3fhVudzm8I3%2BBA%3D"
+  NAMESPACE: test
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/52db7679-e2ba-4101-b1f8-23f8c92fd49e/source.zip?se=2026-08-03T17%3A40%3A34Z&sp=r&sv=2026-06-06&sr=b&sig=byYpE%2BdMEs88MT%2BPPjM3sYObAUBEOAGJXs9mLSOzFgA%3D"
 
 jobs:
   build-and-push:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install testproject123 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install test ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +122,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/testproject123/helm/templates/database.yaml).
+          # (deployment-output/test/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,18 +182,18 @@ jobs:
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
-          JOB_ID: "b40afd50-f63f-4ba3-80a1-d2db81843a94"
+          JOB_ID: "52db7679-e2ba-4101-b1f8-23f8c92fd49e"
           PROVIDER: "azure"
           REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "testproject123"
+          PROJECT_NAME: "test"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_07y78m", "POSTGRES_PASSWORD": "E^sWn^6yJ8zH9KGrEjb86EGz", "POSTGRES_USER": "post_lqxpg7"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_3n94tk", "POSTGRES_PASSWORD": "Y!2CM^ucg%W^MLenwI29tovU", "POSTGRES_USER": "post_x7830v"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -209,4 +209,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall testproject123 -n ${{ env.NAMESPACE }} || true
+          helm uninstall test -n ${{ env.NAMESPACE }} || true

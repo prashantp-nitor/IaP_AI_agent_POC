@@ -11,7 +11,7 @@ variable "db_name" {
 variable "server_name" {
   description = "Logical SQL server name"
   type        = string
-  default     = "srv"
+  default     = "mysrv"
 }
 
 variable "sku_name" {
@@ -29,5 +29,5 @@ variable "region" {
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
-  default     = "rg"
+  default     = "rg1"
 }

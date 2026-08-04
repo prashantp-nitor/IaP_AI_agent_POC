@@ -1,0 +1,3 @@
+cluster_name: aks-fitcart-dev
+provider: azure
+resource_group: AZET-RG-Daas-Platform

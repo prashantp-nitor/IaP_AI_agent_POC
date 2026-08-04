@@ -13,8 +13,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: kart1
-  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/0325b5f2-fb13-4622-a5bd-aecbeb43af51/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS8wMzI1YjVmMi1mYjEzLTQ2MjItYTViZC1hZWNiZWI0M2FmNTEvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU0NzYwOTIsImV4cCI6MTc4NTQ3OTY5Mn0.u43HBhmWq02buvobPIcStOf3V-g2Kn_p7ZL0hb2_l3o"
+  NAMESPACE: fitkart2
+  SOURCE_ZIP_URL: "https://hfxfwdthcbetvpwqgzbr.supabase.co/storage/v1/object/sign/deployment-source/fb6af9ba-0d57-4d81-b7ef-9f53675b2b9f/source.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mNjgzZTM4Ni0yNTc3LTQ4ODYtYmNmYi1jZTdkYzBjYWRjNjIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkZXBsb3ltZW50LXNvdXJjZS9mYjZhZjliYS0wZDU3LTRkODEtYjdlZi05ZjUzNjc1YjJiOWYvc291cmNlLnppcCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODU4MzU1MTQsImV4cCI6MTc4NTgzOTExNH0.hRS1EpkVsQPduaiRhHsG0HGbFZGFuhyRj4AZz3cFMVU"
 
 jobs:
   build-and-push:
@@ -103,7 +103,7 @@ jobs:
             -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
             -v "$GITHUB_WORKSPACE/app:/usr/src" \
             sonarsource/sonar-scanner-cli:11 \
-            -Dsonar.projectKey=kart1 \
+            -Dsonar.projectKey=fitkart2 \
             -Dsonar.sources=. \
             -Dsonar.qualitygate.wait=false \
             $SONAR_EXTRA
@@ -196,7 +196,7 @@ jobs:
             -v "$GITHUB_WORKSPACE/owasp-reports:/report" \
             owasp/dependency-check:10.0.4 \
             --scan /src \
-            --project "kart1" \
+            --project "fitkart2" \
             --format HTML --format JSON \
             --out /report \
             --failOnCVSS 11 \
@@ -260,7 +260,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install kart1 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install fitkart2 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -269,7 +269,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/kart1/helm/templates/database.yaml).
+          # (deployment-output/fitkart2/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -329,4 +329,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall kart1 -n ${{ env.NAMESPACE }} || true
+          helm uninstall fitkart2 -n ${{ env.NAMESPACE }} || true

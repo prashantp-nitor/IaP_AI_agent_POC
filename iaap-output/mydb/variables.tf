@@ -17,7 +17,7 @@ variable "server_name" {
 variable "sku_name" {
   description = "Database service tier (e.g. S0, GP_Gen5_2, BC_Gen5_4)"
   type        = string
-  default     = "S0"
+  default     = "GP_Gen5_8"
 }
 
 variable "region" {

@@ -21,7 +21,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier3app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A03%3A24Z&sp=r&sv=2026-06-06&sr=b&sig=lpgTY4M8QQPP/p0DXqj4sLaqR1aRNQCpHhhUV9SK3fE%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A03%3A41Z&sp=r&sv=2026-06-06&sr=b&sig=w5BKLa9bC8LC1bixM%2BKNMpu8fSDpIxed0PkNJHlDVv0%3D"
   JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 

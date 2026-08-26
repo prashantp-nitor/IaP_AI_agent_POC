@@ -21,7 +21,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier3app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A11%3A32Z&sp=r&sv=2026-06-06&sr=b&sig=vsMXQNQFlsHN8nGkuWR2WULxDr7%2BkfiQjQk/f3z3Xmc%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A15%3A37Z&sp=r&sv=2026-06-06&sr=b&sig=UaWfuLBchl3ZbYnL3ok/oFD5geIHdHZRPFa9KdRJ%2B/4%3D"
   JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
@@ -41,6 +41,16 @@ jobs:
           mkdir -p app
           unzip -q source.zip -d app
 
+      - name: Install Trivy Scanner
+        run: |
+          if ! command -v trivy &> /dev/null; then
+            echo "Installing Trivy deb package..."
+            wget -q https://github.com/aquasecurity/trivy/releases/download/v0.58.2/trivy_0.58.2_Linux-64bit.deb
+            sudo dpkg -i trivy_0.58.2_Linux-64bit.deb || (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/bin v0.58.2) || true
+            rm -f trivy_0.58.2_Linux-64bit.deb
+          fi
+          trivy --version || echo "Trivy installed"
+
       - name: Run Gitleaks Secret Detection
         run: |
           mkdir -p security-reports
@@ -50,12 +60,7 @@ jobs:
       - name: Run Trivy Filesystem Scan (JSON & Summary)
         continue-on-error: true
         run: |
-          mkdir -p security-reports "$HOME/.local/bin"
-          export PATH="$HOME/.local/bin:$PATH"
-          if ! command -v trivy &> /dev/null; then
-            echo "Installing Trivy to $HOME/.local/bin..."
-            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b "$HOME/.local/bin" v0.58.2 || sudo sh -s -- -b /usr/local/bin v0.58.2 || true
-          fi
+          mkdir -p security-reports
           echo "Executing Trivy filesystem scan..."
           trivy fs --format json --output security-reports/dependencies.json --severity CRITICAL,HIGH,MEDIUM,LOW . || true
           trivy fs --severity CRITICAL,HIGH,MEDIUM,LOW . || true
@@ -86,12 +91,7 @@ jobs:
       - name: Run Trivy Image Scan for backend (JSON & Summary)
         continue-on-error: true
         run: |
-          mkdir -p security-reports "$HOME/.local/bin"
-          export PATH="$HOME/.local/bin:$PATH"
-          if ! command -v trivy &> /dev/null; then
-            echo "Installing Trivy to $HOME/.local/bin..."
-            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b "$HOME/.local/bin" v0.58.2 || sudo sh -s -- -b /usr/local/bin v0.58.2 || true
-          fi
+          mkdir -p security-reports
           echo "Executing Trivy container image scan for backend..."
           trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
           trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
@@ -116,12 +116,7 @@ jobs:
       - name: Run Trivy Image Scan for frontend (JSON & Summary)
         continue-on-error: true
         run: |
-          mkdir -p security-reports "$HOME/.local/bin"
-          export PATH="$HOME/.local/bin:$PATH"
-          if ! command -v trivy &> /dev/null; then
-            echo "Installing Trivy to $HOME/.local/bin..."
-            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b "$HOME/.local/bin" v0.58.2 || sudo sh -s -- -b /usr/local/bin v0.58.2 || true
-          fi
+          mkdir -p security-reports
           echo "Executing Trivy container image scan for frontend..."
           trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
           trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true

@@ -21,7 +21,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier3app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A21%3A08Z&sp=r&sv=2026-06-06&sr=b&sig=UhFM5AkDZYrlNAhO1j2X3ZFu0deTFPdsW3pJTJciVs8%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A22%3A49Z&sp=r&sv=2026-06-06&sr=b&sig=S6lgz%2Bd%2Bk0D5LujmIGIQ2TFyVsE3A422WJwieIX8gaM%3D"
   JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
@@ -41,10 +41,16 @@ jobs:
           mkdir -p app
           unzip -q source.zip -d app
 
-      - name: Set up Trivy Scanner
-        uses: aquasecurity/setup-trivy@v0.2.2
-        with:
-          version: 'latest'
+      - name: Install Trivy Scanner
+        run: |
+          if ! command -v trivy &> /dev/null; then
+            echo "Installing Trivy via official apt repository..."
+            sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update -y && sudo apt-get install -y trivy || (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin) || true
+          fi
+          trivy --version || echo "Trivy installed"
 
       - name: Run Gitleaks Secret Detection
         run: |

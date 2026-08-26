@@ -11,7 +11,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "job-err-03"
+        default: "job-null-body"
 
 permissions:
   id-token: write
@@ -22,7 +22,7 @@ env:
   REGISTRY: 
   NAMESPACE: default
   SOURCE_ZIP_URL: ""
-  JOB_ID: ${{ inputs.job_id || 'job-err-03' }}
+  JOB_ID: ${{ inputs.job_id || 'job-null-body' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
 jobs:
@@ -64,7 +64,7 @@ jobs:
           SONAR_HOST_URL: "https://sonarcloud.io"
         with:
           args: >
-            -Dsonar.projectKey=daas-job-err-03
+            -Dsonar.projectKey=daas-job-null-body
             
             -Dsonar.sources=.
       

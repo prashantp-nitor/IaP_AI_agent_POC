@@ -20,7 +20,7 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
+  REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier3app
   SOURCE_ZIP_URL: ""
   JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
@@ -59,14 +59,65 @@ jobs:
 
       
 
-      - name: Log in to Azure Container Registry
-        if: env.REGISTRY != '' || secrets.REGISTRY_USERNAME != '' || secrets.ACR_NAME != '' || vars.ACR_NAME != ''
+      - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY != '' && env.REGISTRY || (secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || (vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '')) }}
-          username: ${{ secrets.REGISTRY_USERNAME || secrets.ACR_USERNAME || secrets.AZURE_CLIENT_ID }}
-          password: ${{ secrets.REGISTRY_PASSWORD || secrets.ACR_PASSWORD || secrets.AZURE_CLIENT_SECRET }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      
+      - name: Build backend container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/backend
+          file: ./app/backend/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/backend:${{ github.sha }}
+          
+          
+          
+
+      - name: Run Trivy Image Scan for backend (JSON & HTML)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          if ! command -v trivy &> /dev/null; then
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.58.2
+          fi
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+          trivy image --format template --template "@contrib/html.tpl" --output security-reports/image-backend.html --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+
+      - name: Push backend image
+        run: |
+          docker push ${{ env.REGISTRY }}/backend:${{ github.sha }}
+      
+      - name: Build frontend container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/frontend
+          file: ./app/frontend/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
+          
+          
+          
+
+      - name: Run Trivy Image Scan for frontend (JSON & HTML)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          if ! command -v trivy &> /dev/null; then
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.58.2
+          fi
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
+          trivy image --format template --template "@contrib/html.tpl" --output security-reports/image-frontend.html --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ env.REGISTRY }}/frontend:${{ github.sha }}
       
 
       - name: Upload Security Reports to Azure Blob Storage

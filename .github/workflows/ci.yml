@@ -1,0 +1,148 @@
+name: CI Security Scan and Container Build
+
+on:
+  push:
+    branches:
+      - "networking"
+    paths:
+      - "deployment-output/**"
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "DaaS Job ID"
+        required: true
+        default: "7930f155-5bb4-470e-80a3-f9313c7c085a"
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+env:
+  REGISTRY: azdaasdeployment.azurecr.io
+  NAMESPACE: tier3app
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T07%3A53%3A17Z&sp=r&sv=2026-06-06&sr=b&sig=RW4I0AZ6Yo9ksr5ksYbGnRvO8usc5nMTbqDN8q1JbeE%3D"
+  JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
+  AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
+
+jobs:
+  ci-security-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download source artifact
+        if: env.SOURCE_ZIP_URL != ''
+        run: |
+          curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
+          mkdir -p app
+          unzip -q source.zip -d app
+
+      - name: Run Gitleaks Secret Detection
+        run: |
+          mkdir -p security-reports
+          docker run --rm -v "$GITHUB_WORKSPACE:/repo" zricethezav/gitleaks:v8.18.4 detect             --source="/repo"             --report-path="/repo/security-reports/gitleaks.json"             --report-format=json             --redact             --exit-code=0 || true
+
+      - name: Run Trivy Filesystem Scan (JSON & HTML)
+        run: |
+          mkdir -p security-reports
+          if ! command -v trivy &> /dev/null; then
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.58.2
+          fi
+          trivy fs --format json --output security-reports/dependencies.json --severity CRITICAL,HIGH,MEDIUM,LOW . || true
+          trivy fs --format template --template "@contrib/html.tpl" --output security-reports/dependencies.html --severity CRITICAL,HIGH,MEDIUM,LOW . || echo "HTML template skipped"
+
+      
+      
+      - name: Run SonarQube / SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: "https://sonarcloud.io"
+        with:
+          args: >
+            -Dsonar.projectKey=daas-tier3app
+            
+            -Dsonar.sources=.
+      
+      
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      
+      - name: Build backend container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/backend
+          file: ./app/backend/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/backend:${{ github.sha }}
+          
+          
+          
+
+      - name: Run Trivy Image Scan for backend (JSON & HTML)
+        run: |
+          mkdir -p security-reports
+          if ! command -v trivy &> /dev/null; then
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.58.2
+          fi
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+          trivy image --format template --template "@contrib/html.tpl" --output security-reports/image-backend.html --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || echo "HTML image render skipped"
+
+      - name: Push backend image
+        run: |
+          docker push ${{ env.REGISTRY }}/backend:${{ github.sha }}
+      
+      - name: Build frontend container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/frontend
+          file: ./app/frontend/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
+          
+          
+          
+
+      - name: Run Trivy Image Scan for frontend (JSON & HTML)
+        run: |
+          mkdir -p security-reports
+          if ! command -v trivy &> /dev/null; then
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.58.2
+          fi
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
+          trivy image --format template --template "@contrib/html.tpl" --output security-reports/image-frontend.html --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || echo "HTML image render skipped"
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ env.REGISTRY }}/frontend:${{ github.sha }}
+      
+
+      - name: Upload Security Reports to Azure Blob Storage
+        if: always()
+        run: |
+          echo "Uploading security reports to Azure Blob container ${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}/${{ env.JOB_ID }}..."
+          if [ -n "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" ]; then
+            az storage blob upload-batch               --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"               --destination "${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}"               --source security-reports/               --destination-path "${{ env.JOB_ID }}"               --overwrite || echo "Warning: Azure storage upload failed, relying on artifact fallback."
+          else
+            echo "AZURE_STORAGE_CONNECTION_STRING not configured. Using workflow artifact storage."
+          fi
+
+      - name: Upload Security Reports as Workflow Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-${{ env.JOB_ID }}
+          path: security-reports/
+          retention-days: 30

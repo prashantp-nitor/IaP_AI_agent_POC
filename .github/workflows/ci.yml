@@ -21,7 +21,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier3app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A15%3A37Z&sp=r&sv=2026-06-06&sr=b&sig=UaWfuLBchl3ZbYnL3ok/oFD5geIHdHZRPFa9KdRJ%2B/4%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A21%3A08Z&sp=r&sv=2026-06-06&sr=b&sig=UhFM5AkDZYrlNAhO1j2X3ZFu0deTFPdsW3pJTJciVs8%3D"
   JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
@@ -41,15 +41,10 @@ jobs:
           mkdir -p app
           unzip -q source.zip -d app
 
-      - name: Install Trivy Scanner
-        run: |
-          if ! command -v trivy &> /dev/null; then
-            echo "Installing Trivy deb package..."
-            wget -q https://github.com/aquasecurity/trivy/releases/download/v0.58.2/trivy_0.58.2_Linux-64bit.deb
-            sudo dpkg -i trivy_0.58.2_Linux-64bit.deb || (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/bin v0.58.2) || true
-            rm -f trivy_0.58.2_Linux-64bit.deb
-          fi
-          trivy --version || echo "Trivy installed"
+      - name: Set up Trivy Scanner
+        uses: aquasecurity/setup-trivy@v0.2.2
+        with:
+          version: 'latest'
 
       - name: Run Gitleaks Secret Detection
         run: |
@@ -130,6 +125,7 @@ jobs:
       - name: Upload Security Reports to Azure Blob Storage
         if: always()
         run: |
+          mkdir -p security-reports
           sudo chmod -R 777 security-reports || true
           echo "Uploading security reports to Azure Blob container ${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}/${{ env.JOB_ID }}..."
           if [ -n "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" ]; then

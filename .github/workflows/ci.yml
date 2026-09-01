@@ -11,7 +11,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "7930f155-5bb4-470e-80a3-f9313c7c085a"
+        default: "0d4c8d31-1d17-41fc-afc7-916509d793db"
 
 permissions:
   id-token: write
@@ -20,9 +20,9 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tier3app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-08-26T11%3A22%3A49Z&sp=r&sv=2026-06-06&sr=b&sig=S6lgz%2Bd%2Bk0D5LujmIGIQ2TFyVsE3A422WJwieIX8gaM%3D"
-  JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
+  NAMESPACE: tier4app
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/0d4c8d31-1d17-41fc-afc7-916509d793db/source.zip?se=2026-09-01T10%3A58%3A46Z&sp=r&sv=2026-06-06&sr=b&sig=m7qXLfSeycy6vYiA44RCBqHNb5NTpgJ7Z113jGyxXGU%3D"
+  JOB_ID: ${{ inputs.job_id || '0d4c8d31-1d17-41fc-afc7-916509d793db' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
 jobs:

@@ -1,11 +1,18 @@
 name: Deploy DaaS Workload via Helm
 
 on:
+  push:
+    branches:
+      - "networking"
+      
+    paths:
+      - "deployment-output/tier3app/**"
+      - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
-        required: true
+        required: false
         default: "7930f155-5bb4-470e-80a3-f9313c7c085a"
       image_tag:
         description: "Container Image Tag"
@@ -145,7 +152,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_bp1vyu", "POSTGRES_PASSWORD": "VlMGqB0\u0026lEV5XGv%*GLr9iCP", "POSTGRES_USER": "post_ltjzvz"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_aztxl7", "POSTGRES_PASSWORD": "say9fgO7AwdnqtCa5j5^Nr0R", "POSTGRES_USER": "post_hm6vbx"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

@@ -10,11 +10,14 @@ on:
 permissions:
   id-token: write
   contents: read
+  security-events: write
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: test
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/52db7679-e2ba-4101-b1f8-23f8c92fd49e/source.zip?se=2026-08-03T17%3A40%3A34Z&sp=r&sv=2026-06-06&sr=b&sig=byYpE%2BdMEs88MT%2BPPjM3sYObAUBEOAGJXs9mLSOzFgA%3D"
+  NAMESPACE: tier3app
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7930f155-5bb4-470e-80a3-f9313c7c085a/source.zip?se=2026-09-01T06%3A49%3A47Z&sp=r&sv=2026-06-06&sr=b&sig=wKn/dz2%2Bl64Q1rYjvsd/%2BD4rCT1%2Bah7szM1RDSNCQeU%3D"
+  JOB_ID: "7930f155-5bb4-470e-80a3-f9313c7c085a"
+  AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
 jobs:
   build-and-push:
@@ -22,15 +25,43 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download source artifact
+        if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-
-      - name: Extract source
-        run: |
-          mkdir app
+          mkdir -p app
           unzip -q source.zip -d app
+
+      - name: Install Trivy Scanner
+        run: |
+          if ! command -v trivy &> /dev/null; then
+            echo "Installing Trivy via official apt repository..."
+            sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update -y && sudo apt-get install -y trivy || (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin) || true
+          fi
+          trivy --version || echo "Trivy installed"
+
+      - name: Run Gitleaks Secret Detection
+        run: |
+          mkdir -p security-reports
+          docker run --rm -v "$GITHUB_WORKSPACE:/repo" zricethezav/gitleaks:v8.18.4 detect             --source="/repo"             --report-path="/repo/security-reports/gitleaks.json"             --report-format=json             --redact             --exit-code=0 || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Run Trivy Filesystem Scan (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy filesystem scan..."
+          trivy fs --format json --output security-reports/dependencies.json --severity CRITICAL,HIGH,MEDIUM,LOW . || true
+          trivy fs --severity CRITICAL,HIGH,MEDIUM,LOW . || true
+          sudo chmod -R 777 security-reports || true
+
+      
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -40,28 +71,76 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       
-      - name: Build and Push backend image
+      - name: Build backend container image
         uses: docker/build-push-action@v5
         with:
           context: ./app/backend
           file: ./app/backend/Dockerfile
-          push: true
+          push: false
+          load: true
           tags: ${{ env.REGISTRY }}/backend:${{ github.sha }}
           
           
           
+
+      - name: Run Trivy Image Scan for backend (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy container image scan for backend..."
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Push backend image
+        run: |
+          docker push ${{ env.REGISTRY }}/backend:${{ github.sha }}
       
-      - name: Build and Push frontend image
+      - name: Build frontend container image
         uses: docker/build-push-action@v5
         with:
           context: ./app/frontend
           file: ./app/frontend/Dockerfile
-          push: true
+          push: false
+          load: true
           tags: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
           
           
           
+
+      - name: Run Trivy Image Scan for frontend (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy container image scan for frontend..."
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ env.REGISTRY }}/frontend:${{ github.sha }}
       
+
+      - name: Upload Security Reports to Azure Blob Storage
+        if: always()
+        run: |
+          mkdir -p security-reports
+          sudo chmod -R 777 security-reports || true
+          echo "Uploading security reports to Azure Blob container security-reports/7930f155-5bb4-470e-80a3-f9313c7c085a..."
+          if [ -n "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" ]; then
+            az storage blob upload-batch               --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"               --destination "security-reports/7930f155-5bb4-470e-80a3-f9313c7c085a"               --source security-reports/               --overwrite || echo "Warning: Azure storage upload failed, relying on artifact fallback."
+          else
+            echo "AZURE_STORAGE_CONNECTION_STRING not configured in secrets. Using workflow artifact storage."
+          fi
+
+      - name: Upload Security Reports as Workflow Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-7930f155-5bb4-470e-80a3-f9313c7c085a
+          path: security-reports/
+          retention-days: 30
 
   deploy-to-kubernetes:
     needs: build-and-push
@@ -113,7 +192,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install test ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install tier3app ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -122,7 +201,7 @@ jobs:
             --set services.frontend.image.tag=${{ github.sha }} \
             --timeout 5m0s
           # DB credentials are already embedded in the generated Secret manifest
-          # (deployment-output/test/helm/templates/database.yaml).
+          # (deployment-output/tier3app/helm/templates/database.yaml).
           # Helm applies the Secret as part of the chart — no --set overrides needed.
 
       - name: Wait for Frontend LoadBalancer IP
@@ -182,18 +261,18 @@ jobs:
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
-          JOB_ID: "52db7679-e2ba-4101-b1f8-23f8c92fd49e"
+          JOB_ID: "7930f155-5bb4-470e-80a3-f9313c7c085a"
           PROVIDER: "azure"
-          REGION: "eastus"
+          REGION: "westus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "test"
+          PROJECT_NAME: "tier3app"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_3n94tk", "POSTGRES_PASSWORD": "Y!2CM^ucg%W^MLenwI29tovU", "POSTGRES_USER": "post_x7830v"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_3wdrww", "POSTGRES_PASSWORD": "JitU0h\u0026#3TgZh06xfheucve!", "POSTGRES_USER": "post_f6r0uh"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -209,4 +288,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test -n ${{ env.NAMESPACE }} || true
+          helm uninstall tier3app -n ${{ env.NAMESPACE }} || true

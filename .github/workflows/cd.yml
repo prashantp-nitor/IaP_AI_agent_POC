@@ -80,9 +80,14 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install tier3app ./${{ steps.resolve_target.outputs.helm_dir }}             --namespace ${{ env.NAMESPACE }}             --create-namespace             --set global.registry=${{ env.REGISTRY }}             --set global.deploymentStrategy=rolling
-            --set services.backend.image.tag=${{ github.sha }}
-            --set services.frontend.image.tag=${{ github.sha }}             --timeout 5m0s
+          helm upgrade --install tier3app ./${{ steps.resolve_target.outputs.helm_dir }} \
+            --namespace ${{ env.NAMESPACE }} \
+            --create-namespace \
+            --set global.registry=${{ env.REGISTRY }} \
+            --set global.deploymentStrategy=rolling \
+            --set services.backend.image.tag=${{ github.sha }} \
+            --set services.frontend.image.tag=${{ github.sha }} \
+            --timeout 5m0s
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
@@ -152,7 +157,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_aztxl7", "POSTGRES_PASSWORD": "say9fgO7AwdnqtCa5j5^Nr0R", "POSTGRES_USER": "post_hm6vbx"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_wuxnlo", "POSTGRES_PASSWORD": "1tQU2bucVstr5*%TWNww79*N", "POSTGRES_USER": "post_klaomg"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

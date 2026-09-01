@@ -94,11 +94,11 @@ database:
   # these in CI — the Secret manifest already contains the real values.
   auth:
     
-    POSTGRES_DB: "post_aztxl7"
+    POSTGRES_DB: "post_wuxnlo"
     
-    POSTGRES_USER: "post_hm6vbx"
+    POSTGRES_USER: "post_klaomg"
     
-    POSTGRES_PASSWORD: "say9fgO7AwdnqtCa5j5^Nr0R"
+    POSTGRES_PASSWORD: "1tQU2bucVstr5*%TWNww79*N"
     
 
 

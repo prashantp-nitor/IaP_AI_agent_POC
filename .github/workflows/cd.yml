@@ -145,7 +145,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_3wdrww", "POSTGRES_PASSWORD": "JitU0h\u0026#3TgZh06xfheucve!", "POSTGRES_USER": "post_f6r0uh"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_bp1vyu", "POSTGRES_PASSWORD": "VlMGqB0\u0026lEV5XGv%*GLr9iCP", "POSTGRES_USER": "post_ltjzvz"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

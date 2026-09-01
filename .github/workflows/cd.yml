@@ -6,14 +6,14 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/tier3app/**"
+      - "deployment-output/tier4app/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "7930f155-5bb4-470e-80a3-f9313c7c085a"
+        default: "0d4c8d31-1d17-41fc-afc7-916509d793db"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -25,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tier3app
-  JOB_ID: ${{ inputs.job_id || '7930f155-5bb4-470e-80a3-f9313c7c085a' }}
+  NAMESPACE: tier4app
+  JOB_ID: ${{ inputs.job_id || '0d4c8d31-1d17-41fc-afc7-916509d793db' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -80,7 +80,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install tier3app ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install tier4app ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -148,16 +148,16 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "westus"
+          REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "tier3app"
+          PROJECT_NAME: "tier4app"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_wuxnlo", "POSTGRES_PASSWORD": "1tQU2bucVstr5*%TWNww79*N", "POSTGRES_USER": "post_klaomg"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_iwpxal", "POSTGRES_PASSWORD": "hMUNY0Yluc2jH!X0JcrwbR#V", "POSTGRES_USER": "post_9a58rf"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -173,4 +173,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall tier3app -n ${{ env.NAMESPACE }} || true
+          helm uninstall tier4app -n ${{ env.NAMESPACE }} || true

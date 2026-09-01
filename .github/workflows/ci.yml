@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 72875e4e-ebb2-4a41-8470-377e6727f8f2 @ 2026-09-01T10:24:44Z
+# DaaS CI Dispatch: 72875e4e-ebb2-4a41-8470-377e6727f8f2 @ 2026-09-01T10:32:56Z
 name: CI Security Scan and Container Build
 
 on:
@@ -22,7 +22,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier5app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/72875e4e-ebb2-4a41-8470-377e6727f8f2/source.zip?se=2026-09-01T11%3A24%3A44Z&sp=r&sv=2026-06-06&sr=b&sig=S6S4qM4KFOkA4ma3BQ1KPGtdaW5OL9nZmqK4oLecFJM%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/72875e4e-ebb2-4a41-8470-377e6727f8f2/source.zip?se=2026-09-01T11%3A32%3A56Z&sp=r&sv=2026-06-06&sr=b&sig=M68UiNRaQImnybfJ1y6GjMLnEtvFffpN9VD6fp1EV1o%3D"
   JOB_ID: ${{ inputs.job_id || '72875e4e-ebb2-4a41-8470-377e6727f8f2' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 

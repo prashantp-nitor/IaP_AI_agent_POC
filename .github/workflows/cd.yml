@@ -6,14 +6,14 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/tier4app/**"
+      - "deployment-output/tier5app/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "0d4c8d31-1d17-41fc-afc7-916509d793db"
+        default: "72875e4e-ebb2-4a41-8470-377e6727f8f2"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -25,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tier4app
-  JOB_ID: ${{ inputs.job_id || '0d4c8d31-1d17-41fc-afc7-916509d793db' }}
+  NAMESPACE: tier5app
+  JOB_ID: ${{ inputs.job_id || '72875e4e-ebb2-4a41-8470-377e6727f8f2' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -80,7 +80,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install tier4app ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install tier5app ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -150,14 +150,14 @@ jobs:
           PROVIDER: "azure"
           REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "tier4app"
+          PROJECT_NAME: "tier5app"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_iwpxal", "POSTGRES_PASSWORD": "hMUNY0Yluc2jH!X0JcrwbR#V", "POSTGRES_USER": "post_9a58rf"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_ruhkl0", "POSTGRES_PASSWORD": "cw2pbJi#U8To9oDAqAFJyQyw", "POSTGRES_USER": "post_kp6j67"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -173,4 +173,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall tier4app -n ${{ env.NAMESPACE }} || true
+          helm uninstall tier5app -n ${{ env.NAMESPACE }} || true

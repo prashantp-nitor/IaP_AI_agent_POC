@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T06:21:58Z
+# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T06:35:00Z
 name: CI Security Scan and Container Build
 
 on:
@@ -22,7 +22,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier7app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T07%3A21%3A58Z&sp=r&sv=2026-06-06&sr=b&sig=hqUyibgxA4vtbKDtVmCWu3rh0xuhkM88hegY1GWhlAA%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T07%3A35%3A00Z&sp=r&sv=2026-06-06&sr=b&sig=EtH8qvG1YVkHQAhnFY9xDqGraoKsfD12vFS3YepEskA%3D"
   JOB_ID: ${{ inputs.job_id || 'a3d195c2-81b8-40ac-85a9-20886e678520' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   INFISICAL_PROJECT_SLUG: "06974d30-99aa-48a4-a302-2f456059e374"
@@ -59,7 +59,7 @@ jobs:
         uses: Infisical/secrets-action@v1.0.16
         continue-on-error: true
         with:
-          method: "universal-auth"
+          method: "universal"
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           project-slug: "06974d30-99aa-48a4-a302-2f456059e374"
@@ -110,14 +110,18 @@ jobs:
             ORG_VAR="${PREFIX}_SONAR_ORGANIZATION"
             KEY_VAR="${PREFIX}_SONAR_PROJECT_KEY"
 
-            if [ -n "${!TOKEN_VAR:-}" ] && [ -z "${SONAR_TOKEN:-}" ]; then
-              echo "SONAR_TOKEN=${!TOKEN_VAR}" >> $GITHUB_ENV
+            TOKEN_VAL="$(eval "echo \${$TOKEN_VAR:-}")"
+            ORG_VAL="$(eval "echo \${$ORG_VAR:-}")"
+            KEY_VAL="$(eval "echo \${$KEY_VAR:-}")"
+
+            if [ -n "$TOKEN_VAL" ] && [ -z "${SONAR_TOKEN:-}" ]; then
+              echo "SONAR_TOKEN=$TOKEN_VAL" >> $GITHUB_ENV
             fi
-            if [ -n "${!ORG_VAR:-}" ] && [ -z "${SONAR_ORGANIZATION:-}" ]; then
-              echo "SONAR_ORGANIZATION=${!ORG_VAR}" >> $GITHUB_ENV
+            if [ -n "$ORG_VAL" ] && [ -z "${SONAR_ORGANIZATION:-}" ]; then
+              echo "SONAR_ORGANIZATION=$ORG_VAL" >> $GITHUB_ENV
             fi
-            if [ -n "${!KEY_VAR:-}" ] && [ -z "${SONAR_PROJECT_KEY:-}" ]; then
-              echo "SONAR_PROJECT_KEY=${!KEY_VAR}" >> $GITHUB_ENV
+            if [ -n "$KEY_VAL" ] && [ -z "${SONAR_PROJECT_KEY:-}" ]; then
+              echo "SONAR_PROJECT_KEY=$KEY_VAL" >> $GITHUB_ENV
             fi
           fi
 

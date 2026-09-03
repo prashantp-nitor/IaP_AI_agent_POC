@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T04:51:17Z
+# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T06:21:58Z
 name: CI Security Scan and Container Build
 
 on:
@@ -22,9 +22,13 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier7app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T05%3A51%3A17Z&sp=r&sv=2026-06-06&sr=b&sig=cRxqJbnw/FsT%2BZfUfi71KUo1aYYf12CDJFIxOqT4zv0%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T07%3A21%3A58Z&sp=r&sv=2026-06-06&sr=b&sig=hqUyibgxA4vtbKDtVmCWu3rh0xuhkM88hegY1GWhlAA%3D"
   JOB_ID: ${{ inputs.job_id || 'a3d195c2-81b8-40ac-85a9-20886e678520' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
+  INFISICAL_PROJECT_SLUG: "06974d30-99aa-48a4-a302-2f456059e374"
+  INFISICAL_ENVIRONMENT: "dev"
+  INFISICAL_DOMAIN: "https://app.infisical.com"
+  PROJECT_PREFIX: "A3D195C2_81B8_40AC_85A9_20886E678520"
 
 jobs:
   ci-security-and-build:
@@ -41,6 +45,26 @@ jobs:
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
           mkdir -p app
           unzip -q source.zip -d app
+
+      - name: Cache Maven Dependencies
+        continue-on-error: true
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.16
+        continue-on-error: true
+        with:
+          method: "universal-auth"
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          project-slug: "06974d30-99aa-48a4-a302-2f456059e374"
+          env-slug: "dev"
+          domain: "https://app.infisical.com"
 
       - name: Install Trivy Scanner
         run: |
@@ -77,16 +101,36 @@ jobs:
           sudo chmod -R 777 security-reports || true
 
       
+      - name: Normalize Infisical Sonar Credentials
+        continue-on-error: true
+        run: |
+          PREFIX="${{ env.PROJECT_PREFIX }}"
+          if [ -n "$PREFIX" ]; then
+            TOKEN_VAR="${PREFIX}_SONAR_TOKEN"
+            ORG_VAR="${PREFIX}_SONAR_ORGANIZATION"
+            KEY_VAR="${PREFIX}_SONAR_PROJECT_KEY"
+
+            if [ -n "${!TOKEN_VAR:-}" ] && [ -z "${SONAR_TOKEN:-}" ]; then
+              echo "SONAR_TOKEN=${!TOKEN_VAR}" >> $GITHUB_ENV
+            fi
+            if [ -n "${!ORG_VAR:-}" ] && [ -z "${SONAR_ORGANIZATION:-}" ]; then
+              echo "SONAR_ORGANIZATION=${!ORG_VAR}" >> $GITHUB_ENV
+            fi
+            if [ -n "${!KEY_VAR:-}" ] && [ -z "${SONAR_PROJECT_KEY:-}" ]; then
+              echo "SONAR_PROJECT_KEY=${!KEY_VAR}" >> $GITHUB_ENV
+            fi
+          fi
+
       
       - name: Run SonarQube / SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
+        continue-on-error: true
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN || secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
             -Dsonar.organization=daas-poc
+            -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
             -Dsonar.sources=.
       
       

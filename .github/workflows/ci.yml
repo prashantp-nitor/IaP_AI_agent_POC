@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 6510ceea-9765-4765-a336-ddab86e1f1a5 @ 2026-09-02T09:22:01Z
+# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T04:51:17Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "6510ceea-9765-4765-a336-ddab86e1f1a5"
+        default: "a3d195c2-81b8-40ac-85a9-20886e678520"
 
 permissions:
   id-token: write
@@ -21,9 +21,9 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tier6app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/6510ceea-9765-4765-a336-ddab86e1f1a5/source.zip?se=2026-09-02T10%3A22%3A01Z&sp=r&sv=2026-06-06&sr=b&sig=ADyzYOWOy4XKFYzozkxQcxQnlgVve5U3opFcGh0ik4w%3D"
-  JOB_ID: ${{ inputs.job_id || '6510ceea-9765-4765-a336-ddab86e1f1a5' }}
+  NAMESPACE: tier7app
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T05%3A51%3A17Z&sp=r&sv=2026-06-06&sr=b&sig=cRxqJbnw/FsT%2BZfUfi71KUo1aYYf12CDJFIxOqT4zv0%3D"
+  JOB_ID: ${{ inputs.job_id || 'a3d195c2-81b8-40ac-85a9-20886e678520' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
 
 jobs:
@@ -76,6 +76,19 @@ jobs:
           trivy fs --severity CRITICAL,HIGH,MEDIUM,LOW "$SCAN_DIR" || true
           sudo chmod -R 777 security-reports || true
 
+      
+      
+      - name: Run SonarQube / SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: "https://sonarcloud.io"
+        with:
+          args: >
+            -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
+            -Dsonar.organization=daas-poc
+            -Dsonar.sources=.
+      
       
 
       - name: Log in to Container Registry

@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T06:36:57Z
+# DaaS CI Dispatch: a3d195c2-81b8-40ac-85a9-20886e678520 @ 2026-09-03T06:54:49Z
 name: CI Security Scan and Container Build
 
 on:
@@ -22,12 +22,9 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tier7app
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T07%3A36%3A57Z&sp=r&sv=2026-06-06&sr=b&sig=A/wRKaT%2BWu%2Bkq5r%2BuZioMhc9Om7oAi/IhKNRmeImzG4%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a3d195c2-81b8-40ac-85a9-20886e678520/source.zip?se=2026-09-03T07%3A54%3A49Z&sp=r&sv=2026-06-06&sr=b&sig=90tAr3jMyVhax8MNHeboULaZ8PMReBFLVwwGtoweniQ%3D"
   JOB_ID: ${{ inputs.job_id || 'a3d195c2-81b8-40ac-85a9-20886e678520' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  INFISICAL_PROJECT_SLUG: "06974d30-99aa-48a4-a302-2f456059e374"
-  INFISICAL_ENVIRONMENT: "dev"
-  INFISICAL_DOMAIN: "https://app.infisical.com"
   PROJECT_PREFIX: "A3D195C2_81B8_40AC_85A9_20886E678520"
 
 jobs:
@@ -62,9 +59,9 @@ jobs:
           method: "universal"
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          project-slug: "06974d30-99aa-48a4-a302-2f456059e374"
-          env-slug: "dev"
-          domain: "https://app.infisical.com"
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG || vars.INFISICAL_PROJECT_SLUG || '' }}
+          env-slug: ${{ secrets.INFISICAL_ENV_SLUG || vars.INFISICAL_ENV_SLUG || 'dev' }}
+          domain: ${{ secrets.INFISICAL_DOMAIN || vars.INFISICAL_DOMAIN || 'https://app.infisical.com' }}
 
       - name: Install Trivy Scanner
         run: |
@@ -105,6 +102,9 @@ jobs:
         continue-on-error: true
         run: |
           PREFIX="${{ env.PROJECT_PREFIX }}"
+          JOB_ID="${{ env.JOB_ID }}"
+          CLEAN_JOB_ID="$(echo "$JOB_ID" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9_' '_' | sed 's/^_//;s/_$//')"
+
           if [ -n "$PREFIX" ]; then
             TOKEN_VAR="${PREFIX}_SONAR_TOKEN"
             ORG_VAR="${PREFIX}_SONAR_ORGANIZATION"
@@ -116,12 +116,24 @@ jobs:
 
             if [ -n "$TOKEN_VAL" ] && [ -z "${SONAR_TOKEN:-}" ]; then
               echo "SONAR_TOKEN=$TOKEN_VAL" >> $GITHUB_ENV
+              SONAR_TOKEN="$TOKEN_VAL"
             fi
             if [ -n "$ORG_VAL" ] && [ -z "${SONAR_ORGANIZATION:-}" ]; then
               echo "SONAR_ORGANIZATION=$ORG_VAL" >> $GITHUB_ENV
+              SONAR_ORGANIZATION="$ORG_VAL"
             fi
             if [ -n "$KEY_VAL" ] && [ -z "${SONAR_PROJECT_KEY:-}" ]; then
               echo "SONAR_PROJECT_KEY=$KEY_VAL" >> $GITHUB_ENV
+              SONAR_PROJECT_KEY="$KEY_VAL"
+            fi
+          fi
+
+          if [ -z "${SONAR_TOKEN:-}" ] && [ -n "$CLEAN_JOB_ID" ] && [ "$CLEAN_JOB_ID" != "$PREFIX" ]; then
+            JOB_TOKEN_VAR="${CLEAN_JOB_ID}_SONAR_TOKEN"
+            JOB_TOKEN_VAL="$(eval "echo \${$JOB_TOKEN_VAR:-}")"
+            if [ -n "$JOB_TOKEN_VAL" ]; then
+              echo "SONAR_TOKEN=$JOB_TOKEN_VAL" >> $GITHUB_ENV
+              SONAR_TOKEN="$JOB_TOKEN_VAL"
             fi
           fi
 

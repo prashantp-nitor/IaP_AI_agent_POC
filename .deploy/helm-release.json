@@ -1,0 +1,7 @@
+{
+  "job_id": "35fd5f08-130b-4e51-a1a7-3cd9a097d603",
+  "dispatched_at": "2026-09-10T06:16:40Z",
+  "target_cluster": "tier9app-test-aks",
+  "namespace": "default",
+  "image_tag": "latest"
+}

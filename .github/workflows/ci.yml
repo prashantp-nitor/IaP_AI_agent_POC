@@ -1,3 +1,4 @@
+# DaaS CI Dispatch: 35fd5f08-130b-4e51-a1a7-3cd9a097d603 @ 2026-09-10T04:47:15Z
 name: CI Security Scan and Container Build
 
 on:
@@ -19,12 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tier9app-123
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/35fd5f08-130b-4e51-a1a7-3cd9a097d603/source.zip?se=2026-09-10T05%3A47%3A07Z&sp=r&sv=2026-06-06&sr=b&sig=ccacyRgUWIGSZBGsOq1Vw3eXagV%2BdWFKaBrW2uzseQM%3D"
+  REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
+  NAMESPACE: default
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/35fd5f08-130b-4e51-a1a7-3cd9a097d603/source.zip?se=2026-09-10T05%3A47%3A13Z&sp=r&sv=2026-06-06&sr=b&sig=0v1ccxJTLsSeOF7DaJ8FZOWeTZ4q1X13FpeDJ4CI2dY%3D"
   JOB_ID: ${{ inputs.job_id || '35fd5f08-130b-4e51-a1a7-3cd9a097d603' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "TIER9APP_123"
+  PROJECT_PREFIX: "35FD5F08_130B_4E51_A1A7_3CD9A097D603"
 
 jobs:
   ci-security-and-build:
@@ -167,7 +168,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-tier9app-123
+            -Dsonar.projectKey=daas-35fd5f08-130b-4e51-a1a7-3cd9a097d603
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true

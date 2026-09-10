@@ -6,14 +6,14 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/3-tier-application-to-azure-aks/**"
+      - "deployment-output/tier9app-123/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "f17090c0-9563-48b0-8fb2-412afba69408"
+        default: "35fd5f08-130b-4e51-a1a7-3cd9a097d603"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -25,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: 3-tier-application-to-azure-aks
-  JOB_ID: ${{ inputs.job_id || 'f17090c0-9563-48b0-8fb2-412afba69408' }}
+  NAMESPACE: tier9app-123
+  JOB_ID: ${{ inputs.job_id || '35fd5f08-130b-4e51-a1a7-3cd9a097d603' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -80,7 +80,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install 3-tier-application-to-azure-aks ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install tier9app-123 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -148,16 +148,16 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "westus"
+          REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "3-tier-application-to-azure-aks"
+          PROJECT_NAME: "tier9app-123"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_h96e3u", "POSTGRES_PASSWORD": "3pQqHh*KDSbzJmr2N\u0026#NMg\u0026w", "POSTGRES_USER": "post_jzsjax"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_5ykfz4", "POSTGRES_PASSWORD": "rvCqQy3u8eLU^6U93C#gfEeQ", "POSTGRES_USER": "post_jckccl"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -173,4 +173,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall 3-tier-application-to-azure-aks -n ${{ env.NAMESPACE }} || true
+          helm uninstall tier9app-123 -n ${{ env.NAMESPACE }} || true

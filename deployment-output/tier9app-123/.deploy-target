@@ -1,0 +1,5 @@
+cluster_name: daas-aks-cluster
+resource_group: daas-rg
+region: eastus
+cloud_provider: azure
+namespace: tier9app-123

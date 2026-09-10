@@ -1,5 +1,5 @@
-cluster_name: daas-aks-cluster
-resource_group: daas-rg
+cluster_name: tier9app-test-aks
+resource_group: AZET-RG-Daas-Platform
 region: eastus
 cloud_provider: azure
 namespace: tier9app-123

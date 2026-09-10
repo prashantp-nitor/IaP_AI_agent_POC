@@ -1,7 +1,8 @@
 {
   "job_id": "35fd5f08-130b-4e51-a1a7-3cd9a097d603",
-  "dispatched_at": "2026-09-10T06:16:40Z",
+  "dispatched_at": "2026-09-10T07:49:15Z",
   "target_cluster": "tier9app-test-aks",
+  "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",
   "image_tag": "latest"
 }

@@ -50,6 +50,9 @@ jobs:
           fi
           CLUSTER_NAME=$(yq e '.cluster_name' $DEPLOY_TARGET_FILE)
           RESOURCE_GROUP=$(yq e '.resource_group' $DEPLOY_TARGET_FILE)
+          if [ -z "$RESOURCE_GROUP" ] || [ "$RESOURCE_GROUP" = "null" ] || [ "$RESOURCE_GROUP" = "daas-rg" ]; then
+            RESOURCE_GROUP="${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || '' }}"
+          fi
           KEY_VAULT_NAME=$(az keyvault list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
           
           echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
@@ -157,7 +160,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_u87xkb", "POSTGRES_PASSWORD": "Mdw9^UgZmyp68RoS!iN4nigs", "POSTGRES_USER": "post_ucgsa9"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_sfmco0", "POSTGRES_PASSWORD": "PM418gG4Y9JgkNDj#mT6H0DV", "POSTGRES_USER": "post_h32ck9"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

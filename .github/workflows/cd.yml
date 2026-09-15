@@ -6,14 +6,14 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/tier9app-123/**"
+      - "deployment-output/tierxapp/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "35fd5f08-130b-4e51-a1a7-3cd9a097d603"
+        default: "cd-a3ee266e"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -25,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tier9app-123
-  JOB_ID: ${{ inputs.job_id || '35fd5f08-130b-4e51-a1a7-3cd9a097d603' }}
+  NAMESPACE: tierxapp
+  JOB_ID: ${{ inputs.job_id || 'cd-a3ee266e' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -83,7 +83,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install tier9app-123 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install tierxapp ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -153,14 +153,14 @@ jobs:
           PROVIDER: "azure"
           REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "tier9app-123"
+          PROJECT_NAME: "tierxapp"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_sfmco0", "POSTGRES_PASSWORD": "PM418gG4Y9JgkNDj#mT6H0DV", "POSTGRES_USER": "post_h32ck9"}'
+          DB_CONFIG_JSON: '{}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -176,4 +176,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall tier9app-123 -n ${{ env.NAMESPACE }} || true
+          helm uninstall tierxapp -n ${{ env.NAMESPACE }} || true

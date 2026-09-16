@@ -6,7 +6,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "cd-e6fbded5"
+        default: "cd-f7f0c647"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -19,7 +19,7 @@ permissions:
 env:
   REGISTRY: default
   NAMESPACE: tierxapp
-  JOB_ID: ${{ inputs.job_id || 'cd-e6fbded5' }}
+  JOB_ID: ${{ inputs.job_id || 'cd-f7f0c647' }}
 
 jobs:
   deploy-to-kubernetes:

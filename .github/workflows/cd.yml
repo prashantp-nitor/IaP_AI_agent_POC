@@ -1,19 +1,12 @@
 name: Deploy DaaS Workload via Helm
 
 on:
-  push:
-    branches:
-      - "networking"
-      
-    paths:
-      - "deployment-output/tierxapp/**"
-      - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "cd-a3ee266e"
+        default: "cd-397e4706"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -26,7 +19,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tierxapp
-  JOB_ID: ${{ inputs.job_id || 'cd-a3ee266e' }}
+  JOB_ID: ${{ inputs.job_id || 'cd-397e4706' }}
 
 jobs:
   deploy-to-kubernetes:

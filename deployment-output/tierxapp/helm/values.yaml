@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "tierxapp"
   # Container registry base URL
-  registry: "azdaasdeployment.azurecr.io"
+  registry: "default"
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
@@ -22,7 +22,7 @@ services:
     enabled: true
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/backend"
+      repository: "default/backend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -47,7 +47,7 @@ services:
     enabled: true
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/frontend"
+      repository: "default/frontend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:

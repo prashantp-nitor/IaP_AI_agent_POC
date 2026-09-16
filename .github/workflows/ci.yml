@@ -6,7 +6,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "cd-397e4706"
+        default: "cd-87249402"
 
 permissions:
   id-token: write
@@ -16,8 +16,8 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tierxapp
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/cd-397e4706/source.zip?se=2026-09-16T07%3A31%3A59Z&sp=r&sv=2026-06-06&sr=b&sig=KHFKitEo5N1%2BwNd07eVwDbVIuEQtrIPhsvvZdxo81No%3D"
-  JOB_ID: ${{ inputs.job_id || 'cd-397e4706' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/cd-87249402/source.zip?se=2026-09-16T07%3A42%3A15Z&sp=r&sv=2026-06-06&sr=b&sig=e43P%2B5NN/r4qZqLC3NZJqrVpf6dpQc582umE7/InSTg%3D"
+  JOB_ID: ${{ inputs.job_id || 'cd-87249402' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "TIERXAPP"
 

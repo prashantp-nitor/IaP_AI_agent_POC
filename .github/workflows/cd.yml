@@ -6,7 +6,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "cd-9ba17227"
+        default: "cd-f64f51b7"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -19,7 +19,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tierxapp
-  JOB_ID: ${{ inputs.job_id || 'cd-9ba17227' }}
+  JOB_ID: ${{ inputs.job_id || 'cd-f64f51b7' }}
 
 jobs:
   deploy-to-kubernetes:

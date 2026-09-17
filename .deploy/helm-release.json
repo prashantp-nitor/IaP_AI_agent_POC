@@ -1,7 +1,7 @@
 {
-  "job_id": "35fd5f08-130b-4e51-a1a7-3cd9a097d603",
-  "dispatched_at": "2026-09-10T07:49:15Z",
-  "target_cluster": "tier9app-test-aks",
+  "job_id": "941f9a08-6dc9-4f66-beae-e8a05afcf246",
+  "dispatched_at": "2026-09-17T10:29:09Z",
+  "target_cluster": "aks-fitcart-dev",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",
   "image_tag": "latest"

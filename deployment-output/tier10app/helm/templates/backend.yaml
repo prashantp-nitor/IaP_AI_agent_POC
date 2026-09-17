@@ -1,0 +1,107 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: tier10app
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: backend
+          image: "{{ index .Values.services "backend" "image" "repository" }}:{{ index .Values.services "backend" "image" "tag" }}"
+          imagePullPolicy: "{{ index .Values.services "backend" "image" "pullPolicy" }}"
+          
+          ports:
+            
+            - containerPort: 8080
+              name: port-8080
+            
+          
+          env:
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2048Mi"
+            limits:
+              cpu: "1000m"
+              memory: "4096Mi"
+          
+          
+
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: tier10app
+  labels:
+    app: backend
+spec:
+  type: ClusterIP
+  ports:
+    
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http-8080
+    
+  selector:
+    app: backend
+    
+---

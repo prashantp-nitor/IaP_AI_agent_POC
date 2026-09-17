@@ -1,12 +1,19 @@
 name: Deploy DaaS Workload via Helm
 
 on:
+  push:
+    branches:
+      - "networking"
+      
+    paths:
+      - "deployment-output/tier10app/**"
+      - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "cd-a518868b"
+        default: "941f9a08-6dc9-4f66-beae-e8a05afcf246"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -18,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: tierxapp
-  JOB_ID: ${{ inputs.job_id || 'cd-a518868b' }}
+  NAMESPACE: tier10app
+  JOB_ID: ${{ inputs.job_id || '941f9a08-6dc9-4f66-beae-e8a05afcf246' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -76,7 +83,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install tierxapp ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install tier10app ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -144,16 +151,16 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "eastus"
+          REGION: "westus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "tierxapp"
+          PROJECT_NAME: "tier10app"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_ekj1dd", "POSTGRES_PASSWORD": "m17v7*b4xqheeIvWz8x1qMn0", "POSTGRES_USER": "post_nmwyoc"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -169,4 +176,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall tierxapp -n ${{ env.NAMESPACE }} || true
+          helm uninstall tier10app -n ${{ env.NAMESPACE }} || true

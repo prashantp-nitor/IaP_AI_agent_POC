@@ -6,7 +6,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "cd-402c5c8a"
+        default: "cd-47e44341"
 
 permissions:
   id-token: write
@@ -14,10 +14,10 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: default
+  REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tierxapp
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/cd-402c5c8a/source.zip?se=2026-09-16T10%3A41%3A05Z&sp=r&sv=2026-06-06&sr=b&sig=Z7qwNl/v7QsenTqhiLf6CAxnfXDToy2pyMKfeDENUpQ%3D"
-  JOB_ID: ${{ inputs.job_id || 'cd-402c5c8a' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/cd-47e44341/source.zip?se=2026-09-17T06%3A21%3A36Z&sp=r&sv=2026-06-06&sr=b&sig=VovRpFwZ/9osbxmmZ9DEDCgvMhakxFHoALnipRfRZhU%3D"
+  JOB_ID: ${{ inputs.job_id || 'cd-47e44341' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "TIERXAPP"
 
@@ -101,53 +101,29 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       
-      - name: Build backend container image
+      - name: Build app container image
         uses: docker/build-push-action@v5
         with:
-          context: ./app/backend
-          file: ./app/backend/Dockerfile
+          context: ./app/.
+          file: ./app/./Dockerfile
           load: true
-          tags: ${{ env.REGISTRY }}/backend:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/app:${{ github.sha }}
           
           
           
 
-      - name: Run Trivy Image Scan for backend (JSON & Summary)
+      - name: Run Trivy Image Scan for app (JSON & Summary)
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+          echo "Executing Trivy container image scan for app..."
+          trivy image --format json --output security-reports/image-app.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/app:${{ github.sha }} || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/app:${{ github.sha }} || true
           sudo chmod -R 777 security-reports || true
 
-      - name: Push backend image
+      - name: Push app image
         run: |
-          docker push ${{ env.REGISTRY }}/backend:${{ github.sha }}
-      
-      - name: Build frontend container image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app/frontend
-          file: ./app/frontend/Dockerfile
-          load: true
-          tags: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
-          
-          
-          
-
-      - name: Run Trivy Image Scan for frontend (JSON & Summary)
-        continue-on-error: true
-        run: |
-          mkdir -p security-reports
-          echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
-          sudo chmod -R 777 security-reports || true
-
-      - name: Push frontend image
-        run: |
-          docker push ${{ env.REGISTRY }}/frontend:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/app:${{ github.sha }}
       
 
       - name: Upload Security Reports to Azure Blob Storage

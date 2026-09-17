@@ -1,0 +1,65 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: tierxapp
+  labels:
+    app: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: app
+          image: "{{ index .Values.services "app" "image" "repository" }}:{{ index .Values.services "app" "image" "tag" }}"
+          imagePullPolicy: "{{ index .Values.services "app" "image" "pullPolicy" }}"
+          
+          ports:
+            
+            - containerPort: 80
+              name: port-80
+            
+          
+          env:
+            
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1024Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2048Mi"
+          
+          
+
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  namespace: tierxapp
+  labels:
+    app: app
+spec:
+  type: LoadBalancer
+  ports:
+    
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http-80
+    
+  selector:
+    app: app
+    
+---

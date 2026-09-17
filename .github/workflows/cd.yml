@@ -6,7 +6,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "cd-402c5c8a"
+        default: "cd-47e44341"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -17,9 +17,9 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: default
+  REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: tierxapp
-  JOB_ID: ${{ inputs.job_id || 'cd-402c5c8a' }}
+  JOB_ID: ${{ inputs.job_id || 'cd-47e44341' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -81,14 +81,13 @@ jobs:
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
             --set global.deploymentStrategy=rolling \
-            --set services.backend.image.tag=${{ github.sha }} \
-            --set services.frontend.image.tag=${{ github.sha }} \
+            --set services.app.image.tag=${{ github.sha }} \
             --timeout 5m0s
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
-          FRONTEND_SVC="frontend"
+          FRONTEND_SVC="app"
           if [ -z "$FRONTEND_SVC" ]; then
             echo "No frontend service found. Skipping LoadBalancer IP wait."
           else
@@ -115,7 +114,7 @@ jobs:
       - name: Retrieve Public IP & Report URL
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
-          FRONTEND_SVC="frontend"
+          FRONTEND_SVC="app"
           if [ -z "$FRONTEND_SVC" ]; then
              echo "URL=None" >> $GITHUB_ENV
              echo "### ⚠️ Deployment Completed (No Frontend)" >> $GITHUB_STEP_SUMMARY
@@ -152,7 +151,7 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
-          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
+          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "app", "is_frontend": true, "ports": [80]}]}'
           DB_CONFIG_JSON: '{}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."

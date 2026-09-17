@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "tierxapp"
   # Container registry base URL
-  registry: "default"
+  registry: "azdaasdeployment.azurecr.io"
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
@@ -18,36 +18,11 @@ global:
 # ── Application Services ─────────────────────────────────
 services:
   
-  backend:
+  app:
     enabled: true
     replicaCount: 1
     image:
-      repository: "default/backend"
-      tag: "PLACEHOLDER_SET_BY_CI"
-      pullPolicy: IfNotPresent
-    ports:
-      
-      
-      - 8080
-      
-      
-    resources:
-      requests:
-        cpu: "250m"
-        memory: "512Mi"
-      limits:
-        cpu: "500m"
-        memory: "1024Mi"
-    # Health check path — override if your app uses a different route
-    healthCheckPath: "/actuator/health"
-    env:
-      
-  
-  frontend:
-    enabled: true
-    replicaCount: 1
-    image:
-      repository: "default/frontend"
+      repository: "azdaasdeployment.azurecr.io/app"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -58,11 +33,11 @@ services:
       
     resources:
       requests:
-        cpu: "250m"
-        memory: "512Mi"
-      limits:
         cpu: "500m"
         memory: "1024Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2048Mi"
     # Health check path — override if your app uses a different route
     healthCheckPath: "/"
     env:

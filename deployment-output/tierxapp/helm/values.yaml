@@ -18,11 +18,36 @@ global:
 # ── Application Services ─────────────────────────────────
 services:
   
-  app:
+  backend:
     enabled: true
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/app"
+      repository: "azdaasdeployment.azurecr.io/backend"
+      tag: "PLACEHOLDER_SET_BY_CI"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1024Mi"
+    # Health check path — override if your app uses a different route
+    healthCheckPath: "/actuator/health"
+    env:
+      
+  
+  frontend:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: "azdaasdeployment.azurecr.io/frontend"
       tag: "PLACEHOLDER_SET_BY_CI"
       pullPolicy: IfNotPresent
     ports:
@@ -33,11 +58,11 @@ services:
       
     resources:
       requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
         cpu: "500m"
         memory: "1024Mi"
-      limits:
-        cpu: "1000m"
-        memory: "2048Mi"
     # Health check path — override if your app uses a different route
     healthCheckPath: "/"
     env:

@@ -28,12 +28,12 @@
             # --- Existing Networking Reference ---
 
 data "azurerm_virtual_network" "aks_vnet" {
-  name                = "tier20app-network"
+  name                = "test-demo-pp-vnet"
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 data "azurerm_subnet" "aks_subnet" {
-  name                 = "app-subnet"
+  name                 = "test-demo-pp-subnet"
   virtual_network_name = data.azurerm_virtual_network.aks_vnet.name
   resource_group_name  = data.azurerm_resource_group.rg.name
 }

@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 5a5ac657-966a-42f0-850f-0faec657da94 @ 2026-09-22T07:38:20Z
+# DaaS CI Dispatch: 7c6d5267-5ca8-46e8-9e22-dcce81a0f436 @ 2026-09-22T08:27:00Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "5a5ac657-966a-42f0-850f-0faec657da94"
+        default: "7c6d5267-5ca8-46e8-9e22-dcce81a0f436"
 
 permissions:
   id-token: write
@@ -22,10 +22,10 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/5a5ac657-966a-42f0-850f-0faec657da94/source.zip?se=2026-09-22T08%3A38%3A17Z&sp=r&sv=2026-06-06&sr=b&sig=wJNJcHOY4tva77Co19Pj/toLm81qLQV4AQyRj%2B0Ecns%3D"
-  JOB_ID: ${{ inputs.job_id || '5a5ac657-966a-42f0-850f-0faec657da94' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7c6d5267-5ca8-46e8-9e22-dcce81a0f436/source.zip?se=2026-09-22T09%3A26%3A57Z&sp=r&sv=2026-06-06&sr=b&sig=S2qTMRrxQpe8l0pn/0MC1QAj255hUq9vSgX9fqZcVM4%3D"
+  JOB_ID: ${{ inputs.job_id || '7c6d5267-5ca8-46e8-9e22-dcce81a0f436' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "5A5AC657_966A_42F0_850F_0FAEC657DA94"
+  PROJECT_PREFIX: "7C6D5267_5CA8_46E8_9E22_DCCE81A0F436"
 
 jobs:
   ci-security-and-build:
@@ -168,7 +168,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-5a5ac657-966a-42f0-850f-0faec657da94
+            -Dsonar.projectKey=daas-7c6d5267-5ca8-46e8-9e22-dcce81a0f436
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true

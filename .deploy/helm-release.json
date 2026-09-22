@@ -1,6 +1,6 @@
 {
   "job_id": "5a5ac657-966a-42f0-850f-0faec657da94",
-  "dispatched_at": "2026-09-22T05:53:08Z",
+  "dispatched_at": "2026-09-22T07:21:55Z",
   "target_cluster": "tier21app-aks",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",

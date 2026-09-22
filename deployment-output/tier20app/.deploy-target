@@ -1,5 +1,5 @@
 cluster_name: tier21app-aks
 resource_group: AZET-RG-Daas-Platform
-region: westus
+region: eastus
 cloud_provider: azure
 namespace: tier20app

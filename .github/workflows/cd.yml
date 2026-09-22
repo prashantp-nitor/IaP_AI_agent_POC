@@ -151,7 +151,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "westus"
+          REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
           PROJECT_NAME: "tier20app"
           DEPLOYMENT_STRATEGY: "rolling"
@@ -160,7 +160,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_ukatdu", "POSTGRES_PASSWORD": "xeGzpM^X*Kf3AZTGsnygVtI2", "POSTGRES_USER": "post_ewsbze"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_bdspgq", "POSTGRES_PASSWORD": "5D1I9ED5hwodbQA6BoR!xDUk", "POSTGRES_USER": "post_ia7xan"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

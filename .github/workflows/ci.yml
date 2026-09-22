@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 5a5ac657-966a-42f0-850f-0faec657da94 @ 2026-09-22T05:39:20Z
+# DaaS CI Dispatch: 5a5ac657-966a-42f0-850f-0faec657da94 @ 2026-09-22T06:43:10Z
 name: CI Security Scan and Container Build
 
 on:
@@ -22,7 +22,7 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/5a5ac657-966a-42f0-850f-0faec657da94/source.zip?se=2026-09-22T06%3A39%3A18Z&sp=r&sv=2026-06-06&sr=b&sig=cRf3S5H6a4t%2BFln8GCrAPL6wCaKt8BkLsRlr9vNryZY%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/5a5ac657-966a-42f0-850f-0faec657da94/source.zip?se=2026-09-22T07%3A43%3A08Z&sp=r&sv=2026-06-06&sr=b&sig=7CQVdWNK933MHabnD1ysikYtT1asd7AuLYhrp98fSNc%3D"
   JOB_ID: ${{ inputs.job_id || '5a5ac657-966a-42f0-850f-0faec657da94' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "5A5AC657_966A_42F0_850F_0FAEC657DA94"

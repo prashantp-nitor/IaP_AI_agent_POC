@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: 3tiertestapp-sa
+  namespace: 3tiertestapp
+  annotations:
+    # Azure: set this to your managed identity client ID after provisioning
+    azure.workload.identity/client-id: "PLACEHOLDER_MANAGED_IDENTITY_CLIENT_ID"

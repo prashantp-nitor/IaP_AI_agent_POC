@@ -1,0 +1,5 @@
+cluster_name: tier21app-aks
+resource_group: AZET-RG-Daas-Platform
+region: eastus
+cloud_provider: azure
+namespace: 3tiertestapp1

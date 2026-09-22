@@ -6,14 +6,14 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/3tiertestapp/**"
+      - "deployment-output/3tiertestapp1/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "7c6d5267-5ca8-46e8-9e22-dcce81a0f436"
+        default: "1b5d0c68-0e16-4549-81d4-a64d3c658b27"
       image_tag:
         description: "Container Image Tag"
         required: false
@@ -25,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: 3tiertestapp
-  JOB_ID: ${{ inputs.job_id || '7c6d5267-5ca8-46e8-9e22-dcce81a0f436' }}
+  NAMESPACE: 3tiertestapp1
+  JOB_ID: ${{ inputs.job_id || '1b5d0c68-0e16-4549-81d4-a64d3c658b27' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -83,7 +83,7 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install 3tiertestapp ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install 3tiertestapp1 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
@@ -153,14 +153,14 @@ jobs:
           PROVIDER: "azure"
           REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "3tiertestapp"
+          PROJECT_NAME: "3tiertestapp1"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_3beq7w", "POSTGRES_PASSWORD": "kzEUt7HDxqHa!0DpyeqczpOP", "POSTGRES_USER": "post_neobs3"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_7jhg38", "POSTGRES_PASSWORD": "h1ZlAX75#XR*#*A9Z^kAtoFe", "POSTGRES_USER": "post_u8nubd"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -176,4 +176,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall 3tiertestapp -n ${{ env.NAMESPACE }} || true
+          helm uninstall 3tiertestapp1 -n ${{ env.NAMESPACE }} || true

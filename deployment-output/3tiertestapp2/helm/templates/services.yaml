@@ -1,0 +1,225 @@
+# ============================================================
+# Network Policies for 3-Tier Application Architecture
+# ============================================================
+
+# ── 1. Baseline Zero-Trust Default Deny ─────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: 3tiertestapp2
+  labels:
+    app.kubernetes.io/name: 3tiertestapp2
+    app.kubernetes.io/managed-by: daas
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# ── 2. Allow CoreDNS Egress (All Pods -> kube-system:53) ────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-coredns-egress
+  namespace: 3tiertestapp2
+  labels:
+    app.kubernetes.io/name: 3tiertestapp2
+    app.kubernetes.io/managed-by: daas
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# ── 3. Frontend Tier Policy ─────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-network-policy
+  namespace: 3tiertestapp2
+  labels:
+    app.kubernetes.io/name: 3tiertestapp2
+    app.kubernetes.io/managed-by: daas
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Ingress from Ingress Controller / External Load Balancer
+    - from:
+        - namespaceSelector: {}
+      ports:
+        
+        - protocol: TCP
+          port: 80
+        
+    # Preserve AKS & Kubelet Health Probes
+    - from:
+        - ipBlock:
+            cidr: 168.63.129.16/32
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        
+        - protocol: TCP
+          port: 80
+        
+  egress:
+    # Egress to Backend on backend application port only
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        
+        - protocol: TCP
+          port: 8080
+        
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    
+---
+# ── 4. Backend Tier Policy ──────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-network-policy
+  namespace: 3tiertestapp2
+  labels:
+    app.kubernetes.io/name: 3tiertestapp2
+    app.kubernetes.io/managed-by: daas
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Ingress ONLY from Frontend pods on backend application port
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        
+        - protocol: TCP
+          port: 8080
+        
+    # Preserve AKS & Kubelet Health Probes
+    - from:
+        - ipBlock:
+            cidr: 168.63.129.16/32
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        
+        - protocol: TCP
+          port: 8080
+        
+  egress:
+    
+    # Egress to Database pod ONLY on database port
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql-db
+      ports:
+        - protocol: TCP
+          port: 5432
+    
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    
+---
+# ── 5. Database Tier Policy ─────────────────────────────────
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgresql-db-network-policy
+  namespace: 3tiertestapp2
+  labels:
+    app.kubernetes.io/name: 3tiertestapp2
+    app.kubernetes.io/managed-by: daas
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql-db
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Ingress ONLY from Backend pods on database port
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Preserve AKS & Kubelet Health Probes
+    - from:
+        - ipBlock:
+            cidr: 168.63.129.16/32
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
+  egress:
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

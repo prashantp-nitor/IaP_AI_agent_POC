@@ -6,18 +6,18 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/3tiertestapp1/**"
+      - "deployment-output/3tiertestapp2/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "1b5d0c68-0e16-4549-81d4-a64d3c658b27"
+        default: "7429997f-73fd-4247-bfe1-fbdd0496d1e1"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: ""
+        default: "sha-7429997f"
 
 permissions:
   id-token: write
@@ -25,8 +25,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: 3tiertestapp1
-  JOB_ID: ${{ inputs.job_id || '1b5d0c68-0e16-4549-81d4-a64d3c658b27' }}
+  NAMESPACE: 3tiertestapp2
+  JOB_ID: ${{ inputs.job_id || '7429997f-73fd-4247-bfe1-fbdd0496d1e1' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -83,13 +83,13 @@ jobs:
 
       - name: Deploy via Helm
         run: |
-          helm upgrade --install 3tiertestapp1 ./${{ steps.resolve_target.outputs.helm_dir }} \
+          helm upgrade --install 3tiertestapp2 ./${{ steps.resolve_target.outputs.helm_dir }} \
             --namespace ${{ env.NAMESPACE }} \
             --create-namespace \
             --set global.registry=${{ env.REGISTRY }} \
             --set global.deploymentStrategy=rolling \
-            --set services.backend.image.tag=${{ github.sha }} \
-            --set services.frontend.image.tag=${{ github.sha }} \
+            --set services.backend.image.tag=${{ inputs.image_tag || 'sha-7429997f' }} \
+            --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-7429997f' }} \
             --timeout 5m0s
 
       - name: Wait for Frontend LoadBalancer IP
@@ -153,14 +153,14 @@ jobs:
           PROVIDER: "azure"
           REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "3tiertestapp1"
+          PROJECT_NAME: "3tiertestapp2"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_7jhg38", "POSTGRES_PASSWORD": "h1ZlAX75#XR*#*A9Z^kAtoFe", "POSTGRES_USER": "post_u8nubd"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_xqr0oz", "POSTGRES_PASSWORD": "\u0026ojxh*^^T7D9PRxSi%lq56kn", "POSTGRES_USER": "post_14z0ta"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -176,4 +176,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall 3tiertestapp1 -n ${{ env.NAMESPACE }} || true
+          helm uninstall 3tiertestapp2 -n ${{ env.NAMESPACE }} || true

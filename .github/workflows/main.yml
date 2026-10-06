@@ -236,6 +236,9 @@ jobs:
         with:
           name: tfplan-${{ matrix.directory }}
           path: iaap-output/${{ matrix.directory }}
+      - name: Nested directories
+        run: |       
+           mv */*.tf . 2>/dev/null || true
 
       - name: Terraform Init
         run: |

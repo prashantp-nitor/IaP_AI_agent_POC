@@ -1,0 +1,9 @@
+region = "eastus"
+resource_group_name = "AZET-RG-Daas-Platform"
+server_name = "postgres-07"
+sku_name = "Standard_B2s"
+pg_version = "14"
+storage_mb = 32768
+backup_retention_days = 7
+administrator_login = "pgadmin"
+extra_tags = {}

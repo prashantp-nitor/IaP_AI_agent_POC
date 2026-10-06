@@ -1,0 +1,19 @@
+{
+  "server_name": "postgres-1",
+  "region": "eastus",
+  "sku_name": "Standard_B2s",
+  "storage_mb": "32768",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "administrator_password": "Admin@123",
+  "version": "14",
+  "administrator_login": "pgadmin",
+  "tags": {
+    "environment": "prod",
+    "owner": "admin@example.com",
+    "project": "test-demo-3",
+    "job_id": "d16b097a-347d-4e1d-b260-53c78fb0db35",
+    "project_folder": "test-demo-3-d16b09"
+  },
+  "_provider": "azure",
+  "_resource_type": "postgresql_flexible_server"
+}

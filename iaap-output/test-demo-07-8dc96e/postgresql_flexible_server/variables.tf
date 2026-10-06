@@ -13,7 +13,7 @@ variable "resource_group_name" {
 variable "server_name" {
   description = "Globally unique PostgreSQL flexible server name"
   type        = string
-  default     = "postgres-07"
+  default     = "postgres-08"
 }
 
 variable "sku_name" {

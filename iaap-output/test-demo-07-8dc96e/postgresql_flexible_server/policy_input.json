@@ -1,5 +1,5 @@
 {
-  "server_name": "postgres-07",
+  "server_name": "postgres-08",
   "region": "eastus",
   "sku_name": "Standard_B2s",
   "storage_mb": "32768",

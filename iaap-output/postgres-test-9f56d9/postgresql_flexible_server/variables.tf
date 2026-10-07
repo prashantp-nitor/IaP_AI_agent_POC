@@ -19,7 +19,7 @@ variable "server_name" {
 variable "sku_name" {
   description = "Compute SKU (e.g. B_Standard_B1ms, GP_Standard_D2s_v3)"
   type        = string
-  default     = "Standard_B2s"
+  default     = "B_Standard_B2s"
 }
 
 variable "pg_version" {

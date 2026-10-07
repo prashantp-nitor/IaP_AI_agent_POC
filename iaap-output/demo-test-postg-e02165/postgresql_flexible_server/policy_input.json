@@ -1,6 +1,6 @@
 {
-  "server_name": "postgres-test",
-  "region": "eastus",
+  "server_name": "postgres-10",
+  "region": "eastus2",
   "sku_name": "Standard_B2s",
   "storage_mb": "32768",
   "resource_group": "AZET-RG-Daas-Platform",

@@ -1,6 +1,6 @@
-region = "westus2"
+region = "eastus2"
 resource_group_name = "AZET-RG-Daas-Platform"
-server_name = "postgres-test"
+server_name = "postgres-10"
 sku_name = "B_Standard_B2s"
 pg_version = "14"
 storage_mb = 32768

@@ -1,7 +1,7 @@
 variable "region" {
   description = "Azure region for all resources"
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
 }
 
 variable "resource_group_name" {
@@ -13,7 +13,7 @@ variable "resource_group_name" {
 variable "server_name" {
   description = "Globally unique PostgreSQL flexible server name"
   type        = string
-  default     = "postgres-test"
+  default     = "postgres-10"
 }
 
 variable "sku_name" {

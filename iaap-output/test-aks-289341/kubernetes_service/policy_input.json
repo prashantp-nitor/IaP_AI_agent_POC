@@ -1,0 +1,18 @@
+{
+  "cluster_name": "aks-cluster-1",
+  "region": "eastus",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "kubernetes_version": "1.34.4",
+  "node_count": "1",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "tags": {
+    "environment": "prod",
+    "owner": "admin@example.com",
+    "project": "test-aks",
+    "job_id": "289341c9-1a08-44c1-a71a-afb77138f819",
+    "project_folder": "test-aks-289341"
+  },
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

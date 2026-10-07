@@ -1,4 +1,4 @@
-region = "eastus"
+region = "westus2"
 resource_group_name = "AZET-RG-Daas-Platform"
 server_name = "postgres-test"
 sku_name = "B_Standard_B2s"

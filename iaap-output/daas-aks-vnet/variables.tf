@@ -13,7 +13,7 @@ variable "resource_group_name" {
 variable "vnet_name" {
   description = "Name of the Azure Virtual Network"
   type        = string
-  default     = "dev-net"
+  default     = "dev-vnet"
 }
 
 variable "address_space" {

@@ -1,6 +1,6 @@
 region = "eastus"
 resource_group_name = "AZET-RG-Daas-Platform"
-vnet_name = "dev-net"
+vnet_name = "dev-vnet"
 address_space = [
   "10.0.0.0/16",
 ]

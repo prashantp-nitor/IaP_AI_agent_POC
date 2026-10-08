@@ -1,0 +1,16 @@
+{
+  "account_name": "testnewstorage",
+  "region": "eastus",
+  "account_tier": "Standard",
+  "replication": "LRS (Locally Redundant)",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "environment": "prod",
+    "owner": "admin@example.com",
+    "project": "test-newstorage",
+    "job_id": "f54624a5-1b57-4b72-9103-3bdb5a92dffd",
+    "project_folder": "test-newstorage-f54624"
+  },
+  "_provider": "azure",
+  "_resource_type": "storage_account"
+}

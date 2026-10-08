@@ -5,7 +5,7 @@ data "azurerm_resource_group" "rg" {
 # --- Existing Networking Reference ---
 
 data "azurerm_virtual_network" "aks_vnet" {
-  name                = "dev-net"
+  name                = "dev-vnet"
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 

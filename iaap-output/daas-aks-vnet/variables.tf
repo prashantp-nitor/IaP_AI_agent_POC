@@ -13,7 +13,7 @@ variable "resource_group_name" {
 variable "vnet_name" {
   description = "Name of the Azure Virtual Network"
   type        = string
-  default     = "production-network"
+  default     = "dev-net"
 }
 
 variable "address_space" {
@@ -27,7 +27,7 @@ variable "address_space" {
 variable "subnet_prefix" {
   description = "CIDR prefix for the default subnet"
   type        = string
-  default     = "10.0.1.0/24"
+  default     = "10.0.3.0/24"
 }
 
 variable "extra_tags" {

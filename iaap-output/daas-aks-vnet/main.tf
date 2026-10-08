@@ -11,16 +11,10 @@ module "vnet" {
   location = data.azurerm_resource_group.rg.location
   address_space = var.address_space
   subnets = {
-    frontend_subnet = {
-      name = "frontend-subnet"
+    subnet_3 = {
+      name = "subnet-3"
       address_prefixes = [
-        "10.0.1.0/24",
-      ]
-    }
-    database_subnet = {
-      name = "database-subnet"
-      address_prefixes = [
-        "10.0.2.0/24",
+        "10.0.3.0/24",
       ]
     }
   }

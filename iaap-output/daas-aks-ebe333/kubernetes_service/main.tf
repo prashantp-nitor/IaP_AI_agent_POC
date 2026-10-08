@@ -5,7 +5,7 @@ data "azurerm_resource_group" "rg" {
 # --- Existing Networking Reference ---
 
 data "azurerm_virtual_network" "aks_vnet" {
-  name                = "production-network"
+  name                = "dev-net"
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
@@ -17,7 +17,7 @@ data "azurerm_subnet" "aks_subnet" {
 
 module "aks" {
   source  = "Azure/avm-res-containerservice-managedcluster/azurerm"
-  version = "0.8.3"
+  version = "0.6.6"
 
   name = var.cluster_name
   parent_id = data.azurerm_resource_group.rg.id

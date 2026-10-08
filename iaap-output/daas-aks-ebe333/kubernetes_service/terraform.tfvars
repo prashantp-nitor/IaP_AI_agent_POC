@@ -1,0 +1,12 @@
+region = "eastus"
+resource_group_name = "AZET-RG-Daas-Platform"
+cluster_name = "aks-cluster-1"
+kubernetes_version = "1.34.4"
+node_count = 3
+node_vm_size = "Standard_D2s_v3"
+network_plugin = "azure"
+network_policy = "azure"
+dns_prefix = "aks-cluster-1"
+enable_rbac = true
+os_disk_size_gb = 128
+extra_tags = {}

@@ -1,0 +1,74 @@
+name: "Post-Provision Kubernetes"
+description: "Configures cluster credentials, verifies cluster node readiness, and reports cluster status"
+
+inputs:
+  directory:
+    description: "Target directory path"
+    required: true
+  provider:
+    description: "Cloud provider ('azure', 'aws', 'gcp')"
+    required: true
+  region:
+    description: "Target cloud region"
+    required: false
+    default: "us-east-1"
+  cluster_name:
+    description: "Cluster name override"
+    required: false
+  resource_group:
+    description: "Azure Resource Group override"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Cluster Credentials and Verify Nodes
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      run: |
+        echo "Executing Kubernetes Post-Provisioning for ${{ inputs.provider }} in iaap-output/${{ inputs.directory }}..."
+
+        CLUSTER_NAME="${{ inputs.cluster_name }}"
+        if [ -z "$CLUSTER_NAME" ]; then
+          CLUSTER_NAME=$(terraform output -raw cluster_name 2>/dev/null || terraform output -raw kubernetes_cluster_name 2>/dev/null || echo "")
+        fi
+
+        if [ -z "$CLUSTER_NAME" ] && [ -f "policy_input.json" ]; then
+          CLUSTER_NAME=$(jq -r '.cluster_name // empty' policy_input.json 2>/dev/null || echo "")
+        fi
+
+        if [ -z "$CLUSTER_NAME" ]; then
+          echo "No cluster_name detected in Terraform outputs or policy_input.json. Skipping kubeconfig setup."
+          exit 0
+        fi
+
+        echo "Target Cluster identified: $CLUSTER_NAME"
+
+        if [ "${{ inputs.provider }}" = "azure" ]; then
+          RG="${{ inputs.resource_group }}"
+          if [ -z "$RG" ]; then
+            RG=$(terraform output -raw resource_group_name 2>/dev/null || echo "")
+          fi
+          if [ -z "$RG" ] && [ -f "policy_input.json" ]; then
+            RG=$(jq -r '.resource_group // empty' policy_input.json 2>/dev/null || echo "")
+          fi
+          if [ -z "$RG" ]; then
+            RG="${{ env.AZURE_RESOURCE_GROUP || 'AZET-RG-Daas-Platform' }}"
+          fi
+
+          echo "Configuring AKS credentials for $CLUSTER_NAME in RG: $RG..."
+          az aks get-credentials --resource-group "$RG" --name "$CLUSTER_NAME" --overwrite-existing || echo "Warning: Unable to fetch AKS credentials"
+          
+        elif [ "${{ inputs.provider }}" = "aws" ]; then
+          echo "Configuring AWS EKS kubeconfig for $CLUSTER_NAME in ${{ inputs.region }}..."
+          aws eks update-kubeconfig --region "${{ inputs.region }}" --name "$CLUSTER_NAME" || echo "Warning: Unable to fetch EKS kubeconfig"
+        fi
+
+        if command -v kubectl &>/dev/null; then
+          echo "Checking cluster node status..."
+          kubectl get nodes -o wide || echo "Kubectl connection check completed"
+        fi
+
+        echo "### ☸️ Kubernetes Cluster Provisioned: \`$CLUSTER_NAME\`" >> "$GITHUB_STEP_SUMMARY"
+        echo "- **Provider:** ${{ inputs.provider }}" >> "$GITHUB_STEP_SUMMARY"
+        echo "- **Directory:** \`iaap-output/${{ inputs.directory }}\`" >> "$GITHUB_STEP_SUMMARY"

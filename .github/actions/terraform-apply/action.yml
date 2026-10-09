@@ -1,0 +1,101 @@
+name: "Terraform Apply"
+description: "Downloads plan artifact, runs terraform apply, and automatically clears lock on failure"
+
+inputs:
+  directory:
+    description: "Target directory path relative to iaap-output/"
+    required: true
+  backend_type:
+    description: "Terraform backend type ('azurerm', 's3', 'gcs')"
+    required: false
+    default: "azurerm"
+  state_key:
+    description: "State file path key in the remote backend"
+    required: true
+  artifact_name:
+    description: "Plan artifact name to download"
+    required: true
+  tf_version:
+    description: "Terraform version to install"
+    required: false
+    default: "1.13.0"
+  azure_rg:
+    description: "Azure Resource Group for Terraform state storage"
+    required: false
+  azure_storage_account:
+    description: "Azure Storage Account for Terraform state storage"
+    required: false
+  azure_container:
+    description: "Azure Blob Container for state storage"
+    required: false
+    default: "deploy-storage"
+  azure_access_key:
+    description: "Azure Storage Access Key"
+    required: false
+  s3_bucket:
+    description: "AWS S3 Bucket for Terraform state storage"
+    required: false
+  aws_region:
+    description: "AWS Region for S3 state bucket"
+    required: false
+    default: "us-east-1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform CLI
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.tf_version }}
+
+    - name: Download Plan Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: iaap-output/${{ inputs.directory }}
+
+    - name: Terraform Init
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      env:
+        ARM_ACCESS_KEY: ${{ inputs.azure_access_key }}
+      run: |
+        echo "Re-initializing Terraform backend in iaap-output/${{ inputs.directory }}..."
+        if [ "${{ inputs.backend_type }}" = "s3" ]; then
+          BUCKET="${{ inputs.s3_bucket }}"
+          if [ -z "$BUCKET" ]; then
+            BUCKET="daas-terraform-state"
+          fi
+          terraform init \
+            -backend-config="bucket=$BUCKET" \
+            -backend-config="key=${{ inputs.state_key }}" \
+            -backend-config="region=${{ inputs.aws_region }}"
+        else
+          terraform init \
+            -backend-config="resource_group_name=${{ inputs.azure_rg }}" \
+            -backend-config="storage_account_name=${{ inputs.azure_storage_account }}" \
+            -backend-config="container_name=${{ inputs.azure_container }}" \
+            -backend-config="key=${{ inputs.state_key }}"
+        fi
+
+    - name: Terraform Apply
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      run: |
+        set +e
+        echo "Applying Terraform plan..."
+        terraform apply -auto-approve tfplan 2>&1 | tee apply.log
+        EXIT_CODE=${PIPESTATUS[0]}
+
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "Terraform apply failed with exit code $EXIT_CODE"
+          if [ -f apply.log ]; then
+            LOCK_ID=$(grep -oE "ID:\s+[0-9a-fA-F-]+" apply.log | head -1 | awk '{print $2}')
+            if [ -n "$LOCK_ID" ]; then
+              echo "Releasing Terraform state lock: $LOCK_ID"
+              terraform force-unlock -force "$LOCK_ID" || true
+            fi
+          fi
+          exit $EXIT_CODE
+        fi
+        echo "Terraform apply completed successfully."

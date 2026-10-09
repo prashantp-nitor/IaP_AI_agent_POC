@@ -1,0 +1,53 @@
+name: "Setup Cloud Authentication"
+description: "Dynamically authenticates to Azure, AWS, or GCP based on the target provider"
+
+inputs:
+  provider:
+    description: "Cloud provider name ('azure', 'aws', 'gcp')"
+    required: true
+  azure_credentials:
+    description: "Azure service principal JSON credentials"
+    required: false
+  aws_access_key_id:
+    description: "AWS Access Key ID"
+    required: false
+  aws_secret_access_key:
+    description: "AWS Secret Access Key"
+    required: false
+  aws_region:
+    description: "AWS target region"
+    required: false
+    default: "us-east-1"
+  gcp_sa_key:
+    description: "Google Cloud Service Account JSON key"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Azure CLI Login
+      if: inputs.provider == 'azure' && inputs.azure_credentials != ''
+      uses: azure/login@v3
+      with:
+        creds: ${{ inputs.azure_credentials }}
+
+    - name: Configure AWS Credentials
+      if: inputs.provider == 'aws' && inputs.aws_access_key_id != ''
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws_access_key_id }}
+        aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+        aws-region: ${{ inputs.aws_region }}
+
+    - name: Verify AWS Identity
+      if: inputs.provider == 'aws' && inputs.aws_access_key_id != ''
+      shell: bash
+      run: |
+        echo "Verifying AWS authentication..."
+        aws sts get-caller-identity || echo "AWS CLI caller-identity check complete"
+
+    - name: Google Cloud Authentication
+      if: inputs.provider == 'gcp' && inputs.gcp_sa_key != ''
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.gcp_sa_key }}

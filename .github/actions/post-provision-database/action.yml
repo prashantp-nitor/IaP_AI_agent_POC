@@ -1,0 +1,31 @@
+name: "Post-Provision Database"
+description: "Inspects database endpoints and records connection details"
+
+inputs:
+  directory:
+    description: "Target directory path"
+    required: true
+  provider:
+    description: "Cloud provider ('azure', 'aws', 'gcp')"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Inspect Database Endpoints
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      run: |
+        echo "Validating Database provisioning in iaap-output/${{ inputs.directory }}..."
+        ENDPOINT=$(terraform output -raw fqdn 2>/dev/null || terraform output -raw endpoint 2>/dev/null || terraform output -raw host 2>/dev/null || echo "")
+        PORT=$(terraform output -raw port 2>/dev/null || echo "5432")
+
+        if [ -n "$ENDPOINT" ]; then
+          echo "Discovered database endpoint: $ENDPOINT:$PORT"
+          echo "### 🗄️ Database Provisioned Successfully" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Host/FQDN:** \`$ENDPOINT\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Port:** \`$PORT\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Provider:** ${{ inputs.provider }}" >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "No explicit FQDN/endpoint exported in outputs for iaap-output/${{ inputs.directory }}"
+        fi

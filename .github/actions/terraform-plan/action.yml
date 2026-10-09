@@ -1,0 +1,99 @@
+name: "Terraform Plan"
+description: "Initializes Terraform with dynamic backend (S3/AzureRM), validates configuration, and generates plan artifact"
+
+inputs:
+  directory:
+    description: "Target directory path relative to iaap-output/"
+    required: true
+  backend_type:
+    description: "Terraform backend type ('azurerm', 's3', 'gcs')"
+    required: false
+    default: "azurerm"
+  state_key:
+    description: "State file path key in the remote backend"
+    required: true
+  tf_version:
+    description: "Terraform version to install"
+    required: false
+    default: "1.13.0"
+  azure_rg:
+    description: "Azure Resource Group for Terraform state storage"
+    required: false
+  azure_storage_account:
+    description: "Azure Storage Account for Terraform state storage"
+    required: false
+  azure_container:
+    description: "Azure Blob Container for state storage"
+    required: false
+    default: "deploy-storage"
+  azure_access_key:
+    description: "Azure Storage Access Key"
+    required: false
+  s3_bucket:
+    description: "AWS S3 Bucket for Terraform state storage"
+    required: false
+  aws_region:
+    description: "AWS Region for S3 state bucket"
+    required: false
+    default: "us-east-1"
+
+outputs:
+  artifact_name:
+    description: "Uploaded plan artifact name"
+    value: ${{ steps.plan_meta.outputs.artifact_name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform CLI
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.tf_version }}
+
+    - name: Determine Safe Artifact Name
+      id: plan_meta
+      shell: bash
+      run: |
+        SAFE_NAME=$(echo "${{ inputs.directory }}" | tr '/' '-')
+        echo "artifact_name=tfplan-$SAFE_NAME" >> "$GITHUB_OUTPUT"
+
+    - name: Terraform Init
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      env:
+        ARM_ACCESS_KEY: ${{ inputs.azure_access_key }}
+      run: |
+        echo "Initializing Terraform in iaap-output/${{ inputs.directory }} (Backend: ${{ inputs.backend_type }})..."
+        if [ "${{ inputs.backend_type }}" = "s3" ]; then
+          BUCKET="${{ inputs.s3_bucket }}"
+          if [ -z "$BUCKET" ]; then
+            BUCKET="daas-terraform-state"
+          fi
+          terraform init \
+            -backend-config="bucket=$BUCKET" \
+            -backend-config="key=${{ inputs.state_key }}" \
+            -backend-config="region=${{ inputs.aws_region }}"
+        else
+          terraform init \
+            -backend-config="resource_group_name=${{ inputs.azure_rg }}" \
+            -backend-config="storage_account_name=${{ inputs.azure_storage_account }}" \
+            -backend-config="container_name=${{ inputs.azure_container }}" \
+            -backend-config="key=${{ inputs.state_key }}"
+        fi
+
+    - name: Terraform Validate
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      run: terraform validate
+
+    - name: Terraform Plan
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      run: terraform plan -out=tfplan
+
+    - name: Upload Plan Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.plan_meta.outputs.artifact_name }}
+        path: iaap-output/${{ inputs.directory }}/tfplan
+        retention-days: 7

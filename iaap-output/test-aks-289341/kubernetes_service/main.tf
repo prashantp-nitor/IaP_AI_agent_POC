@@ -35,6 +35,8 @@ module "aks" {
     network_plugin = var.network_plugin
     network_policy = var.network_policy
     load_balancer_sku = "standard"
+    service_cidr = var.service_cidr
+    dns_service_ip = var.dns_service_ip
   }
   oidc_issuer_profile = {
     enabled = true

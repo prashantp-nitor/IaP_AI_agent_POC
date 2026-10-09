@@ -1,12 +1,9 @@
 name: Terraform Networking Deployment Pipeline
 
+# NOTE: Automated push triggers are now handled dynamically by main.yml.
+# This workflow is retained for manual ad-hoc executions.
 on:
-  push:
-    branches:
-      - networking
-    paths:
-      - 'iaap-output/*-vpc/**'
-      - 'iaap-output/*-vnet/**'
+  workflow_dispatch: {}
 
 concurrency:
   group: terraform-networking-${{ github.ref }}

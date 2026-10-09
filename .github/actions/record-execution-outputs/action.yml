@@ -1,0 +1,108 @@
+name: "Record Execution Outputs"
+description: "Captures Terraform outputs and saves deployment execution records directly into the PostgreSQL database"
+
+inputs:
+  directory:
+    description: "Target directory path"
+    required: true
+  provider:
+    description: "Cloud provider"
+    required: true
+  job_id:
+    description: "Deployment Job ID"
+    required: false
+  database_url:
+    description: "PostgreSQL Database Connection String"
+    required: false
+  commit_sha:
+    description: "Commit SHA"
+    required: false
+  run_id:
+    description: "GitHub Run ID"
+    required: false
+  job_status:
+    description: "Job execution status"
+    required: false
+    default: "success"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Save Execution Outputs to Database
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      env:
+        DATABASE_URL: ${{ inputs.database_url }}
+        JOB_ID: ${{ inputs.job_id || inputs.directory }}
+        PROVIDER: ${{ inputs.provider }}
+        COMMIT_SHA: ${{ inputs.commit_sha || github.sha }}
+        RUN_ID: ${{ inputs.run_id || github.run_id }}
+        JOB_STATUS: ${{ inputs.job_status }}
+      run: |
+        echo "Capturing Terraform outputs in iaap-output/${{ inputs.directory }}..."
+        TF_OUTPUTS=$(terraform output -json 2>/dev/null || echo '{}')
+
+        if [ -z "$DATABASE_URL" ]; then
+          echo "DATABASE_URL is not provided. Skipping database execution record."
+          exit 0
+        fi
+
+        python3 -m pip install --quiet psycopg2-binary 2>/dev/null || true
+
+        python3 -c "
+        import os, json, psycopg2
+
+        db_url = os.environ.get('DATABASE_URL')
+        job_id = os.environ.get('JOB_ID')
+        provider = os.environ.get('PROVIDER') or 'azure'
+        commit_sha = os.environ.get('COMMIT_SHA')
+        run_id = os.environ.get('RUN_ID')
+        job_status = os.environ.get('JOB_STATUS')
+        tf_outputs_raw = '''$TF_OUTPUTS'''
+
+        try:
+            tf_outputs = json.loads(tf_outputs_raw)
+        except Exception:
+            tf_outputs = {}
+
+        infra_details = {
+            'provider': provider,
+            'directory': job_id
+        }
+        deployment_details = {
+            'commit_sha': commit_sha,
+            'github_run_id': run_id
+        }
+        deployment_outputs = {
+            'status': job_status
+        }
+
+        try:
+            conn = psycopg2.connect(db_url)
+            cur = conn.cursor()
+
+            sql = '''
+            INSERT INTO deployment_execution_outputs (job_id, infra_details, infra_outputs, deployment_details, deployment_outputs, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+            ON CONFLICT (job_id) DO UPDATE SET
+                infra_details = EXCLUDED.infra_details,
+                infra_outputs = EXCLUDED.infra_outputs,
+                deployment_details = EXCLUDED.deployment_details,
+                deployment_outputs = EXCLUDED.deployment_outputs,
+                updated_at = NOW();
+            '''
+
+            cur.execute(sql, (
+                job_id,
+                json.dumps(infra_details),
+                json.dumps(tf_outputs),
+                json.dumps(deployment_details),
+                json.dumps(deployment_outputs)
+            ))
+            conn.commit()
+            cur.close()
+            conn.close()
+            print(f'Successfully recorded execution outputs for job_id: {job_id}')
+        except Exception as exc:
+            print(f'Database record update error: {exc}')
+        "

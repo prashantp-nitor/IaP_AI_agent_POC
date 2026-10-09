@@ -46,6 +46,18 @@ variable "network_policy" {
   default     = "azure"
 }
 
+variable "service_cidr" {
+  description = "CIDR for Kubernetes service cluster IPs; must not overlap the VNet's address space"
+  type        = string
+  default     = "172.16.0.0/16"
+}
+
+variable "dns_service_ip" {
+  description = "IP address for the Kubernetes DNS service; must fall within service_cidr"
+  type        = string
+  default     = "172.16.0.10"
+}
+
 variable "dns_prefix" {
   description = "DNS prefix for the AKS cluster"
   type        = string

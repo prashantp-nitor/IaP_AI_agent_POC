@@ -1,0 +1,29 @@
+name: "Post-Provision Networking"
+description: "Discovers and reports provisioned network topology (VPC/VNet IDs and Subnets)"
+
+inputs:
+  directory:
+    description: "Target directory path"
+    required: true
+  provider:
+    description: "Cloud provider ('azure', 'aws', 'gcp')"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Inspect Network Outputs
+      shell: bash
+      working-directory: iaap-output/${{ inputs.directory }}
+      run: |
+        echo "Validating Networking infrastructure in iaap-output/${{ inputs.directory }}..."
+        NET_ID=$(terraform output -raw vnet_id 2>/dev/null || terraform output -raw vpc_id 2>/dev/null || terraform output -raw id 2>/dev/null || echo "")
+        NET_NAME=$(terraform output -raw vnet_name 2>/dev/null || terraform output -raw vpc_name 2>/dev/null || terraform output -raw name 2>/dev/null || echo "")
+
+        echo "### 🌐 Networking Infrastructure Provisioned" >> "$GITHUB_STEP_SUMMARY"
+        echo "- **Network Name:** \`${NET_NAME:-$inputs.directory}\`" >> "$GITHUB_STEP_SUMMARY"
+        if [ -n "$NET_ID" ]; then
+          echo "- **Resource ID:** \`$NET_ID\`" >> "$GITHUB_STEP_SUMMARY"
+        fi
+        echo "- **Provider:** ${{ inputs.provider }}" >> "$GITHUB_STEP_SUMMARY"
+        echo "- **Directory:** \`iaap-output/${{ inputs.directory }}\`" >> "$GITHUB_STEP_SUMMARY"

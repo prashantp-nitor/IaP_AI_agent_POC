@@ -1,0 +1,21 @@
+{
+  "vnet_name": "production-network",
+  "region": "eastus",
+  "address_space": "10.0.0.0/16",
+  "subnet_prefix": "10.0.1.0/24",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "subnets": [
+    {
+      "name": "frontend-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "public"
+    },
+    {
+      "name": "database-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    }
+  ],
+  "_provider": "azure",
+  "_resource_type": "virtual_network"
+}

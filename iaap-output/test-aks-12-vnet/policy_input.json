@@ -1,0 +1,16 @@
+{
+  "vnet_name": "dev-vnet",
+  "region": "eastus",
+  "address_space": "10.0.0.0/16",
+  "subnet_prefix": "10.0.3.0/24",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "subnets": [
+    {
+      "name": "subnet-3",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "_provider": "azure",
+  "_resource_type": "virtual_network"
+}

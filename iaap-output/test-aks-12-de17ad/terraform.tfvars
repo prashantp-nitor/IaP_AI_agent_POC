@@ -1,0 +1,19 @@
+region = "eastus"
+resource_group_name = "AZET-RG-Daas-Platform"
+extra_tags = {
+  ManagedBy = "IAAP"
+  environment = "prod"
+  owner = "admin@example.com"
+  project = "test-aks-12"
+  job_id = "de17ad76-b232-43bb-80d8-770b0cbca6e3"
+  project_folder = "test-aks-12-de17ad"
+}
+cluster_name = "aks-cluster-1"
+kubernetes_version = "1.34.4"
+node_count = 1
+node_vm_size = "Standard_D2s_v3"
+network_plugin = "azure"
+network_policy = "azure"
+dns_prefix = "aks-cluster-1"
+enable_rbac = true
+os_disk_size_gb = 128

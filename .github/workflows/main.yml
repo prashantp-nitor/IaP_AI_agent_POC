@@ -4,8 +4,8 @@ on:
   workflow_dispatch: {}
   push:
     branches:
-      - main
-      - networking
+      - feature/update-pipeline
+      - 
     paths:
       - 'iaap-output/**'
 

@@ -1,0 +1,36 @@
+{
+  "cluster_name": "aks-3-tier-app-fitcart-321-aks",
+  "region": "eastus",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "admin@company.com",
+    "project": "3-tier-app-fitcart-321",
+    "job_id": "b603659e-8af1-4f61-a04f-73ede24302bf",
+    "project_folder": "3-tier-app-fitcart-321-b60365"
+  },
+  "server_name": "3-tier-app-fitcart-321-db",
+  "sku_name": "standard",
+  "storage_mb": "32768",
+  "registry_name": "tier3fitcartacr",
+  "sku": "Standard",
+  "admin_enabled": "False",
+  "type": "azure_key_vault",
+  "registryName": "tier3fitcartacr",
+  "adminEnabled": false,
+  "field_values": {
+    "vault_name": "tier3fircartakv",
+    "sku_name": "standard"
+  },
+  "vault_name": "tier3fircartakv",
+  "vaultName": "tier3fircartakv",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

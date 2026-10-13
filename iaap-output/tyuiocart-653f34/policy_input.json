@@ -1,0 +1,58 @@
+{
+  "vnet_name": "tyuiocart-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "westeurope",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "tyuiocart",
+    "job_id": "653f34e6-e18b-4f49-8673-0b414d1c357f",
+    "project_folder": "tyuiocart-653f34"
+  },
+  "cluster_name": "tyuiocart-aks",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "server_name": "tyuiocart-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "vault_name": "tyuiocartkv-653f34",
+  "type": "azure_container_registry",
+  "vaultName": "tyuiocartkv",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "field_values": {
+    "registry_name": "tyuiocartacr",
+    "sku": "Standard",
+    "admin_enabled": false
+  },
+  "registry_name": "tyuiocartacr653f34",
+  "admin_enabled": "False",
+  "registryName": "tyuiocartacr",
+  "adminEnabled": false,
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

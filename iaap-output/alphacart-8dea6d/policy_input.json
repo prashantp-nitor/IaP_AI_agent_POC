@@ -1,0 +1,57 @@
+{
+  "cluster_name": "alphacart-aks",
+  "region": "westeurope",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "alphacart",
+    "job_id": "8dea6de9-c06a-4ae7-873f-a89234f7d486",
+    "project_folder": "alphacart-8dea6d"
+  },
+  "server_name": "alphacart-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "vault_name": "alphacartkv-8dea6d",
+  "type": "virtual_network",
+  "vaultName": "alphacartkv",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "field_values": {
+    "vnet_name": "alphacart-network",
+    "address_space": "10.0.0.0/16"
+  },
+  "registry_name": "alphacartacr8dea6d",
+  "admin_enabled": "False",
+  "registryName": "alphacartacr",
+  "adminEnabled": false,
+  "vnet_name": "alphacart-network",
+  "address_space": "10.0.0.0/16",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "vnetName": "alphacart-network",
+  "addressSpace": "10.0.0.0/16",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

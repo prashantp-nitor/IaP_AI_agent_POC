@@ -1,0 +1,36 @@
+{
+  "cluster_name": "fitcart-app-123-aks",
+  "region": "eastus",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "admin@company.com",
+    "project": "fitcart-app-123",
+    "job_id": "ba6e772a-f577-4484-a75c-1d37c3d377b0",
+    "project_folder": "fitcart-app-123-ba6e77"
+  },
+  "server_name": "fitcart-app-123-db",
+  "sku_name": "standard",
+  "storage_mb": "32768",
+  "registry_name": "projectacrfit",
+  "sku": "Standard",
+  "admin_enabled": "False",
+  "type": "azure_key_vault",
+  "registryName": "projectacrfit",
+  "adminEnabled": false,
+  "field_values": {
+    "vault_name": "projectakvfit",
+    "sku_name": "standard"
+  },
+  "vault_name": "projectakvfit",
+  "vaultName": "projectakvfit",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

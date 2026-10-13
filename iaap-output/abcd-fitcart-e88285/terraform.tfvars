@@ -1,0 +1,33 @@
+region = "eastus"
+resource_group_name = "AZET-RG-Daas-Platform"
+extra_tags = {
+  ManagedBy = "IAAP"
+  environment = "prod"
+  owner = "user@company.com"
+  project = "abcd-fitcart"
+  job_id = "e88285db-7831-486c-966b-347bda996221"
+  project_folder = "abcd-fitcart-e88285"
+}
+cluster_name = "abcd-fitcart-aks"
+kubernetes_version = "1.34.4"
+node_count = 2
+node_vm_size = "Standard_D2s_v3"
+network_plugin = "azure"
+network_policy = "azure"
+dns_prefix = "abcd-fitcart-aks"
+enable_rbac = true
+os_disk_size_gb = 30
+postgres_server_name = "abcd-fitcart-db"
+postgres_sku_name = "GP_Standard_D2s_v3"
+postgres_version = "14"
+postgres_storage_mb = 32768
+postgres_backup_retention_days = 7
+postgres_admin_username = "pgadmin"
+postgres_admin_password = "9=aQ2eSD+Od54Oo%"
+postgres_database_name = "appdb"
+acr_name = "abcdfitcart12e88285"
+acr_sku = "Standard"
+acr_admin_enabled = false
+acr_zone_redundancy_enabled = false
+key_vault_name = "abcdfitcartkv-e88285"
+key_vault_sku = "standard"

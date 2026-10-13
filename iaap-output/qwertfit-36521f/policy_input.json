@@ -1,0 +1,62 @@
+{
+  "cluster_name": "qwertfit-aks",
+  "region": "westeurope",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "type": "virtual_network",
+  "minNodes": 1,
+  "maxNodes": 2,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "qwertfit",
+    "job_id": "36521f5a-f04c-4909-b224-a8e7a3defbad",
+    "project_folder": "qwertfit-36521f"
+  },
+  "server_name": "qwertfit-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "vault_name": "qwertfitkv-36521f",
+  "vaultName": "qwertfitkv",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "field_values": {
+    "vnet_name": "qwertfit-network",
+    "address_space": "10.0.0.0/16"
+  },
+  "registry_name": "qwertfitacr36521f",
+  "admin_enabled": "False",
+  "registryName": "qwertfitacr",
+  "adminEnabled": false,
+  "vnet_name": "qwertfit-network",
+  "address_space": "10.0.0.0/16",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "vnetName": "qwertfit-network",
+  "addressSpace": "10.0.0.0/16",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

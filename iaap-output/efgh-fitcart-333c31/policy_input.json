@@ -1,0 +1,36 @@
+{
+  "cluster_name": "efgh-fitcart-aks",
+  "region": "westus",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "efgh-fitcart",
+    "job_id": "333c31ca-3ce6-491e-be8c-a774d0f82383",
+    "project_folder": "efgh-fitcart-333c31"
+  },
+  "server_name": "efgh-fitcart-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "registry_name": "efghcartacr333c31",
+  "admin_enabled": "False",
+  "type": "azure_key_vault",
+  "registryName": "efghcartacr",
+  "adminEnabled": false,
+  "field_values": {
+    "vault_name": "efghcartkv",
+    "sku_name": "standard"
+  },
+  "vault_name": "efghcartkv-333c31",
+  "vaultName": "efghcartkv",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

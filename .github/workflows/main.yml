@@ -175,6 +175,7 @@ jobs:
       TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       TF_VAR_db_password: ${{ secrets.RDS_DB_PASSWORD }}
+      TF_VAR_postgres_admin_password: ${{ secrets.AZURE_POSTGRES_PASSWORD || secrets.RDS_DB_PASSWORD || '' }}
 
     steps:
       - name: Checkout Code
@@ -232,7 +233,7 @@ jobs:
 
       # Call respective action for Databases (PostgreSQL / RDS / Redis)
       - name: Post-Provision Database Action
-        if: matrix.item.resource_category == 'database'
+        if: matrix.item.resource_category == 'database' || matrix.item.resource_category == 'kubernetes'
         uses: ./.github/actions/post-provision-database
         with:
           directory: ${{ matrix.item.directory }}

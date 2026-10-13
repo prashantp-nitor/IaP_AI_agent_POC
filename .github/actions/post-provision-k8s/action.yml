@@ -45,9 +45,9 @@ runs:
         echo "Target Cluster identified: $CLUSTER_NAME"
 
         if [ "${{ inputs.provider }}" = "azure" ]; then
-          RG="${{ inputs.resource_group }}"
+          RG=$(terraform output -raw resource_group_name 2>/dev/null || echo "")
           if [ -z "$RG" ]; then
-            RG=$(terraform output -raw resource_group_name 2>/dev/null || echo "")
+            RG="${{ inputs.resource_group }}"
           fi
           if [ -z "$RG" ] && [ -f "policy_input.json" ]; then
             RG=$(jq -r '.resource_group // empty' policy_input.json 2>/dev/null || echo "")

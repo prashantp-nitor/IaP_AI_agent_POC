@@ -1,0 +1,157 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: billing-cart
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.services.backend.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: backend
+          image: "{{ .Values.services.backend.image.repository }}:{{ .Values.services.backend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.backend.image.pullPolicy }}"
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.backend.containerPort | default 8080 }}
+              name: port-8080
+            
+          
+          env:
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          resources:
+            requests:
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "2048Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "4096Mi" }}"
+          {{- if .Values.global.secretProviderClass }}
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+      {{- if .Values.global.secretProviderClass }}
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}
+
+---
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: billing-cart
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.services.frontend.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: frontend
+          image: "{{ .Values.services.frontend.image.repository }}:{{ .Values.services.frontend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.frontend.image.pullPolicy }}"
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.frontend.containerPort | default 80 }}
+              name: port-80
+            
+          
+          env:
+            
+          resources:
+            requests:
+              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.frontend.resources.requests.memory | default "2048Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "4096Mi" }}"
+          {{- if .Values.global.secretProviderClass }}
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+      {{- if .Values.global.secretProviderClass }}
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}
+
+---

@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.backend.serviceName | default "backend" }}
+  namespace: billing-cart
+  labels:
+    app: backend
+spec:
+  type: ClusterIP
+  ports:
+    
+    - port: {{ index .Values.services.backend.ports 0 | default 8080 }}
+      targetPort: {{ .Values.services.backend.containerPort | default 8080 }}
+      protocol: TCP
+      name: http-8080
+    
+  selector:
+    app: backend
+    
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.frontend.serviceName | default "frontend" }}
+  namespace: billing-cart
+  labels:
+    app: frontend
+spec:
+  type: ClusterIP
+  ports:
+    
+    - port: {{ index .Values.services.frontend.ports 0 | default 80 }}
+      targetPort: {{ .Values.services.frontend.containerPort | default 80 }}
+      protocol: TCP
+      name: http-80
+    
+  selector:
+    app: frontend
+    
+---

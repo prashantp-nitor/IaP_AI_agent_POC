@@ -1,0 +1,53 @@
+{
+  "vnet_name": "test-demo-17-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "westus",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "test-demo-17",
+    "job_id": "37af5aed-d1b6-4e00-856b-8e75e5c1314b",
+    "project_folder": "test-demo-17-37af5a"
+  },
+  "cluster_name": "test-demo-17-aks",
+  "kubernetes_version": "1.34.4",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "type": "compute",
+  "minNodes": 1,
+  "maxNodes": 1,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "server_name": "test-demo-17-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "vault_name": "test-demo-17-kv-37af5a",
+  "registry_name": "testdemo17acr37af5a",
+  "admin_enabled": "False",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

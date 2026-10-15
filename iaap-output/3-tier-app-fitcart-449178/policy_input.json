@@ -1,0 +1,52 @@
+{
+  "server_name": "3-tier-app-fitcart-db",
+  "region": "eastus",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "3-tier-app-fitcart",
+    "job_id": "4491784c-8e67-4f50-932e-af079e8e2d73",
+    "project_folder": "3-tier-app-fitcart-449178"
+  },
+  "vault_name": "testkv151026-449178",
+  "type": "virtual_network",
+  "vaultName": "testkv151026",
+  "skuName": "standard",
+  "softDeleteRetentionDays": 90,
+  "field_values": {
+    "vnet_name": "testnw1151026",
+    "address_space": "10.0.0.0/16"
+  },
+  "registry_name": "testacr151026449178",
+  "admin_enabled": "False",
+  "registryName": "testacr151026",
+  "adminEnabled": false,
+  "vnet_name": "testnw1151026",
+  "address_space": "10.0.0.0/16",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "vnetName": "testnw1151026",
+  "addressSpace": "10.0.0.0/16",
+  "_provider": "azure",
+  "_resource_type": "postgresql_flexible_server"
+}

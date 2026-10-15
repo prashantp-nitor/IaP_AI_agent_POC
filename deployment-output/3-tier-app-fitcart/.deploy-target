@@ -1,0 +1,5 @@
+cluster_name: test-demo-17-aks
+resource_group: AZET-RG-Daas-Platform
+region: westus
+cloud_provider: azure
+namespace: 3-tier-app-fitcart

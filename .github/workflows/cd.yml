@@ -8,18 +8,18 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/billing-cart/**"
+      - "deployment-output/3-tier-app-fitcart/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "043944fb-9bfd-40dc-aff4-96118fa59aa9"
+        default: "795db0e2-889e-4f0d-8d2b-a7ec912b085b"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-043944fb"
+        default: "sha-795db0e2"
 
 permissions:
   id-token: write
@@ -27,8 +27,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: billing-cart
-  JOB_ID: ${{ inputs.job_id || '043944fb-9bfd-40dc-aff4-96118fa59aa9' }}
+  NAMESPACE: 3-tier-app-fitcart
+  JOB_ID: ${{ inputs.job_id || '795db0e2-889e-4f0d-8d2b-a7ec912b085b' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -45,7 +45,7 @@ jobs:
       - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/billing-cart/.deploy-target"
+          DEPLOY_TARGET_FILE="deployment-output/3-tier-app-fitcart/.deploy-target"
           if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
             DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
           fi
@@ -91,7 +91,7 @@ jobs:
         run: |
           PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
           if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/billing-cart"
+            PROJECT_DIR="deployment-output/3-tier-app-fitcart"
           fi
           if [ ! -d "$PROJECT_DIR" ]; then
             PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
@@ -110,9 +110,9 @@ jobs:
           fi
 
           for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "billing-cart")
+            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "3-tier-app-fitcart")
             if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="billing-cart"
+              CHART_NAME="3-tier-app-fitcart"
             fi
             echo "=========================================="
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
@@ -123,8 +123,8 @@ jobs:
               --create-namespace \
               --set global.registry=${{ env.REGISTRY }} \
               --set global.deploymentStrategy=rolling \
-              --set services.backend.image.tag=${{ inputs.image_tag || 'sha-043944fb' }} \
-              --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-043944fb' }} \ \
+              --set services.backend.image.tag=${{ inputs.image_tag || 'sha-795db0e2' }} \
+              --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-795db0e2' }} \ \
               --timeout 5m0s
           done
 
@@ -187,16 +187,16 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "eastus"
+          REGION: "westus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "billing-cart"
+          PROJECT_NAME: "3-tier-app-fitcart"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_lqxe72", "POSTGRES_PASSWORD": "bhbkAP5bS#odu#knA0pRBa3p", "POSTGRES_USER": "post_y2bxy3"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_6xgevm", "POSTGRES_PASSWORD": "3ucc5\u0026Wm#XmDTM78sBZyA*fq", "POSTGRES_USER": "post_h494l1"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -212,4 +212,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall billing-cart -n ${{ env.NAMESPACE }} || true
+          helm uninstall 3-tier-app-fitcart -n ${{ env.NAMESPACE }} || true

@@ -8,18 +8,18 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/3-tier-app-fitcart/**"
+      - "deployment-output/test-cart/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "795db0e2-889e-4f0d-8d2b-a7ec912b085b"
+        default: "ce128efe-00d7-4a1d-ae23-c54dfeb1aced"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-795db0e2"
+        default: "sha-ce128efe"
 
 permissions:
   id-token: write
@@ -27,8 +27,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: 3-tier-app-fitcart
-  JOB_ID: ${{ inputs.job_id || '795db0e2-889e-4f0d-8d2b-a7ec912b085b' }}
+  NAMESPACE: test-cart
+  JOB_ID: ${{ inputs.job_id || 'ce128efe-00d7-4a1d-ae23-c54dfeb1aced' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -45,7 +45,7 @@ jobs:
       - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/3-tier-app-fitcart/.deploy-target"
+          DEPLOY_TARGET_FILE="deployment-output/test-cart/.deploy-target"
           if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
             DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
           fi
@@ -91,7 +91,7 @@ jobs:
         run: |
           PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
           if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/3-tier-app-fitcart"
+            PROJECT_DIR="deployment-output/test-cart"
           fi
           if [ ! -d "$PROJECT_DIR" ]; then
             PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
@@ -110,9 +110,9 @@ jobs:
           fi
 
           for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "3-tier-app-fitcart")
+            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "test-cart")
             if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="3-tier-app-fitcart"
+              CHART_NAME="test-cart"
             fi
             echo "=========================================="
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
@@ -123,8 +123,8 @@ jobs:
               --create-namespace \
               --set global.registry=${{ env.REGISTRY }} \
               --set global.deploymentStrategy=rolling \
-              --set services.backend.image.tag=${{ inputs.image_tag || 'sha-795db0e2' }} \
-              --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-795db0e2' }} \ \
+              --set services.backend.image.tag=${{ inputs.image_tag || 'sha-ce128efe' }} \
+              --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-ce128efe' }} \ \
               --timeout 5m0s
           done
 
@@ -189,14 +189,14 @@ jobs:
           PROVIDER: "azure"
           REGION: "westus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "3-tier-app-fitcart"
+          PROJECT_NAME: "test-cart"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_6xgevm", "POSTGRES_PASSWORD": "3ucc5\u0026Wm#XmDTM78sBZyA*fq", "POSTGRES_USER": "post_h494l1"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_yw2wye", "POSTGRES_PASSWORD": "^gkYPZ5\u00264jWMTMa!vZQYT0Y*", "POSTGRES_USER": "post_o3z42k"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -212,4 +212,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall 3-tier-app-fitcart -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-cart -n ${{ env.NAMESPACE }} || true

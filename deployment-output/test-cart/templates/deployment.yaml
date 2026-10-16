@@ -1,0 +1,232 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.backend.serviceName | default "backend" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.services.backend.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "test-cart.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: backend
+          image: "{{ .Values.services.backend.image.repository }}:{{ .Values.services.backend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.backend.image.pullPolicy }}"
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.backend.containerPort | default 8080 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          
+          {{- if .Values.probes.readiness.enabled }}
+          readinessProbe:
+            {{ .Values.probes.readiness.type }}:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.probes.readiness.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            successThreshold: {{ .Values.probes.readiness.successThreshold }}
+          {{- end }}
+          {{- if .Values.probes.liveness.enabled }}
+          livenessProbe:
+            {{ .Values.probes.liveness.type }}:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.probes.liveness.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            successThreshold: {{ .Values.probes.liveness.successThreshold }}
+          {{- end }}
+          {{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            {{ .Values.probes.startup.type }}:
+              path: {{ .Values.probes.startup.path }}
+              port: {{ .Values.probes.startup.port | default "http" }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+          {{- end }}
+          resources:
+            requests:
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "2048Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "4096Mi" }}"
+          {{- if .Values.global.secretProviderClass }}
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+      {{- if .Values.global.secretProviderClass }}
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.frontend.serviceName | default "frontend" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.services.frontend.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "test-cart.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: frontend
+          image: "{{ .Values.services.frontend.image.repository }}:{{ .Values.services.frontend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.frontend.image.pullPolicy }}"
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.frontend.containerPort | default 80 }}
+              name: http
+            
+          
+          
+          {{- if .Values.probes.readiness.enabled }}
+          readinessProbe:
+            {{ .Values.probes.readiness.type }}:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.probes.readiness.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            successThreshold: {{ .Values.probes.readiness.successThreshold }}
+          {{- end }}
+          {{- if .Values.probes.liveness.enabled }}
+          livenessProbe:
+            {{ .Values.probes.liveness.type }}:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.probes.liveness.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            successThreshold: {{ .Values.probes.liveness.successThreshold }}
+          {{- end }}
+          {{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            {{ .Values.probes.startup.type }}:
+              path: {{ .Values.probes.startup.path }}
+              port: {{ .Values.probes.startup.port | default "http" }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+          {{- end }}
+          resources:
+            requests:
+              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.frontend.resources.requests.memory | default "2048Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "4096Mi" }}"
+          {{- if .Values.global.secretProviderClass }}
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+      {{- if .Values.global.secretProviderClass }}
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}

@@ -1,0 +1,5 @@
+cluster_name: tier3-app-fit-aks161026
+resource_group: AZET-RG-Daas-Platform
+region: westus
+cloud_provider: azure
+namespace: test-cart

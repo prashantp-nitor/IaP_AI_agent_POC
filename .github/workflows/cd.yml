@@ -124,7 +124,7 @@ jobs:
               --set global.registry=${{ env.REGISTRY }} \
               --set global.deploymentStrategy=rolling \
               --set services.backend.image.tag=${{ inputs.image_tag || 'sha-ce128efe' }} \
-              --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-ce128efe' }} \ \
+              --set services.frontend.image.tag=${{ inputs.image_tag || 'sha-ce128efe' }} \ 
               --timeout 5m0s
           done
 

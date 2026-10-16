@@ -1,0 +1,42 @@
+region = "eastus"
+resource_group_name = "AZET-RG-Daas-Platform"
+extra_tags = {
+  ManagedBy = "IAAP"
+  environment = "prod"
+  owner = "user@company.com"
+  project = "3-tier-app-fitcart"
+  job_id = "20d70859-4937-4279-88de-b6570ec0cfc7"
+  project_folder = "3-tier-app-fitcart-20d708"
+}
+vnet_name = "3-tier-app-fit-network161026"
+address_space = [
+  "10.0.0.0/16",
+]
+cluster_name = "tier3-app-fit-aks161026"
+kubernetes_version = "1.34"
+node_count = 2
+node_vm_size = "Standard_D2s_v3"
+network_plugin = "azure"
+network_policy = "azure"
+dns_prefix = "tier3-app-fit-aks161026"
+enable_rbac = true
+os_disk_size_gb = 30
+postgres_server_name = "3-tier-app-fit-db161026"
+postgres_sku_name = "B_Standard_B1ms"
+postgres_version = "15"
+postgres_storage_mb = 32768
+postgres_backup_retention_days = 14
+postgres_admin_username = "pgadmin"
+postgres_admin_password = "*HWngXR=h%63srWS"
+postgres_database_name = "appdb"
+acr_name = "3tierappfitacr20d708161026"
+acr_sku = "Standard"
+acr_admin_enabled = false
+acr_zone_redundancy_enabled = false
+key_vault_name = "kv-3-tier-app-fit-20d708"
+key_vault_sku = "standard"
+key_vault_soft_delete_retention_days = 90
+account_name = "3tierappfit20d708sa16102"
+account_tier = "Standard"
+replication = "LRS"
+access_tier = "Hot"

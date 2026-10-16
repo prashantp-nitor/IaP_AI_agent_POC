@@ -1,0 +1,64 @@
+{
+  "vnet_name": "3-tier-app-fitcart-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "eastus",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "3-tier-app-fitcart",
+    "job_id": "471670d7-f56f-42a4-b9c6-9a1a98617582",
+    "project_folder": "3-tier-app-fitcart-471670"
+  },
+  "server_name": "3-tier-app-fit-dbnew161026",
+  "storage_mb": "32768",
+  "subnet_name": "db-subnet",
+  "high_availability": true,
+  "backup_retention_days": "14",
+  "engine": "PostgreSQL",
+  "version": "15",
+  "sku_name": "B_Standard_B2s",
+  "sku": "B_Standard_B2s",
+  "type": "database",
+  "serverName": "3-tier-app-fit-dbnew161026",
+  "subnetName": "db-subnet",
+  "skuName": "B_Standard_B2s",
+  "storageGb": 32,
+  "highAvailability": true,
+  "backupRetentionDays": 14,
+  "adminPassword": "",
+  "field_values": {
+    "server_name": "3-tier-app-fit-dbnew161026",
+    "subnet_name": "db-subnet",
+    "high_availability": true,
+    "backup_retention_days": 14,
+    "administrator_password": "",
+    "engine": "PostgreSQL",
+    "version": "15",
+    "sku_name": "B_Standard_B2s",
+    "sku": "B_Standard_B2s",
+    "storage_mb": "32768"
+  },
+  "_provider": "azure",
+  "_resource_type": "postgresql_flexible_server"
+}

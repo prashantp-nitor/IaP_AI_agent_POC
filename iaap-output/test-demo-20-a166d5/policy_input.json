@@ -1,0 +1,84 @@
+{
+  "vnet_name": "test-demo-20-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "westus",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "test-demo-20",
+    "job_id": "a166d5f9-7cc7-47ff-b57f-d51cd184f532",
+    "project_folder": "test-demo-20-a166d5"
+  },
+  "cluster_name": "test-demo-20-aks",
+  "kubernetes_version": "1.34",
+  "node_count": "1",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "high_availability": true,
+  "min_count": 1,
+  "max_count": 2,
+  "enable_auto_scaling": true,
+  "type": "database",
+  "clusterName": "test-demo-20-aks",
+  "highAvailability": true,
+  "minNodes": 1,
+  "maxNodes": 2,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "field_values": {
+    "server_name": "test-demo-20-db",
+    "subnet_name": "db-subnet",
+    "high_availability": true,
+    "backup_retention_days": 14,
+    "administrator_password": "",
+    "engine": "PostgreSQL",
+    "version": "15",
+    "sku_name": "B_Standard_B1ms",
+    "sku": "B_Standard_B1ms",
+    "storage_mb": "32768"
+  },
+  "subnet_name": "db-subnet",
+  "server_name": "test-demo-20-db",
+  "storage_mb": "32768",
+  "backup_retention_days": "14",
+  "engine": "PostgreSQL",
+  "version": "15",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "serverName": "test-demo-20-db",
+  "subnetName": "db-subnet",
+  "skuName": "B_Standard_B1ms",
+  "storageGb": 32,
+  "backupRetentionDays": 14,
+  "adminPassword": "",
+  "vault_name": "test-demo-20-kv-a166d5",
+  "soft_delete_retention_days": 90,
+  "registry_name": "testdemo20acra166d5",
+  "admin_enabled": "False",
+  "frontend_repo": "test-demo-20-frontend",
+  "backend_repo": "test-demo-20-backend",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

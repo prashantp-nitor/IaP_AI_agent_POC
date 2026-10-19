@@ -1,4 +1,4 @@
-region = "eastus"
+region = "eastus2"
 resource_group_name = "AZET-RG-Daas-Platform"
 extra_tags = {
   ManagedBy = "IAAP"

@@ -1,0 +1,6 @@
+cluster_name: test-demo-20-aks
+resource_group: AZET-RG-Daas-Platform
+region: westus
+cloud_provider: azure
+namespace: test-demo-20
+registry: azdaasdeployment.azurecr.io

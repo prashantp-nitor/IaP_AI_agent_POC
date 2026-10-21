@@ -1,0 +1,5 @@
+1. Get the application URL:
+   kubectl get service --namespace {{ .Release.Namespace }}
+
+2. View pods status:
+   kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}

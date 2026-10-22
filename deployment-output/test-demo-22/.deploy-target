@@ -3,4 +3,4 @@ resource_group: AZET-RG-Daas-Platform
 region: westus
 cloud_provider: azure
 namespace: test-demo-22
-registry: testdemo22acrd3c09b.azurecr.io
+registry: azdaasdeployment.azurecr.io

@@ -52,8 +52,8 @@ services:
     containerPort: 8080
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/azdaasdeployment-azurecr-io"
-      tag: "sha-1a276844"
+      repository: "azdaasdeployment.azurecr.io/backend"
+      tag: "sha-71630c19"
       pullPolicy: IfNotPresent
     ports:
       
@@ -80,7 +80,7 @@ services:
     replicaCount: 1
     image:
       repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "sha-1a276844"
+      tag: "sha-71630c19"
       pullPolicy: IfNotPresent
     ports:
       
@@ -109,7 +109,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "ZY2z7#M93P*30Ic09dnkYzWE"
+  password: "GMCxP%53fDltBrQ1*lTvbK2d"
   migrations:
     enabled: false
   
@@ -130,11 +130,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_99rsgo"
+    POSTGRES_DB: "post_w4e5fp"
     
-    POSTGRES_USER: "post_dkxika"
+    POSTGRES_USER: "post_d4k1py"
     
-    POSTGRES_PASSWORD: "ZY2z7#M93P*30Ic09dnkYzWE"
+    POSTGRES_PASSWORD: "GMCxP%53fDltBrQ1*lTvbK2d"
     
   
 

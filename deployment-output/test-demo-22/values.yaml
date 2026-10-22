@@ -1,5 +1,5 @@
 # ============================================================
-# DaaS Generated values.yaml for test-demo-22
+# DaaS Generated values.yaml for test-demo-22 helm
 # Override at deploy time with:
 #   helm upgrade --install test-demo-22 ./helm -f values-prod.yaml
 #   or per-value: --set global.namespace=my-namespace

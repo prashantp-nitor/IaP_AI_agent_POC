@@ -6,7 +6,7 @@ metadata:
   labels:
     app: backend
 spec:
-  type: ClusterIP
+  type: {{ .Values.services.backend.serviceType | default "ClusterIP" }}
   ports:
     
     - port: {{ index .Values.services.backend.ports 0 | default 8080 }}
@@ -25,7 +25,7 @@ metadata:
   labels:
     app: frontend
 spec:
-  type: ClusterIP
+  type: {{ .Values.services.frontend.serviceType | default "LoadBalancer" }}
   ports:
     
     - port: {{ index .Values.services.frontend.ports 0 | default 80 }}

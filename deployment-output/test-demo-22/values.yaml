@@ -1,5 +1,5 @@
 # ============================================================
-# DaaS Generated values.yaml for test-demo-22 helm
+# DaaS Generated values.yaml for test-demo-22
 # Override at deploy time with:
 #   helm upgrade --install test-demo-22 ./helm -f values-prod.yaml
 #   or per-value: --set global.namespace=my-namespace
@@ -15,7 +15,7 @@ global:
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
-  environment: "production"
+  environment: "dev"
   azureWorkloadIdentityClientId: ""
   secretProviderClass: ""
 
@@ -81,11 +81,12 @@ services:
     namespace: "test-demo-22"
     enabled: true
     serviceName: "backend"
+    serviceType: "ClusterIP"
     containerPort: 8080
     replicaCount: 1
     image:
       repository: "azdaasdeployment.azurecr.io"
-      tag: "sha-80777f5c"
+      tag: "sha-4e169814"
       pullPolicy: IfNotPresent
     ports:
       
@@ -95,11 +96,11 @@ services:
       
     resources:
       requests:
-        cpu: "500m"
-        memory: "2048Mi"
+        cpu: "100m"
+        memory: "128Mi"
       limits:
-        cpu: "1000m"
-        memory: "4096Mi"
+        cpu: "100m"
+        memory: "128Mi"
     # Health check path — override if your app uses a different route
     healthCheckPath: "/actuator/health"
     env:
@@ -109,11 +110,12 @@ services:
     namespace: "test-demo-22"
     enabled: true
     serviceName: "frontend"
+    serviceType: "LoadBalancer"
     containerPort: 80
     replicaCount: 1
     image:
       repository: "azdaasdeployment.azurecr.io"
-      tag: "sha-80777f5c"
+      tag: "sha-4e169814"
       pullPolicy: IfNotPresent
     ports:
       
@@ -123,11 +125,11 @@ services:
       
     resources:
       requests:
-        cpu: "500m"
-        memory: "2048Mi"
+        cpu: "100m"
+        memory: "128Mi"
       limits:
-        cpu: "1000m"
-        memory: "4096Mi"
+        cpu: "100m"
+        memory: "128Mi"
     # Health check path — override if your app uses a different route
     healthCheckPath: "/"
     env:
@@ -138,15 +140,39 @@ services:
 
 database:
   enabled: true
-  inCluster: false
-  connectionString: "test-demo-22-db.postgres.database.azure.com"
-  host: "test"
+  inCluster: true
+  connectionString: ""
+  host: ""
   port: 5432
-  name: "test-demo-22-db.postgres.database.azure.com"
+  name: "appdb"
   user: "pgadmin"
-  password: ""
+  password: "o1nK0dkCEd8RVbM8FJ4J#GUa"
   migrations:
-    enabled: true
+    enabled: false
+  
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  storage:
+    size: "10Gi"
+    storageClassName: "managed-csi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+  auth:
+    
+    POSTGRES_DB: "post_u3wyf6"
+    
+    POSTGRES_USER: "post_vnvxfh"
+    
+    POSTGRES_PASSWORD: "o1nK0dkCEd8RVbM8FJ4J#GUa"
+    
   
 
 

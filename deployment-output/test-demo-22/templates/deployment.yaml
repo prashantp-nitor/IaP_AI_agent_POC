@@ -38,6 +38,51 @@ spec:
             
           
           
+          env:
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          
           {{- if .Values.probes.readiness.enabled }}
           readinessProbe:
             {{ .Values.probes.readiness.type }}:
@@ -71,11 +116,11 @@ spec:
           {{- end }}
           resources:
             requests:
-              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
-              memory: "{{ .Values.services.backend.resources.requests.memory | default "2048Mi" }}"
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "128Mi" }}"
             limits:
-              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
-              memory: "{{ .Values.services.backend.resources.limits.memory | default "4096Mi" }}"
+              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "128Mi" }}"
           {{- if .Values.global.secretProviderClass }}
           volumeMounts:
             - name: secrets-store-inline
@@ -165,11 +210,11 @@ spec:
           {{- end }}
           resources:
             requests:
-              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "500m" }}"
-              memory: "{{ .Values.services.frontend.resources.requests.memory | default "2048Mi" }}"
+              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.requests.memory | default "128Mi" }}"
             limits:
-              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "1000m" }}"
-              memory: "{{ .Values.services.frontend.resources.limits.memory | default "4096Mi" }}"
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "128Mi" }}"
           {{- if .Values.global.secretProviderClass }}
           volumeMounts:
             - name: secrets-store-inline

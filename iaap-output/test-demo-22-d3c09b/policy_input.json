@@ -1,0 +1,74 @@
+{
+  "vnet_name": "test-demo-22-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "westus",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "test-demo-22",
+    "job_id": "d3c09b76-a7fe-4111-9bd9-4ceb8751c56d",
+    "project_folder": "test-demo-22-d3c09b"
+  },
+  "cluster_name": "test-demo-22-aks",
+  "kubernetes_version": "1.34",
+  "node_count": "1",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "high_availability": false,
+  "min_count": 1,
+  "max_count": 1,
+  "enable_auto_scaling": true,
+  "type": "compute",
+  "clusterName": "test-demo-22-aks",
+  "highAvailability": false,
+  "minNodes": 1,
+  "maxNodes": 1,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "field_values": {
+    "cluster_name": "test-demo-22-aks",
+    "high_availability": false,
+    "kubernetes_version": "1.34",
+    "node_vm_size": "Standard_D2s_v3",
+    "node_count": 1,
+    "min_count": 1,
+    "max_count": 1,
+    "enable_auto_scaling": true
+  },
+  "subnet_name": "db-subnet",
+  "server_name": "test-demo-22-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "backup_retention_days": "14",
+  "vault_name": "test-demo-22-kv-d3c09b",
+  "soft_delete_retention_days": 90,
+  "registry_name": "testdemo22acrd3c09b",
+  "admin_enabled": "False",
+  "frontend_repo": "test-demo-22-frontend",
+  "backend_repo": "test-demo-22-backend",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

@@ -15,7 +15,7 @@ global:
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
-  environment: "dev"
+  environment: "production"
   azureWorkloadIdentityClientId: ""
   secretProviderClass: ""
 
@@ -85,8 +85,8 @@ services:
     containerPort: 8080
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io"
-      tag: "sha-4e169814"
+      repository: "azdaasdeployment.azurecr.io/backend"
+      tag: "sha-4ee2e3b8"
       pullPolicy: IfNotPresent
     ports:
       
@@ -114,8 +114,8 @@ services:
     containerPort: 80
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io"
-      tag: "sha-4e169814"
+      repository: "azdaasdeployment.azurecr.io/frontend"
+      tag: "sha-4ee2e3b8"
       pullPolicy: IfNotPresent
     ports:
       
@@ -146,7 +146,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "o1nK0dkCEd8RVbM8FJ4J#GUa"
+  password: "JXyMTZiggR1N38kP6#dE^6Ra"
   migrations:
     enabled: false
   
@@ -167,11 +167,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_u3wyf6"
+    POSTGRES_DB: "post_wr6lx8"
     
-    POSTGRES_USER: "post_vnvxfh"
+    POSTGRES_USER: "post_jd9qjz"
     
-    POSTGRES_PASSWORD: "o1nK0dkCEd8RVbM8FJ4J#GUa"
+    POSTGRES_PASSWORD: "JXyMTZiggR1N38kP6#dE^6Ra"
     
   
 

@@ -84,7 +84,7 @@ services:
     containerPort: 8080
     replicaCount: 1
     image:
-      repository: "testdemo22acrd3c09b.azurecr.io/backend"
+      repository: "azdaasdeployment.azurecr.io/backend"
       tag: "sha-80777f5c"
       pullPolicy: IfNotPresent
     ports:
@@ -112,7 +112,7 @@ services:
     containerPort: 80
     replicaCount: 1
     image:
-      repository: "testdemo22acrd3c09b.azurecr.io/frontend"
+      repository: "azdaasdeployment.azurecr.io/frontend"
       tag: "sha-80777f5c"
       pullPolicy: IfNotPresent
     ports:

@@ -20,7 +20,7 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: azdaasdeployment.azurecr.io/frontend:latest
+  REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: test-demo-22
   SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/4e169814-763b-4b93-b783-439f99d5540a/source.zip?se=2026-10-22T11%3A51%3A30Z&sp=r&sv=2026-06-06&sr=b&sig=tfN2ksmdBugVUotQq2/68SF5vMsm3V%2BPznNDFnwP34U%3D"
   JOB_ID: ${{ inputs.job_id || '4e169814-763b-4b93-b783-439f99d5540a' }}

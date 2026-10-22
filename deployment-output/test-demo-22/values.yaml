@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "test-demo-22"
   # Container registry base URL
-  registry: "acrdaassystem.azurecr.io"
+  registry: "azdaasdeployment.azurecr.io"
   # Ingress hostname
   ingressHost: "test-demo-22.local"
   # Deployment strategy: rolling | blue-green | canary
@@ -52,8 +52,8 @@ services:
     containerPort: 8080
     replicaCount: 1
     image:
-      repository: "acrdaassystem.azurecr.io/app"
-      tag: "sha-360be6ce"
+      repository: "azdaasdeployment.azurecr.io/azdaasdeployment-azurecr-io"
+      tag: "sha-1a276844"
       pullPolicy: IfNotPresent
     ports:
       
@@ -79,8 +79,8 @@ services:
     containerPort: 80
     replicaCount: 1
     image:
-      repository: "acrdaassystem.azurecr.io/frontend"
-      tag: "sha-360be6ce"
+      repository: "azdaasdeployment.azurecr.io/frontend"
+      tag: "sha-1a276844"
       pullPolicy: IfNotPresent
     ports:
       
@@ -109,7 +109,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "dnxZ8#SGFyr&EzNKVYyy8jGH"
+  password: "ZY2z7#M93P*30Ic09dnkYzWE"
   migrations:
     enabled: false
   
@@ -130,11 +130,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_z16n9b"
+    POSTGRES_DB: "post_99rsgo"
     
-    POSTGRES_USER: "post_e24riy"
+    POSTGRES_USER: "post_dkxika"
     
-    POSTGRES_PASSWORD: "dnxZ8#SGFyr&EzNKVYyy8jGH"
+    POSTGRES_PASSWORD: "ZY2z7#M93P*30Ic09dnkYzWE"
     
   
 

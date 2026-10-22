@@ -3,4 +3,4 @@ resource_group: AZET-RG-Daas-Platform
 region: eastus
 cloud_provider: azure
 namespace: test-demo-22
-registry: acrdaassystem.azurecr.io
+registry: azdaasdeployment.azurecr.io

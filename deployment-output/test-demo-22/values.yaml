@@ -80,7 +80,7 @@ services:
   backend:
     namespace: "test-demo-22"
     enabled: true
-    serviceName: "test-demo-22-backend"
+    serviceName: "backend"
     containerPort: 8080
     replicaCount: 1
     image:

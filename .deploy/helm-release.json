@@ -1,8 +1,8 @@
 {
-  "job_id": "4ee2e3b8-61f7-4dc4-b912-eeeed64df319",
-  "dispatched_at": "2026-10-22T12:10:40Z",
+  "job_id": "360be6ce-0805-4bfa-b571-db55c1291376",
+  "dispatched_at": "2026-10-22T13:07:46Z",
   "target_cluster": "test-demo-22-aks",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "test-demo-22",
-  "image_tag": "sha-4ee2e3b8"
+  "image_tag": "sha-360be6ce"
 }

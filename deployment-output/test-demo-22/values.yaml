@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "test-demo-22"
   # Container registry base URL
-  registry: "azdaasdeployment.azurecr.io"
+  registry: "acrdaassystem.azurecr.io"
   # Ingress hostname
   ingressHost: "test-demo-22.local"
   # Deployment strategy: rolling | blue-green | canary
@@ -28,39 +28,6 @@ serviceAccount:
     
 
 imagePullSecrets: []
-
-# ── Health Probes ────────────────────────────────────────
-probes:
-  readiness:
-    enabled: true
-    type: httpGet
-    path: /actuator/health/readiness
-    port: http
-    initialDelaySeconds: 10
-    periodSeconds: 5
-    timeoutSeconds: 2
-    failureThreshold: 3
-    successThreshold: 1
-
-  liveness:
-    enabled: true
-    type: httpGet
-    path: /actuator/health/liveness
-    port: http
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 2
-    failureThreshold: 3
-    successThreshold: 1
-
-  startup:
-    enabled: false
-    type: httpGet
-    path: /actuator/health
-    port: http
-    periodSeconds: 10
-    timeoutSeconds: 2
-    failureThreshold: 30
 
 # ── Resources ────────────────────────────────────────────
 resources:
@@ -85,8 +52,8 @@ services:
     containerPort: 8080
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/backend"
-      tag: "sha-4ee2e3b8"
+      repository: "acrdaassystem.azurecr.io/app"
+      tag: "sha-360be6ce"
       pullPolicy: IfNotPresent
     ports:
       
@@ -96,13 +63,11 @@ services:
       
     resources:
       requests:
-        cpu: "100m"
-        memory: "128Mi"
+        cpu: "500m"
+        memory: "512Mi"
       limits:
-        cpu: "100m"
-        memory: "128Mi"
-    # Health check path — override if your app uses a different route
-    healthCheckPath: "/actuator/health"
+        cpu: "1000m"
+        memory: "1Gi"
     env:
       
   
@@ -114,8 +79,8 @@ services:
     containerPort: 80
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "sha-4ee2e3b8"
+      repository: "acrdaassystem.azurecr.io/frontend"
+      tag: "sha-360be6ce"
       pullPolicy: IfNotPresent
     ports:
       
@@ -130,8 +95,6 @@ services:
       limits:
         cpu: "100m"
         memory: "128Mi"
-    # Health check path — override if your app uses a different route
-    healthCheckPath: "/"
     env:
       
   
@@ -146,7 +109,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "JXyMTZiggR1N38kP6#dE^6Ra"
+  password: "dnxZ8#SGFyr&EzNKVYyy8jGH"
   migrations:
     enabled: false
   
@@ -167,11 +130,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_wr6lx8"
+    POSTGRES_DB: "post_z16n9b"
     
-    POSTGRES_USER: "post_jd9qjz"
+    POSTGRES_USER: "post_e24riy"
     
-    POSTGRES_PASSWORD: "JXyMTZiggR1N38kP6#dE^6Ra"
+    POSTGRES_PASSWORD: "dnxZ8#SGFyr&EzNKVYyy8jGH"
     
   
 

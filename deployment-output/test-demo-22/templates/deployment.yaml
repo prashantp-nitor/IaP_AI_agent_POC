@@ -83,44 +83,13 @@ spec:
               
             
           
-          {{- if .Values.probes.readiness.enabled }}
-          readinessProbe:
-            {{ .Values.probes.readiness.type }}:
-              path: {{ .Values.probes.readiness.path }}
-              port: {{ .Values.probes.readiness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
-            successThreshold: {{ .Values.probes.readiness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.liveness.enabled }}
-          livenessProbe:
-            {{ .Values.probes.liveness.type }}:
-              path: {{ .Values.probes.liveness.path }}
-              port: {{ .Values.probes.liveness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
-            successThreshold: {{ .Values.probes.liveness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.startup.enabled }}
-          startupProbe:
-            {{ .Values.probes.startup.type }}:
-              path: {{ .Values.probes.startup.path }}
-              port: {{ .Values.probes.startup.port | default "http" }}
-            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
-          {{- end }}
           resources:
             requests:
-              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "100m" }}"
-              memory: "{{ .Values.services.backend.resources.requests.memory | default "128Mi" }}"
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "512Mi" }}"
             limits:
-              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "100m" }}"
-              memory: "{{ .Values.services.backend.resources.limits.memory | default "128Mi" }}"
+              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "1Gi" }}"
           {{- if .Values.global.secretProviderClass }}
           volumeMounts:
             - name: secrets-store-inline
@@ -177,37 +146,6 @@ spec:
             
           
           
-          {{- if .Values.probes.readiness.enabled }}
-          readinessProbe:
-            {{ .Values.probes.readiness.type }}:
-              path: {{ .Values.probes.readiness.path }}
-              port: {{ .Values.probes.readiness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
-            successThreshold: {{ .Values.probes.readiness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.liveness.enabled }}
-          livenessProbe:
-            {{ .Values.probes.liveness.type }}:
-              path: {{ .Values.probes.liveness.path }}
-              port: {{ .Values.probes.liveness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
-            successThreshold: {{ .Values.probes.liveness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.startup.enabled }}
-          startupProbe:
-            {{ .Values.probes.startup.type }}:
-              path: {{ .Values.probes.startup.path }}
-              port: {{ .Values.probes.startup.port | default "http" }}
-            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
-          {{- end }}
           resources:
             requests:
               cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"

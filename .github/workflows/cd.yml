@@ -209,8 +209,8 @@ jobs:
 
           python3 .github/scripts/save_outputs.py
 
-      - name: Cleanup on Failed Deployment
-        if: failure()
-        run: |
-          echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-demo-22 -n ${{ env.NAMESPACE }} || true
+#      - name: Cleanup on Failed Deployment
+#        if: failure()
+#        run: |
+#          echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
+#          helm uninstall test-demo-22 -n ${{ env.NAMESPACE }} || true

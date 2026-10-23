@@ -1,0 +1,19 @@
+{{- if .Values.database.inCluster }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-db
+  namespace: test-demo-23
+  labels:
+    app: database
+spec:
+  # Headless service — StatefulSet pods get stable DNS names
+  clusterIP: None
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: db
+  selector:
+    app: database
+{{- end }}

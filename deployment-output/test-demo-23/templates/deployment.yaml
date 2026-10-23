@@ -1,0 +1,170 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.backend.serviceName | default "backend" }}
+  namespace: {{ .Values.services.backend.namespace | default .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.services.backend.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "test-demo-23.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: backend
+          image: "{{ .Values.services.backend.image.repository }}:{{ .Values.services.backend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.backend.image.pullPolicy }}"
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.backend.containerPort | default 8080 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "512Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "1Gi" }}"
+          {{- if .Values.global.secretProviderClass }}
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+      {{- if .Values.global.secretProviderClass }}
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.frontend.serviceName | default "frontend" }}
+  namespace: {{ .Values.services.frontend.namespace | default .Release.Namespace }}
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.services.frontend.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "test-demo-23.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: frontend
+          image: "{{ .Values.services.frontend.image.repository }}:{{ .Values.services.frontend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.frontend.image.pullPolicy }}"
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.frontend.containerPort | default 80 }}
+              name: http
+            
+          
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.requests.memory | default "128Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "128Mi" }}"
+          {{- if .Values.global.secretProviderClass }}
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+      {{- if .Values.global.secretProviderClass }}
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}

@@ -53,7 +53,7 @@ services:
     replicaCount: 1
     image:
       repository: "azdaasdeployment.azurecr.io/backend"
-      tag: "sha-71630c19"
+      tag: "sha-6d360f0f"
       pullPolicy: IfNotPresent
     ports:
       
@@ -80,7 +80,7 @@ services:
     replicaCount: 1
     image:
       repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "sha-71630c19"
+      tag: "sha-6d360f0f"
       pullPolicy: IfNotPresent
     ports:
       
@@ -109,7 +109,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "GMCxP%53fDltBrQ1*lTvbK2d"
+  password: "yvVuZcou8j2CQakDh%vir86p"
   migrations:
     enabled: false
   
@@ -130,11 +130,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_w4e5fp"
+    POSTGRES_DB: "post_ydsecz"
     
-    POSTGRES_USER: "post_d4k1py"
+    POSTGRES_USER: "post_bi08ea"
     
-    POSTGRES_PASSWORD: "GMCxP%53fDltBrQ1*lTvbK2d"
+    POSTGRES_PASSWORD: "yvVuZcou8j2CQakDh%vir86p"
     
   
 
@@ -145,7 +145,7 @@ ingress:
   className: "azure-application-gateway"
   host: "test-demo-22.local"
   path: "/"
-  tls: false
+  tls: true
   tlsSecretName: "test-demo-22-tls-secret"
 
 # ── Autoscaling ──────────────────────────────────────────

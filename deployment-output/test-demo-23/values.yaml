@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "test-demo-23"
   # Container registry base URL
-  registry: "azdaasdeployment.azurecr.io"
+  registry: "testdemo23acr32ceb7.azurecr.io"
   # Ingress hostname
   ingressHost: "test-demo-23.local"
   # Deployment strategy: rolling | blue-green | canary
@@ -52,8 +52,8 @@ services:
     containerPort: 8080
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/backend"
-      tag: "sha-742b1855"
+      repository: "testdemo23acr32ceb7.azurecr.io/backend"
+      tag: "sha-53435baf"
       pullPolicy: IfNotPresent
     ports:
       
@@ -79,8 +79,8 @@ services:
     containerPort: 80
     replicaCount: 1
     image:
-      repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "sha-742b1855"
+      repository: "testdemo23acr32ceb7.azurecr.io/frontend"
+      tag: "sha-53435baf"
       pullPolicy: IfNotPresent
     ports:
       
@@ -109,7 +109,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "02#fUZxF5nKtJz6msn*D8OxP"
+  password: "P1ArVIBAl#ln631CxeE1aFlo"
   migrations:
     enabled: false
   
@@ -130,11 +130,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_4te67w"
+    POSTGRES_DB: "post_ocvod6"
     
-    POSTGRES_USER: "post_cqfx6l"
+    POSTGRES_USER: "post_zsf1bj"
     
-    POSTGRES_PASSWORD: "02#fUZxF5nKtJz6msn*D8OxP"
+    POSTGRES_PASSWORD: "P1ArVIBAl#ln631CxeE1aFlo"
     
   
 

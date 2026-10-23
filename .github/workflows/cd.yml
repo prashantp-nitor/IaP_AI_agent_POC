@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - "feature/update-pipeline"
-      
+      - "feature/test-custom-acr-login"
       - "networking"
-      
+
     paths:
       - "deployment-output/test-demo-22/**"
       - "deployment-output/**"
@@ -59,7 +59,7 @@ jobs:
             RESOURCE_GROUP="${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || '' }}"
           fi
           KEY_VAULT_NAME=$(az keyvault list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
-          
+
           echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
           echo "resource_group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
           echo "key_vault_name=$KEY_VAULT_NAME" >> $GITHUB_OUTPUT
@@ -73,7 +73,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
-          version: 'latest'
+          version: "latest"
 
       - name: Create ACR Pull Secret in AKS
         run: |
@@ -84,8 +84,6 @@ jobs:
             --docker-username=${{ secrets.REGISTRY_USERNAME }} \
             --docker-password=${{ secrets.REGISTRY_PASSWORD }} \
             --dry-run=client -o yaml | kubectl apply -f -
-
-
 
       - name: Deploy via Helm
         run: |
@@ -165,12 +163,12 @@ jobs:
              echo "### ⚠️ Deployment Completed (No Frontend)" >> $GITHUB_STEP_SUMMARY
              exit 0
           fi
-          
+
           IP=$(kubectl get svc $FRONTEND_SVC -n $FRONTEND_NS -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
           if [ -z "$IP" ]; then
             IP=$(kubectl get svc $FRONTEND_SVC -n $FRONTEND_NS -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
           fi
-          
+
           if [ -z "$IP" ]; then
             echo "Warning: Frontend IP/Hostname was not assigned."
             echo "URL=http://<pending-public-ip>" >> $GITHUB_ENV

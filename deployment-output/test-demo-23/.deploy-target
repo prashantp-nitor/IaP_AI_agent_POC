@@ -1,6 +1,6 @@
 cluster_name: test-demo-23-aks
 resource_group: AZET-RG-Daas-Platform
-region: westus
+region: eastus
 cloud_provider: azure
 namespace: test-demo-23
-registry: testdemo23acr32ceb7.azurecr.io
+registry: azdaasdeployment.azurecr.io

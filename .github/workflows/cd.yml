@@ -15,11 +15,11 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "5ad5d29e-d3c6-4dcf-9521-5d8a75d22f08"
+        default: "52643210-bc8d-4794-82ed-747719d1fedd"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-5ad5d29e"
+        default: "sha-52643210"
 
 permissions:
   id-token: write
@@ -28,7 +28,7 @@ permissions:
 env:
   REGISTRY: testdemo23acr32ceb7.azurecr.io
   NAMESPACE: test-demo-23
-  JOB_ID: ${{ inputs.job_id || '5ad5d29e-d3c6-4dcf-9521-5d8a75d22f08' }}
+  JOB_ID: ${{ inputs.job_id || '52643210-bc8d-4794-82ed-747719d1fedd' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -75,15 +75,19 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Create ACR Pull Secret in AKS
+      - name: Create Namespaces and ACR Pull Secret in AKS
         run: |
-          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret docker-registry acr-pull-secret \
-            --namespace ${{ env.NAMESPACE }} \
-            --docker-server=${{ env.REGISTRY }} \
-            --docker-username=${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }} \
-            --docker-password=${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+          TARGET_NAMESPACES="${{ env.NAMESPACE }} test-demo-23-backend test-demo-23-frontend"
+          for NS in $(echo "$TARGET_NAMESPACES" | xargs -n1 | sort -u); do
+            echo "Ensuring namespace and ACR pull secret in $NS..."
+            kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f -
+            kubectl create secret docker-registry acr-pull-secret \
+              --namespace "$NS" \
+              --docker-server=${{ env.REGISTRY }} \
+              --docker-username=${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }} \
+              --docker-password=${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+          done
 
 
 
@@ -118,7 +122,7 @@ jobs:
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-5ad5d29e' }}" --set-string "services.backend.namespace=test-demo-23-backend" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-5ad5d29e' }}" --set-string "services.frontend.namespace=test-demo-23-frontend" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-52643210' }}" --set-string "services.backend.namespace=test-demo-23-backend" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-52643210' }}" --set-string "services.frontend.namespace=test-demo-23-frontend" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
@@ -197,7 +201,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_lfvayi", "POSTGRES_PASSWORD": "u0ckqSi4Jtbu8uQ*pSdFx#2Y", "POSTGRES_USER": "post_5szgqd"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_owsz4y", "POSTGRES_PASSWORD": "^dH!S1PvqpWe82pgjY6i\u00268NW", "POSTGRES_USER": "post_dhbd04"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

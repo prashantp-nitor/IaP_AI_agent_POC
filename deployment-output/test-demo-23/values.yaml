@@ -53,7 +53,7 @@ services:
     replicaCount: 1
     image:
       repository: "testdemo23acr32ceb7.azurecr.io/backend"
-      tag: "sha-5ad5d29e"
+      tag: "sha-52643210"
       pullPolicy: IfNotPresent
     ports:
       
@@ -80,7 +80,7 @@ services:
     replicaCount: 1
     image:
       repository: "testdemo23acr32ceb7.azurecr.io/frontend"
-      tag: "sha-5ad5d29e"
+      tag: "sha-52643210"
       pullPolicy: IfNotPresent
     ports:
       
@@ -117,7 +117,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "u0ckqSi4Jtbu8uQ*pSdFx#2Y"
+  password: "^dH!S1PvqpWe82pgjY6i&8NW"
   migrations:
     enabled: false
   
@@ -138,11 +138,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_lfvayi"
+    POSTGRES_DB: "post_owsz4y"
     
-    POSTGRES_USER: "post_5szgqd"
+    POSTGRES_USER: "post_dhbd04"
     
-    POSTGRES_PASSWORD: "u0ckqSi4Jtbu8uQ*pSdFx#2Y"
+    POSTGRES_PASSWORD: "^dH!S1PvqpWe82pgjY6i&8NW"
     
   
 

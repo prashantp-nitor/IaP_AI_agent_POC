@@ -146,6 +146,19 @@ spec:
             
           
           
+          env:
+            
+            - name: REACT_APP_API_URL
+              
+              value: "http://backend.test-demo-23-backend.svc.cluster.local:8080"
+              
+            
+            - name: API_URL
+              
+              value: "http://backend.test-demo-23-backend.svc.cluster.local:8080"
+              
+            
+          
           resources:
             requests:
               cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"

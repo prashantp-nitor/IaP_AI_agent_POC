@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: frontend
+data:
+  
+  REACT_APP_API_URL: "http://backend.test-demo-23-backend.svc.cluster.local:8080"
+  
+  API_URL: "http://backend.test-demo-23-backend.svc.cluster.local:8080"

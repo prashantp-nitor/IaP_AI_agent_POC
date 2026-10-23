@@ -45,7 +45,7 @@ resources:
 services:
   
   backend:
-    namespace: "test-demo-23"
+    namespace: "test-demo-23-backend"
     enabled: true
     serviceName: "backend"
     serviceType: "ClusterIP"
@@ -53,7 +53,7 @@ services:
     replicaCount: 1
     image:
       repository: "testdemo23acr32ceb7.azurecr.io/backend"
-      tag: "sha-53435baf"
+      tag: "sha-5ad5d29e"
       pullPolicy: IfNotPresent
     ports:
       
@@ -72,7 +72,7 @@ services:
       
   
   frontend:
-    namespace: "test-demo-23"
+    namespace: "test-demo-23-frontend"
     enabled: true
     serviceName: "frontend"
     serviceType: "LoadBalancer"
@@ -80,7 +80,7 @@ services:
     replicaCount: 1
     image:
       repository: "testdemo23acr32ceb7.azurecr.io/frontend"
-      tag: "sha-53435baf"
+      tag: "sha-5ad5d29e"
       pullPolicy: IfNotPresent
     ports:
       
@@ -97,6 +97,14 @@ services:
         memory: "128Mi"
     env:
       
+      
+      REACT_APP_API_URL: "http://backend.test-demo-23-backend.svc.cluster.local:8080"
+      
+      
+      
+      API_URL: "http://backend.test-demo-23-backend.svc.cluster.local:8080"
+      
+      
   
 
 # ── Database ─────────────────────────────────────────────
@@ -109,7 +117,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "P1ArVIBAl#ln631CxeE1aFlo"
+  password: "u0ckqSi4Jtbu8uQ*pSdFx#2Y"
   migrations:
     enabled: false
   
@@ -130,11 +138,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_ocvod6"
+    POSTGRES_DB: "post_lfvayi"
     
-    POSTGRES_USER: "post_zsf1bj"
+    POSTGRES_USER: "post_5szgqd"
     
-    POSTGRES_PASSWORD: "P1ArVIBAl#ln631CxeE1aFlo"
+    POSTGRES_PASSWORD: "u0ckqSi4Jtbu8uQ*pSdFx#2Y"
     
   
 

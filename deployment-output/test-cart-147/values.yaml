@@ -1,0 +1,156 @@
+# ============================================================
+# DaaS Generated values.yaml for test-cart-147
+# Override at deploy time with:
+#   helm upgrade --install test-cart-147 ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "test-cart-147"
+  # Container registry base URL
+  registry: "azdaasdeployment.azurecr.io"
+  # Ingress hostname
+  ingressHost: "test-cart-147.local"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "production"
+  azureWorkloadIdentityClientId: ""
+  secretProviderClass: ""
+
+# ── Service Account ──────────────────────────────────────
+serviceAccount:
+  create: true
+  name: "test-cart-147-sa"
+  labels: {}
+  annotations:
+    
+
+imagePullSecrets: []
+
+# ── Resources ────────────────────────────────────────────
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts and applications run on clusters
+  # with insufficient resources.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  backend:
+    namespace: "test-cart-147"
+    enabled: true
+    serviceName: "backend"
+    serviceType: "ClusterIP"
+    containerPort: 8080
+    replicaCount: 1
+    image:
+      repository: "testcart145acr51292a.azurecr.io/backend"
+      tag: "sha-9355eb09"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+  
+  frontend:
+    namespace: "test-cart-147"
+    enabled: true
+    serviceName: "frontend"
+    serviceType: "LoadBalancer"
+    containerPort: 80
+    replicaCount: 1
+    image:
+      repository: "testcart145acr51292a.azurecr.io/frontend"
+      tag: "sha-9355eb09"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+    env:
+      
+  
+
+# ── Database ─────────────────────────────────────────────
+
+database:
+  enabled: true
+  inCluster: true
+  connectionString: ""
+  host: ""
+  port: 5432
+  name: "appdb"
+  user: "pgadmin"
+  password: "JO7U20boR8#D#P!8!eBZ83mo"
+  migrations:
+    enabled: false
+  
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  storage:
+    size: "10Gi"
+    storageClassName: "managed-csi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+  auth:
+    
+    POSTGRES_DB: "post_x3mz96"
+    
+    POSTGRES_USER: "post_rvsd3k"
+    
+    POSTGRES_PASSWORD: "JO7U20boR8#D#P!8!eBZ83mo"
+    
+  
+
+
+# ── Ingress ──────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "azure-application-gateway"
+  host: "test-cart-147.local"
+  path: "/"
+  tls: false
+  tlsSecretName: "test-cart-147-tls-secret"
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80

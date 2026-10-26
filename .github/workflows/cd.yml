@@ -8,27 +8,27 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/infratest01/**"
+      - "deployment-output/test-cart-147/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "1f6d85c4-cb4a-4137-9b2f-5d83deefed93"
+        default: "9355eb09-2a6d-4a75-af18-077a2fc607c2"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-1f6d85c4"
+        default: "sha-9355eb09"
 
 permissions:
   id-token: write
   contents: read
 
 env:
-  REGISTRY: infratest01acr3fcef8.azurecr.io
-  NAMESPACE: infratest01
-  JOB_ID: ${{ inputs.job_id || '1f6d85c4-cb4a-4137-9b2f-5d83deefed93' }}
+  REGISTRY: azdaasdeployment.azurecr.io
+  NAMESPACE: test-cart-147
+  JOB_ID: ${{ inputs.job_id || '9355eb09-2a6d-4a75-af18-077a2fc607c2' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -45,7 +45,7 @@ jobs:
       - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/infratest01/.deploy-target"
+          DEPLOY_TARGET_FILE="deployment-output/test-cart-147/.deploy-target"
           if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
             DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
           fi
@@ -81,8 +81,8 @@ jobs:
           kubectl create secret docker-registry acr-pull-secret \
             --namespace ${{ env.NAMESPACE }} \
             --docker-server=${{ env.REGISTRY }} \
-            --docker-username=${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }} \
-            --docker-password=${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }} \
+            --docker-username=${{ secrets.REGISTRY_USERNAME }} \
+            --docker-password=${{ secrets.REGISTRY_PASSWORD }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
 
@@ -91,15 +91,16 @@ jobs:
         run: |
           PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
           if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/infratest01"
+            PROJECT_DIR="deployment-output/test-cart-147"
           fi
           if [ ! -d "$PROJECT_DIR" ]; then
             PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
           fi
           echo "Looking for Helm charts in $PROJECT_DIR..."
 
+
           # Discover all directories with Chart.yaml
-          CHART_DIRS=$(find "$PROJECT_DIR" -mindepth 1 -maxdepth 2 -name "Chart.yaml" -exec dirname {} \;)
+          CHART_DIRS=$(find "$PROJECT_DIR" -mindepth 1 -maxdepth 2 -path "$PROJECT_DIR/existing" -prune -o -name "Chart.yaml" -exec dirname {} \;)
           if [ -z "$CHART_DIRS" ]; then
             if [ -d "./${{ steps.resolve_target.outputs.helm_dir }}" ]; then
               CHART_DIRS="./${{ steps.resolve_target.outputs.helm_dir }}"
@@ -109,23 +110,28 @@ jobs:
             fi
           fi
 
-          for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "infratest01")
+          mapfile -t CHART_PATHS <<< "$CHART_DIRS"
+
+          for chart_path in "${CHART_PATHS[@]}"; do
+
+            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "test-cart-147")
+
             if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="infratest01"
+              CHART_NAME="test-cart-147"
             fi
             echo "=========================================="
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-1f6d85c4' }}" --set-string "services.backend.namespace=infratest01" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-1f6d85c4' }}" --set-string "services.frontend.namespace=infratest01" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-9355eb09' }}" --set-string "services.backend.namespace=test-cart-147" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-9355eb09' }}" --set-string "services.frontend.namespace=test-cart-147" --timeout 5m0s
           done
+
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
           FRONTEND_SVC="frontend"
-          FRONTEND_NS="infratest01"
+          FRONTEND_NS="test-cart-147"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -156,7 +162,7 @@ jobs:
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
           FRONTEND_SVC="frontend"
-          FRONTEND_NS="infratest01"
+          FRONTEND_NS="test-cart-147"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -182,22 +188,23 @@ jobs:
             echo "Your application is publicly reachable at: **[$URL]($URL)**" >> $GITHUB_STEP_SUMMARY
           fi
 
+
       - name: Save Execution Outputs Directly to Database
         if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "westus"
+          REGION: "eastus"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "infratest01"
+          PROJECT_NAME: "test-cart-147"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_xlsti8", "POSTGRES_PASSWORD": "#sQ4VfYxmi9#FqiA5XZxCSD1", "POSTGRES_USER": "post_xhpxrw"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_x3mz96", "POSTGRES_PASSWORD": "JO7U20boR8#D#P!8!eBZ83mo", "POSTGRES_USER": "post_rvsd3k"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -209,8 +216,9 @@ jobs:
 
           python3 .github/scripts/save_outputs.py
 
+
       - name: Cleanup on Failed Deployment
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall infratest01 -n ${{ env.NAMESPACE }} || true
+          helm uninstall test-cart-147 -n ${{ env.NAMESPACE }} || true

@@ -1,0 +1,6 @@
+cluster_name: aks-fitcart-dev
+resource_group: AZET-RG-Daas-Platform
+region: westus
+cloud_provider: azure
+namespace: infratest01
+registry: infratest01acr3fcef8.azurecr.io

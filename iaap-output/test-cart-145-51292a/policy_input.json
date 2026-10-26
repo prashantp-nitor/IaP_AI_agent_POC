@@ -1,0 +1,56 @@
+{
+  "vnet_name": "test-cart-145-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "westeurope",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "test-cart-145",
+    "job_id": "51292ab9-04a6-4897-9401-b5c1d51f521d",
+    "project_folder": "test-cart-145-51292a"
+  },
+  "cluster_name": "test-cart-145-aks",
+  "kubernetes_version": "1.34",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "subnet_name": "db-subnet",
+  "high_availability": true,
+  "min_count": 2,
+  "max_count": 5,
+  "enable_auto_scaling": true,
+  "server_name": "test-cart-145-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "backup_retention_days": "14",
+  "vault_name": "test-cart-145-kv-51292a",
+  "soft_delete_retention_days": 90,
+  "registry_name": "testcart145acr51292a",
+  "admin_enabled": "False",
+  "frontend_repo": "test-cart-145-frontend",
+  "backend_repo": "test-cart-145-backend",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

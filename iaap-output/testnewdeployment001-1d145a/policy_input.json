@@ -1,0 +1,86 @@
+{
+  "cluster_name": "testnewdeploym-aks",
+  "region": "eastus",
+  "kubernetes_version": "1.34",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "high_availability": false,
+  "min_count": 2,
+  "max_count": 5,
+  "enable_auto_scaling": true,
+  "type": "virtual_network",
+  "clusterName": "testnewdeploym-aks",
+  "highAvailability": false,
+  "minNodes": 2,
+  "maxNodes": 5,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "field_values": {
+    "vnet_name": "testnewdeploym-network",
+    "address_space": "10.0.0.0/16"
+  },
+  "subnet_name": "db-subnet",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "testnewdeployment001",
+    "job_id": "1d145ad6-efa3-462b-bddb-33caff5a5826",
+    "project_folder": "testnewdeployment001-1d145a"
+  },
+  "server_name": "testnewdeploym-db",
+  "storage_mb": "32768",
+  "backup_retention_days": "14",
+  "engine": "PostgreSQL",
+  "version": "15",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "serverName": "testnewdeploym-db",
+  "subnetName": "db-subnet",
+  "skuName": "standard",
+  "storageGb": 32,
+  "backupRetentionDays": 14,
+  "adminPassword": "",
+  "vault_name": "testnewdeploym-kv-1d145a",
+  "soft_delete_retention_days": 90,
+  "vaultName": "testnewdeploym-kv-1d145a",
+  "softDeleteRetentionDays": 90,
+  "registry_name": "testnewdeploymacr1d145a",
+  "admin_enabled": "False",
+  "frontend_repo": "testnewdeploym-frontend",
+  "backend_repo": "testnewdeploym-backend",
+  "registryName": "testnewdeploymacr1d145a",
+  "adminEnabled": false,
+  "repositories": [
+    "testnewdeploym-frontend",
+    "testnewdeploym-backend"
+  ],
+  "frontendRepo": "testnewdeploym-frontend",
+  "backendRepo": "testnewdeploym-backend",
+  "vnet_name": "testnewdeploym-network",
+  "address_space": "10.0.0.0/16",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "vnetName": "testnewdeploym-network",
+  "addressSpace": "10.0.0.0/16",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

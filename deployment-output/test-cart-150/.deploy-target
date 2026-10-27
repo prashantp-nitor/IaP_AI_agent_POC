@@ -1,0 +1,6 @@
+cluster_name: test-cart-135-aks
+resource_group: AZET-RG-Daas-Platform
+region: eastus
+cloud_provider: azure
+namespace: test-cart-150
+registry: testcart145acr51292a.azurecr.io

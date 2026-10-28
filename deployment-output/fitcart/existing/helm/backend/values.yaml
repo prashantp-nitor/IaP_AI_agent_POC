@@ -1,0 +1,25 @@
+replicaCount: 2
+image:
+  repository: fitcartacr.azurecr.io/fitcart-backend
+  tag: 20261027-demo1
+  pullPolicy: IfNotPresent
+imagePullSecret: 'acr-pull-secret'
+serviceName: backend
+service:
+  type: ClusterIP
+  port: 8080
+containerPort: 8080
+db:
+  host: postgres
+  port: 5432
+  name: backenddb
+  user: 'testadmin'
+  password: 'test-secret-password-123'
+frontendOrigin: http://frontend:80
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi

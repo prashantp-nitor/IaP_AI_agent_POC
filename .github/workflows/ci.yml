@@ -1,4 +1,3 @@
-# DaaS CI Dispatch: 00000000-0000-0000-0000-000000000101 @ 2026-10-28T06:14:55Z
 name: CI Security Scan and Container Build
 
 on:
@@ -20,12 +19,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
-  NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/00000000-0000-0000-0000-000000000101/source.zip?se=2026-10-28T07%3A14%3A54Z&sp=r&sv=2026-06-06&sr=b&sig=u1zlhqITOxPGRZqG4GDbmwOkF%2BV9WvszJqkV5%2B8UVfY%3D"
+  REGISTRY: fitcartacr.azurecr.io
+  NAMESPACE: fitcart
+  SOURCE_ZIP_URL: "https://storage.local/source.zip"
   JOB_ID: ${{ inputs.job_id || '00000000-0000-0000-0000-000000000101' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "00000000_0000_0000_0000_000000000101"
+  PROJECT_PREFIX: "FITCART"
 
 jobs:
   ci-security-and-build:
@@ -40,6 +39,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
+          echo "3368b61186b80800938da664614351db8d1b37b34e0d538adc58a172698f5e36  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -168,7 +168,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-00000000-0000-0000-0000-000000000101
+            -Dsonar.projectKey=daas-fitcart
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -182,6 +182,56 @@ jobs:
           username: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
+      
+      - name: Build backend container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/backend
+          file: ./app/backend/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1
+          
+          
+          
+
+      - name: Run Trivy Image Scan for backend (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy container image scan for backend..."
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1 || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Push backend image
+        run: |
+          docker push ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1
+      
+      - name: Build frontend container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/frontend
+          file: ./app/frontend/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1
+          
+          
+          
+
+      - name: Run Trivy Image Scan for frontend (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy container image scan for frontend..."
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1 || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1
       
 
       - name: Upload Security Reports to Azure Blob Storage

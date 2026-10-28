@@ -1,0 +1,24 @@
+replicaCount: 1
+
+image:
+  repository: fitcartacr.azurecr.io/fitcart-frontend
+  tag: 20261027-demo1
+  pullPolicy: IfNotPresent
+
+imagePullSecret: "acr-pull-secret"
+
+serviceName: frontend
+
+service:
+  type: LoadBalancer
+  port: 80
+
+containerPort: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

@@ -1,216 +1,146 @@
-name: Deploy DaaS Workload via Helm
+name: Deploy Existing Helm Workload
 
 on:
   push:
     branches:
-      - "feature/test-custom-acr-login"
-      
-      - "networking"
-      
+      - "main"
     paths:
-      - "deployment-output/test-cart-150/**"
+      - ".deploy/helm-release.json"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "0501fd44-a370-44f9-b7f2-ff034a8469ed"
-      image_tag:
-        description: "Container Image Tag"
-        required: false
-        default: "sha-0501fd44"
+        default: "00000000-0000-0000-0000-000000000101"
 
 permissions:
   id-token: write
   contents: read
 
-env:
-  REGISTRY: testcart145acr51292a.azurecr.io
-  NAMESPACE: test-cart-150
-  JOB_ID: ${{ inputs.job_id || '0501fd44-a370-44f9-b7f2-ff034a8469ed' }}
-
 jobs:
-  deploy-to-kubernetes:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      job_id: ${{ steps.validate.outputs.job_id }}
+      dispatch_id: ${{ steps.validate.outputs.dispatch_id }}
+      manifest_path: ${{ steps.validate.outputs.manifest_path }}
+      target_key: ${{ steps.validate.outputs.target_key }}
+      project_name: ${{ steps.validate.outputs.project_name }}
+      cluster_name: ${{ steps.validate.outputs.cluster_name }}
+      resource_group: ${{ steps.validate.outputs.resource_group }}
+      namespace: ${{ steps.validate.outputs.namespace }}
+      acr_registry: ${{ steps.validate.outputs.acr_registry }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Validate Dispatch Metadata
+        id: validate
+        run: |
+          python3 -c '
+          import json, os, sys
+
+          dispatch_file = ".deploy/helm-release.json"
+          if not os.path.exists(dispatch_file):
+              sys.stderr.write(f"Dispatch metadata not found: {dispatch_file}\n")
+              sys.exit(1)
+
+          with open(dispatch_file, "r", encoding="utf-8") as f:
+              dispatch = json.load(f)
+
+          manifest_path = dispatch.get("manifest_path")
+          if not manifest_path:
+              project_name = dispatch.get("project_name", "")
+              manifest_path = f"deployment-output/{project_name}/.existing-helm-release.json"
+
+          if not os.path.exists(manifest_path):
+              sys.stderr.write(f"Release manifest not found: {manifest_path}\n")
+              sys.exit(1)
+
+          with open(manifest_path, "r", encoding="utf-8") as f:
+              manifest = json.load(f)
+
+          # Parity validation between dispatch metadata and release manifest
+          for key in ["schema_version", "job_id", "discovery_revision", "config_digest"]:
+              d_val = str(dispatch.get(key, ""))
+              m_val = str(manifest.get(key, ""))
+              if d_val != m_val:
+                  sys.stderr.write(f"Dispatch/manifest parity failure on {key}: {d_val} != {m_val}\n")
+                  sys.exit(1)
+
+          rg = dispatch.get("resource_group") or manifest.get("resource_group", "")
+          cluster = dispatch.get("cluster_name") or manifest.get("cluster_name", "")
+          ns = dispatch.get("namespace") or manifest.get("namespace", "default")
+          target_key = f"{rg}/{cluster}/{ns}".strip("/").lower()
+          project_name = dispatch.get("project_name") or manifest.get("project_name", "")
+          acr_reg = dispatch.get("acr_registry") or manifest.get("pull_secret", {}).get("registry", "")
+
+          output_file = os.environ.get("GITHUB_OUTPUT")
+          if output_file:
+              with open(output_file, "a", encoding="utf-8") as out:
+                  out.write(f"job_id={dispatch.get(\"job_id\", \"\")}\n")
+                  out.write(f"dispatch_id={dispatch.get(\"dispatch_id\", \"\")}\n")
+                  out.write(f"manifest_path={manifest_path}\n")
+                  out.write(f"target_key={target_key}\n")
+                  out.write(f"project_name={project_name}\n")
+                  out.write(f"cluster_name={cluster}\n")
+                  out.write(f"resource_group={rg}\n")
+                  out.write(f"namespace={ns}\n")
+                  out.write(f"acr_registry={acr_reg}\n")
+          '
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-latest
+    concurrency:
+      group: existing-helm-${{ needs.prepare.outputs.target_key }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Azure CLI Login
         uses: azure/login@v2
         with:
-          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Resolve Target Cluster & Key Vault
-        id: resolve_target
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Connect to AKS Cluster
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/test-cart-150/.deploy-target"
-          if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
-            DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
-          fi
-          if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
-            echo "Error: No .deploy-target file found at $DEPLOY_TARGET_FILE"
-            exit 1
-          fi
-          CLUSTER_NAME=$(yq e '.cluster_name' $DEPLOY_TARGET_FILE)
-          RESOURCE_GROUP=$(yq e '.resource_group' $DEPLOY_TARGET_FILE)
-          if [ -z "$RESOURCE_GROUP" ] || [ "$RESOURCE_GROUP" = "null" ] || [ "$RESOURCE_GROUP" = "daas-rg" ]; then
-            RESOURCE_GROUP="${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || '' }}"
-          fi
-          KEY_VAULT_NAME=$(az keyvault list --resource-group $RESOURCE_GROUP --query "[0].name" -o tsv)
-          
-          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
-          echo "resource_group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
-          echo "key_vault_name=$KEY_VAULT_NAME" >> $GITHUB_OUTPUT
-          echo "project_dir=$(dirname $DEPLOY_TARGET_FILE)" >> $GITHUB_OUTPUT
-          echo "helm_dir=$(dirname $DEPLOY_TARGET_FILE)/helm" >> $GITHUB_OUTPUT
+          az aks get-credentials --resource-group ${{ needs.prepare.outputs.resource_group }} --name ${{ needs.prepare.outputs.cluster_name }} --overwrite-existing
 
-      - name: Set up Kubeconfig
-        run: |
-          az aks get-credentials --resource-group ${{ steps.resolve_target.outputs.resource_group }} --name ${{ steps.resolve_target.outputs.cluster_name }} --overwrite-existing
-
-      - name: Install Helm
-        uses: azure/setup-helm@v3
+      - name: Install Helm v3.19.0
+        uses: azure/setup-helm@v4
         with:
-          version: 'latest'
+          version: 'v3.19.0'
 
-      - name: Create ACR Pull Secret in AKS
+      - name: Deploy Existing Helm Releases
+        id: deploy_releases
+        env:
+          JOB_ID: ${{ needs.prepare.outputs.job_id }}
         run: |
-          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret docker-registry acr-pull-secret \
-            --namespace ${{ env.NAMESPACE }} \
-            --docker-server=${{ env.REGISTRY }} \
-            --docker-username=${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }} \
-            --docker-password=${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+          python .github/scripts/deploy_existing_helm.py \
+            --dispatch-file .deploy/helm-release.json \
+            --workspace "$GITHUB_WORKSPACE" \
+            --output-file /tmp/existing-helm-deploy-result.json
 
-
-
-      - name: Deploy via Helm
-        run: |
-          PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
-          if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/test-cart-150"
-          fi
-          if [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
-          fi
-          echo "Looking for Helm charts in $PROJECT_DIR..."
-
-          # Discover all directories with Chart.yaml
-          CHART_DIRS=$(find "$PROJECT_DIR" -mindepth 1 -maxdepth 2 -name "Chart.yaml" -exec dirname {} \;)
-          if [ -z "$CHART_DIRS" ]; then
-            if [ -d "./${{ steps.resolve_target.outputs.helm_dir }}" ]; then
-              CHART_DIRS="./${{ steps.resolve_target.outputs.helm_dir }}"
-            else
-              echo "Error: No Helm charts found in $PROJECT_DIR"
-              exit 1
-            fi
-          fi
-
-          for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "test-cart-150")
-            if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="test-cart-150"
-            fi
-            echo "=========================================="
-            echo "Deploying Helm chart: $CHART_NAME from $chart_path"
-            echo "=========================================="
-
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-0501fd44' }}" --set-string "services.backend.namespace=test-cart-150" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-0501fd44' }}" --set-string "services.frontend.namespace=test-cart-150" --timeout 5m0s
-          done
-
-      - name: Wait for Frontend LoadBalancer IP
-        run: |
-          echo "Waiting for Frontend LoadBalancer external IP..."
-          FRONTEND_SVC="frontend"
-          FRONTEND_NS="test-cart-150"
-          if [ -z "$FRONTEND_NS" ]; then
-            FRONTEND_NS="${{ env.NAMESPACE }}"
-          fi
-          if [ -z "$FRONTEND_SVC" ]; then
-            echo "No frontend service found. Skipping LoadBalancer IP wait."
-          else
-            IP=""
-            for i in {1..30}; do
-              IP=$(kubectl get svc $FRONTEND_SVC -n $FRONTEND_NS -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-              if [ -z "$IP" ]; then
-                IP=$(kubectl get svc $FRONTEND_SVC -n $FRONTEND_NS -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
-              fi
-              if [ ! -z "$IP" ]; then
-                echo "Frontend LoadBalancer IP/Hostname assigned: $IP"
-                break
-              fi
-              echo "Waiting for IP assignment (attempt $i/30)..."
-              sleep 10
-            done
-            if [ -z "$IP" ]; then
-              echo "Error: Frontend LoadBalancer IP assignment timed out."
-              kubectl describe svc $FRONTEND_SVC -n $FRONTEND_NS
-              exit 1
-            fi
-          fi
-
-      - name: Retrieve Public IP & Report URL
-        run: |
-          echo "Retrieving public IP/hostname from frontend service..."
-          FRONTEND_SVC="frontend"
-          FRONTEND_NS="test-cart-150"
-          if [ -z "$FRONTEND_NS" ]; then
-            FRONTEND_NS="${{ env.NAMESPACE }}"
-          fi
-          if [ -z "$FRONTEND_SVC" ]; then
-             echo "URL=None" >> $GITHUB_ENV
-             echo "### ⚠️ Deployment Completed (No Frontend)" >> $GITHUB_STEP_SUMMARY
-             exit 0
-          fi
-          
-          IP=$(kubectl get svc $FRONTEND_SVC -n $FRONTEND_NS -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-          if [ -z "$IP" ]; then
-            IP=$(kubectl get svc $FRONTEND_SVC -n $FRONTEND_NS -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
-          fi
-          
-          if [ -z "$IP" ]; then
-            echo "Warning: Frontend IP/Hostname was not assigned."
-            echo "URL=http://<pending-public-ip>" >> $GITHUB_ENV
-            echo "### ⚠️ Deployment Completed (IP Pending)" >> $GITHUB_STEP_SUMMARY
-          else
-            URL="http://$IP"
-            echo "URL=$URL" >> $GITHUB_ENV
-            echo "### 🚀 Deployment Successfully Exposed!" >> $GITHUB_STEP_SUMMARY
-            echo "Your application is publicly reachable at: **[$URL]($URL)**" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Save Execution Outputs Directly to Database
+      - name: Save Execution Outputs
         if: always()
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
-          JOB_ID: ${{ env.JOB_ID }}
-          PROVIDER: "azure"
-          REGION: "eastus"
-          NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "test-cart-150"
-          DEPLOYMENT_STRATEGY: "rolling"
-          COMMIT_SHA: ${{ github.sha }}
-          RUN_ID: ${{ github.run_id }}
-          JOB_STATUS: ${{ job.status }}
-          PUBLIC_URL: ${{ env.URL }}
-          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_5x0cms", "POSTGRES_PASSWORD": "!3HondKn6R%zDM0gZomCy3G\u0026", "POSTGRES_USER": "post_nmrw32"}'
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JOB_ID: ${{ needs.prepare.outputs.job_id }}
         run: |
-          echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
-          if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL secret is not set. Skipping direct DB update."
-            exit 0
-          fi
-
-          python3 -m pip install --quiet psycopg2-binary 2>/dev/null || true
-
-          python3 .github/scripts/save_outputs.py
-
-      - name: Cleanup on Failed Deployment
-        if: failure()
-        run: |
-          echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall test-cart-150 -n ${{ env.NAMESPACE }} || true
+          python .github/scripts/save_existing_helm_outputs.py \
+            --dispatch-file .deploy/helm-release.json \
+            --result-file /tmp/existing-helm-deploy-result.json \
+            --commit-sha "$GITHUB_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --workflow-status "${{ job.status }}"

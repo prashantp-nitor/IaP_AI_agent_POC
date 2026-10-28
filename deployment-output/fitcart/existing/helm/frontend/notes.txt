@@ -1,0 +1,2 @@
+# FitCart Configuration Comment
+# Read-only chart file

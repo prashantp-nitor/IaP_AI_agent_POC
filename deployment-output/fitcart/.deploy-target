@@ -1,0 +1,8 @@
+{
+  "cluster_name": "fitcart-aks",
+  "resource_group": "fitcart-rg",
+  "region": "eastus",
+  "cloud_provider": "azure",
+  "namespace": "fitcart",
+  "registry": "fitcartacr.azurecr.io"
+}

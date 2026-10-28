@@ -1,8 +1,8 @@
 {
-  "job_id": "job-helm-ok",
-  "dispatched_at": "2026-10-28T09:05:53Z",
-  "target_cluster": "default",
-  "resource_group": "AZET-RG-Daas-Platform",
+  "job_id": "job-reuse-flow",
+  "dispatched_at": "2026-10-28T09:05:58Z",
+  "target_cluster": "existing-aks-cluster-99",
+  "resource_group": "rg-cred-mgr-real",
   "namespace": "default",
-  "image_tag": "sha-jobhelmo"
+  "image_tag": "sha-jobreuse"
 }

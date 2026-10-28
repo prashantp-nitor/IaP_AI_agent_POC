@@ -1,6 +1,6 @@
 {
   "job_id": "job-artifacts-123",
-  "dispatched_at": "2026-10-28T09:04:46Z",
+  "dispatched_at": "2026-10-28T09:05:46Z",
   "target_cluster": "default",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",

@@ -1,4 +1,4 @@
-cluster_name: provisioned-aks-01
+cluster_name: daas-aks-cluster
 resource_group: AZET-RG-Daas-Platform
 region: eastus
 cloud_provider: azure

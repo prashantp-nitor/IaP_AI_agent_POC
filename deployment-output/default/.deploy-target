@@ -1,6 +1,5 @@
-cluster_name: test-demo-21-aks
+cluster_name: daas-aks-cluster
 resource_group: AZET-RG-Daas-Platform
-region: westus
+region: eastus
 cloud_provider: azure
 namespace: default
-registry: testdemo21acr70632f.azurecr.io

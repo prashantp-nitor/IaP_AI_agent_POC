@@ -1,8 +1,8 @@
 {
-  "job_id": "job-prov-flow",
-  "dispatched_at": "2026-10-28T09:04:41Z",
-  "target_cluster": "provisioned-aks-01",
+  "job_id": "job-artifacts-123",
+  "dispatched_at": "2026-10-28T09:04:46Z",
+  "target_cluster": "default",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",
-  "image_tag": "sha-jobprovf"
+  "image_tag": "sha-jobartif"
 }

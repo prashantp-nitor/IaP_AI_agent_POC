@@ -1,8 +1,8 @@
 {
-  "job_id": "00000000-0000-0000-0000-000000000101",
-  "dispatched_at": "2026-10-28T06:15:00Z",
+  "job_id": "job-helm-ok",
+  "dispatched_at": "2026-10-28T09:04:25Z",
   "target_cluster": "default",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",
-  "image_tag": "sha-00000000"
+  "image_tag": "sha-jobhelmo"
 }

@@ -1,5 +1,5 @@
-cluster_name: daas-aks-cluster
-resource_group: AZET-RG-Daas-Platform
+cluster_name: existing-aks-cluster-99
+resource_group: rg-cred-mgr-real
 region: eastus
 cloud_provider: azure
 namespace: default

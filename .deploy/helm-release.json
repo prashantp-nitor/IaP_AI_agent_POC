@@ -1,8 +1,8 @@
 {
-  "job_id": "job-helm-fail",
-  "dispatched_at": "2026-10-28T09:06:03Z",
-  "target_cluster": "default",
+  "job_id": "job-prov-flow",
+  "dispatched_at": "2026-10-28T09:06:08Z",
+  "target_cluster": "provisioned-aks-01",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "default",
-  "image_tag": "sha-jobhelmf"
+  "image_tag": "sha-jobprovf"
 }

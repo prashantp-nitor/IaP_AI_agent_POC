@@ -1,4 +1,3 @@
-# DaaS CI Dispatch: 17993d1d-a36e-4962-9dea-8f6b3eb3159f @ 2026-10-29T06:47:22Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +11,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "17993d1d-a36e-4962-9dea-8f6b3eb3159f"
+        default: "00000000-0000-0000-0000-000000000101"
 
 permissions:
   id-token: write
@@ -20,12 +19,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: testdemo29acr2cb44a.azurecr.io
-  NAMESPACE: test-demo-29
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/17993d1d-a36e-4962-9dea-8f6b3eb3159f/source.zip?se=2026-10-29T07%3A47%3A22Z&sp=r&sv=2026-06-06&sr=b&sig=c6Om3sQB/95yaBcIFeIyqfiNopE/e%2BkaNDgxF1fArI8%3D"
-  JOB_ID: ${{ inputs.job_id || '17993d1d-a36e-4962-9dea-8f6b3eb3159f' }}
+  REGISTRY: fitcartacr.azurecr.io
+  NAMESPACE: fitcart
+  SOURCE_ZIP_URL: "https://storage.local/source.zip"
+  JOB_ID: ${{ inputs.job_id || '00000000-0000-0000-0000-000000000101' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "17993D1D_A36E_4962_9DEA_8F6B3EB3159F"
+  PROJECT_PREFIX: "FITCART"
 
 jobs:
   ci-security-and-build:
@@ -40,6 +39,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
+          echo "328bf8a0d6a0c0c24a56eba76457e00bcd61783239b9b2bf6b312760b6091651  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -168,7 +168,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-17993d1d-a36e-4962-9dea-8f6b3eb3159f
+            -Dsonar.projectKey=daas-fitcart
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -190,7 +190,7 @@ jobs:
           file: ./app/backend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/backend:sha-17993d1d
+          tags: ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1
           
           
           
@@ -200,13 +200,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-17993d1d || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-17993d1d || true
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/backend:sha-17993d1d
+          docker push ${{ env.REGISTRY }}/fitcart-backend:20261027-demo1
       
       - name: Build frontend container image
         uses: docker/build-push-action@v5
@@ -215,7 +215,7 @@ jobs:
           file: ./app/frontend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/frontend:sha-17993d1d
+          tags: ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1
           
           
           
@@ -225,13 +225,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-17993d1d || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-17993d1d || true
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/frontend:sha-17993d1d
+          docker push ${{ env.REGISTRY }}/fitcart-frontend:20261027-demo1
       
 
       - name: Upload Security Reports to Azure Blob Storage

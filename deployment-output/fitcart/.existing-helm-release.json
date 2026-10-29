@@ -22,8 +22,8 @@
     }
   ],
   "cluster_name": "fitcart-aks",
-  "config_digest": "5061bf53cdb956f3e72c438d90e4305df7fef65c134f19d5d5aca0bfbeb37cc9",
-  "discovery_revision": "1d562007dd154a9f999b5539dcddd693",
+  "config_digest": "e2a0bd0ad180a6924a940437999149baa8c9d6f656bc1a1acc0423437a430761",
+  "discovery_revision": "89eaa96842524a85bef87fef6d71a87a",
   "frontend_endpoint": {
     "namespace": "fitcart",
     "port": 80,

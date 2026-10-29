@@ -11,7 +11,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "00000000-0000-0000-0000-000000000010"
+        default: "00000000-0000-0000-0000-000000000101"
 
 permissions:
   id-token: write
@@ -22,7 +22,7 @@ env:
   REGISTRY: fitcartacr.azurecr.io
   NAMESPACE: fitcart-ba6e77
   SOURCE_ZIP_URL: "https://storage.local/source.zip"
-  JOB_ID: ${{ inputs.job_id || '00000000-0000-0000-0000-000000000010' }}
+  JOB_ID: ${{ inputs.job_id || '00000000-0000-0000-0000-000000000101' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "FITCART"
 
@@ -39,7 +39,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "42436a67bbf95e9b43f34af1f1f7cd658addc53919f689a568beca8970378e25  source.zip" | sha256sum -c -
+          echo "e346ead020184096cc4d11895cd1ec15fceb894d498c42350328b5985e168936  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 

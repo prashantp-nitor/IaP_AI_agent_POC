@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: c028c731-8b52-48ac-8a00-ee5bc79703f8 @ 2026-10-27T05:33:59Z
+# DaaS CI Dispatch: 7a2b184e-f951-41f7-96d8-a97baf0c86ca @ 2026-10-29T06:52:26Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "c028c731-8b52-48ac-8a00-ee5bc79703f8"
+        default: "7a2b184e-f951-41f7-96d8-a97baf0c86ca"
 
 permissions:
   id-token: write
@@ -20,13 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: testnewdeploymacr1d145a.azurecr.io
-  NAMESPACE: testnewdeployment001
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/c028c731-8b52-48ac-8a00-ee5bc79703f8/source.zip?sp=r&st=2026-10-29T05:06:06Z&se=2026-10-29T13:21:06Z&sv=2026-02-06&sr=b&sig=RQ4%2FvT54gWHHcqU6fbLNCOqM1jI7iG5RtIWZXRkUILA%3D"
-  # SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/c028c731-8b52-48ac-8a00-ee5bc79703f8/source.zip?se=2026-10-27T06%3A33%3A59Z&sp=r&sv=2026-06-06&sr=b&sig=OyV%2BLenjoTli54rLzZ%2Bym4hofrxmjadLByIg06fpob0%3D"
-  JOB_ID: ${{ inputs.job_id || 'c028c731-8b52-48ac-8a00-ee5bc79703f8' }}
+  REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
+  NAMESPACE: test-demo-29
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7a2b184e-f951-41f7-96d8-a97baf0c86ca/source.zip?se=2026-10-29T07%3A52%3A26Z&sp=r&sv=2026-06-06&sr=b&sig=fLgJeri6z0sScAck3XfW7HDNTGAX/HQcg3FhaYwgzNQ%3D"
+  JOB_ID: ${{ inputs.job_id || '7a2b184e-f951-41f7-96d8-a97baf0c86ca' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "C028C731_8B52_48AC_8A00_EE5BC79703F8"
+  PROJECT_PREFIX: "7A2B184E_F951_41F7_96D8_A97BAF0C86CA"
 
 jobs:
   ci-security-and-build:
@@ -99,28 +98,82 @@ jobs:
           sudo chmod -R 777 security-reports || true
 
       
-      - name: Set Sonar Sources
+      - name: Normalize Infisical Sonar Credentials
+        continue-on-error: true
         run: |
+          PREFIX="${{ env.PROJECT_PREFIX }}"
+          JOB_ID="${{ env.JOB_ID }}"
+          CLEAN_JOB_ID="$(echo "$JOB_ID" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9_' '_' | sed 's/^_//;s/_$//')"
+
+          if [ -n "$PREFIX" ]; then
+            TOKEN_VAR="${PREFIX}_SONAR_TOKEN"
+            HOST_VAR="${PREFIX}_SONAR_HOST_URL"
+            ORG_VAR="${PREFIX}_SONAR_ORGANIZATION"
+            KEY_VAR="${PREFIX}_SONAR_PROJECT_KEY"
+
+            TOKEN_VAL="$(eval "echo \${$TOKEN_VAR:-}")"
+            HOST_VAL="$(eval "echo \${$HOST_VAR:-}")"
+            ORG_VAL="$(eval "echo \${$ORG_VAR:-}")"
+            KEY_VAL="$(eval "echo \${$KEY_VAR:-}")"
+
+            if [ -n "$TOKEN_VAL" ] && [ -z "${SONAR_TOKEN:-}" ]; then
+              echo "SONAR_TOKEN=$TOKEN_VAL" >> $GITHUB_ENV
+              SONAR_TOKEN="$TOKEN_VAL"
+            fi
+            if [ -n "$HOST_VAL" ] && [ -z "$SONAR_HOST_URL" ]; then
+              echo "SONAR_HOST_URL=$HOST_VAL" >> $GITHUB_ENV
+              SONAR_HOST_URL="$HOST_VAL"
+            fi
+            if [ -n "$ORG_VAL" ] && [ -z "${SONAR_ORGANIZATION:-}" ]; then
+              echo "SONAR_ORGANIZATION=$ORG_VAL" >> $GITHUB_ENV
+              SONAR_ORGANIZATION="$ORG_VAL"
+            fi
+            if [ -n "$KEY_VAL" ] && [ -z "${SONAR_PROJECT_KEY:-}" ]; then
+              echo "SONAR_PROJECT_KEY=$KEY_VAL" >> $GITHUB_ENV
+              SONAR_PROJECT_KEY="$KEY_VAL"
+            fi
+          fi
+
+          if [ -z "${SONAR_TOKEN:-}" ] && [ -n "$CLEAN_JOB_ID" ] && [ "$CLEAN_JOB_ID" != "$PREFIX" ]; then
+            JOB_TOKEN_VAR="${CLEAN_JOB_ID}_SONAR_TOKEN"
+            JOB_TOKEN_VAL="$(eval "echo \${$JOB_TOKEN_VAR:-}")"
+            if [ -n "$JOB_TOKEN_VAL" ]; then
+              echo "SONAR_TOKEN=$JOB_TOKEN_VAL" >> $GITHUB_ENV
+              SONAR_TOKEN="$JOB_TOKEN_VAL"
+            fi
+          fi
+          if [ -z "$SONAR_HOST_URL" ] && [ -n "$CLEAN_JOB_ID" ] && [ "$CLEAN_JOB_ID" != "$PREFIX" ]; then
+            JOB_HOST_VAR="${CLEAN_JOB_ID}_SONAR_HOST_URL"
+            JOB_HOST_VAL="$(eval "echo \${$JOB_HOST_VAR:-}")"
+            if [ -n "$JOB_HOST_VAL" ]; then
+              echo "SONAR_HOST_URL=$JOB_HOST_VAL" >> $GITHUB_ENV
+              SONAR_HOST_URL="$JOB_HOST_VAL"
+            fi
+          fi
+
           SONAR_SOURCES="."
           if [ -d "app" ]; then
             SONAR_SOURCES="app"
           fi
           echo "SONAR_SOURCES=$SONAR_SOURCES" >> $GITHUB_ENV
 
+      
       - name: Run SonarQube / SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
-          SONAR_TOKEN: "5fd7aea66993be5b0d02699c7a7a11c384bd4bb7"
-          SONAR_HOST_URL: "https://sonarcloud.io"
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN || secrets.SONAR_TOKEN }}
+          
         with:
           args: >
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.organization=daas-poc
-            -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
+            
+            
+            -Dsonar.projectKey=daas-7a2b184e-f951-41f7-96d8-a97baf0c86ca
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
+      
+      
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -137,7 +190,7 @@ jobs:
           file: ./app/backend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/backend:sha-c028c731
+          tags: ${{ env.REGISTRY }}/backend:sha-7a2b184e
           
           
           
@@ -147,13 +200,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-c028c731 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-c028c731 || true
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-7a2b184e || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-7a2b184e || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/backend:sha-c028c731
+          docker push ${{ env.REGISTRY }}/backend:sha-7a2b184e
       
       - name: Build frontend container image
         uses: docker/build-push-action@v5
@@ -162,7 +215,7 @@ jobs:
           file: ./app/frontend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/frontend:sha-c028c731
+          tags: ${{ env.REGISTRY }}/frontend:sha-7a2b184e
           
           
           
@@ -172,13 +225,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-c028c731 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-c028c731 || true
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-7a2b184e || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-7a2b184e || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/frontend:sha-c028c731
+          docker push ${{ env.REGISTRY }}/frontend:sha-7a2b184e
       
 
       - name: Upload Security Reports to Azure Blob Storage

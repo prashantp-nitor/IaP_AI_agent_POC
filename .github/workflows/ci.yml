@@ -130,7 +130,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
-          SONAR_TOKEN: "[REDACTED_GENERIC_API_KEY_5]"
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "https://sonarcloud.io"
         with:
           args: >-

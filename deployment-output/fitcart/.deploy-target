@@ -3,6 +3,6 @@
   "resource_group": "fitcart-rg",
   "region": "eastus",
   "cloud_provider": "azure",
-  "namespace": "fitcart",
+  "namespace": "fitcart-ba6e77",
   "registry": "fitcartacr.azurecr.io"
 }

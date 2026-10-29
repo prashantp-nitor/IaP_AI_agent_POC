@@ -22,16 +22,16 @@
     }
   ],
   "cluster_name": "fitcart-aks",
-  "config_digest": "e2a0bd0ad180a6924a940437999149baa8c9d6f656bc1a1acc0423437a430761",
-  "discovery_revision": "89eaa96842524a85bef87fef6d71a87a",
+  "config_digest": "ff6e2ef011abaa28411e2e6703d9cdf580173aa341fd6f293d4efe818bf00763",
+  "discovery_revision": "9ac7413b2623480480cec581bfc3e67c",
   "frontend_endpoint": {
-    "namespace": "fitcart",
+    "namespace": "fitcart-ba6e77",
     "port": 80,
     "scheme": "http",
     "service_name": "frontend"
   },
   "job_id": "00000000-0000-0000-0000-000000000101",
-  "namespace": "fitcart",
+  "namespace": "fitcart-ba6e77",
   "project_name": "fitcart",
   "provider": "azure",
   "pull_secret": {

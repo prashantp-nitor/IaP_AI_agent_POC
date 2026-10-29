@@ -20,7 +20,7 @@ permissions:
 
 env:
   REGISTRY: fitcartacr.azurecr.io
-  NAMESPACE: fitcart
+  NAMESPACE: fitcart-ba6e77
   SOURCE_ZIP_URL: "https://storage.local/source.zip"
   JOB_ID: ${{ inputs.job_id || '00000000-0000-0000-0000-000000000101' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
@@ -39,7 +39,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "328bf8a0d6a0c0c24a56eba76457e00bcd61783239b9b2bf6b312760b6091651  source.zip" | sha256sum -c -
+          echo "f8d57a1e61c01bebfb2f2f9522de081dda5916c1f33b3a15dd56c5dd60753586  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 

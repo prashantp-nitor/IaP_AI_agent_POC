@@ -1,0 +1,56 @@
+{
+  "vnet_name": "test-demo-29-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "eastus",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "test-demo-29",
+    "job_id": "2cb44a1b-55c7-467d-8071-61d0c5a1fe7b",
+    "project_folder": "test-demo-29-2cb44a"
+  },
+  "cluster_name": "test-demo-29-aks",
+  "kubernetes_version": "1.34",
+  "node_count": "2",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "subnet_name": "db-subnet",
+  "high_availability": true,
+  "min_count": 2,
+  "max_count": 5,
+  "enable_auto_scaling": true,
+  "server_name": "test-demo-29-db",
+  "storage_mb": "32768",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "backup_retention_days": "14",
+  "vault_name": "test-demo-29-kv-2cb44a",
+  "soft_delete_retention_days": 90,
+  "registry_name": "testdemo29acr2cb44a",
+  "admin_enabled": "False",
+  "frontend_repo": "test-demo-29-frontend",
+  "backend_repo": "test-demo-29-backend",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

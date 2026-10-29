@@ -22,15 +22,15 @@
     }
   ],
   "cluster_name": "fitcart-aks",
-  "config_digest": "ff6e2ef011abaa28411e2e6703d9cdf580173aa341fd6f293d4efe818bf00763",
-  "discovery_revision": "9ac7413b2623480480cec581bfc3e67c",
+  "config_digest": "8d88b587a26b0224f4b57fbe616c107e72688aad7b94ce57eeedb397d7265dd7",
+  "discovery_revision": "064b866573bf4022b0bdb79dc04aa81e",
   "frontend_endpoint": {
     "namespace": "fitcart-ba6e77",
     "port": 80,
     "scheme": "http",
     "service_name": "frontend"
   },
-  "job_id": "00000000-0000-0000-0000-000000000101",
+  "job_id": "00000000-0000-0000-0000-000000000010",
   "namespace": "fitcart-ba6e77",
   "project_name": "fitcart",
   "provider": "azure",
@@ -89,24 +89,6 @@
           "size_bytes": 147
         },
         {
-          "package_path": "deployment-output/fitcart/existing/helm/backend/binary.bin",
-          "path": "helm/backend/binary.bin",
-          "sha256": "db89824d39a30f48b5c79775d5f01f4859e1b80f6d7acde373cd29d6facb3fe6",
-          "size_bytes": 7
-        },
-        {
-          "package_path": "deployment-output/fitcart/existing/helm/backend/config.properties",
-          "path": "helm/backend/config.properties",
-          "sha256": "6f55a64f20c8f996da7d2137353a9e4ac952ca81aa2ad408a8da81d65daee46f",
-          "size_bytes": 63
-        },
-        {
-          "package_path": "deployment-output/fitcart/existing/helm/backend/empty.txt",
-          "path": "helm/backend/empty.txt",
-          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-          "size_bytes": 0
-        },
-        {
           "package_path": "deployment-output/fitcart/existing/helm/backend/templates/configmap.yaml",
           "path": "helm/backend/templates/configmap.yaml",
           "sha256": "917e3f441e3b99f074552240fc13b34c7612317a854aacfd84dab5cc237972a5",
@@ -151,12 +133,6 @@
           "path": "helm/frontend/Chart.yaml",
           "sha256": "f3fc063ebe41e65ac9d32ff53e881c2a20de4bd8d3e3cf254d3fc5b1a30b1795",
           "size_bytes": 159
-        },
-        {
-          "package_path": "deployment-output/fitcart/existing/helm/frontend/notes.txt",
-          "path": "helm/frontend/notes.txt",
-          "sha256": "bb153615204c00908053b0276be1c14e27c3576679f84aa2844b84145024d023",
-          "size_bytes": 55
         },
         {
           "package_path": "deployment-output/fitcart/existing/helm/frontend/templates/deployment.yaml",

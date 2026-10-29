@@ -39,7 +39,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "e346ead020184096cc4d11895cd1ec15fceb894d498c42350328b5985e168936  source.zip" | sha256sum -c -
+          echo "0db850564a45c756193f39f2eda1d76825841ba9bfcdb33825606e9a05f91723  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 

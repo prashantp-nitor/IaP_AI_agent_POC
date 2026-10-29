@@ -22,7 +22,8 @@ permissions:
 env:
   REGISTRY: testnewdeploymacr1d145a.azurecr.io
   NAMESPACE: testnewdeployment001
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/c028c731-8b52-48ac-8a00-ee5bc79703f8/source.zip?se=2026-10-27T06%3A33%3A59Z&sp=r&sv=2026-06-06&sr=b&sig=OyV%2BLenjoTli54rLzZ%2Bym4hofrxmjadLByIg06fpob0%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/c028c731-8b52-48ac-8a00-ee5bc79703f8/source.zip?sp=r&st=2026-10-29T05:06:06Z&se=2026-10-29T13:21:06Z&sv=2026-02-06&sr=b&sig=RQ4%2FvT54gWHHcqU6fbLNCOqM1jI7iG5RtIWZXRkUILA%3D"
+  # SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/c028c731-8b52-48ac-8a00-ee5bc79703f8/source.zip?se=2026-10-27T06%3A33%3A59Z&sp=r&sv=2026-06-06&sr=b&sig=OyV%2BLenjoTli54rLzZ%2Bym4hofrxmjadLByIg06fpob0%3D"
   JOB_ID: ${{ inputs.job_id || 'c028c731-8b52-48ac-8a00-ee5bc79703f8' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "C028C731_8B52_48AC_8A00_EE5BC79703F8"

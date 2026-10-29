@@ -201,11 +201,7 @@ jobs:
 
       - name: Push frontend image
         run: |
-<<<<<<< HEAD
           docker push ${{ env.REGISTRY }}/frontend:sha-7a2b184e
-=======
-          docker push "${REGISTRY}/frontend:sha-7a2b184e"
->>>>>>> a2c5f2843ab9ac15f47b005692bfbf813af3c72d
 
       - name: Upload Security Reports to Azure Blob Storage
         if: always()

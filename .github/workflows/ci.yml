@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 7a2b184e-f951-41f7-96d8-a97baf0c86ca @ 2026-10-29T06:52:26Z
+# DaaS CI Dispatch: 8bfa978d-a5d6-47e8-94d0-f4e30d4ac7c7
 name: CI Security Scan and Container Build
 
 on:
@@ -7,12 +7,13 @@ on:
       - "feature/update-pipeline"
     paths:
       - ".github/workflows/ci.yml"
+
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "7a2b184e-f951-41f7-96d8-a97baf0c86ca"
+        default: "8bfa978d-a5d6-47e8-94d0-f4e30d4ac7c7"
 
 permissions:
   id-token: write
@@ -22,14 +23,15 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: test-demo-29
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7a2b184e-f951-41f7-96d8-a97baf0c86ca/source.zip?se=2026-10-29T07%3A52%3A26Z&sp=r&sv=2026-06-06&sr=b&sig=fLgJeri6z0sScAck3XfW7HDNTGAX/HQcg3FhaYwgzNQ%3D"
-  JOB_ID: ${{ inputs.job_id || '7a2b184e-f951-41f7-96d8-a97baf0c86ca' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/8bfa978d-a5d6-47e8-94d0-f4e30d4ac7c7/source.zip?se=2026-10-29T07%3A52%3A26Z&sp=r&sv=2026-06-06&sr=b&sig=fLgJeri6z0sScAck3XfW7HDNTGAX/HQcg3FhaYwgzNQ%3D"
+  JOB_ID: ${{ inputs.job_id || '8bfa978d-a5d6-47e8-94d0-f4e30d4ac7c7' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "7A2B184E_F951_41F7_96D8_A97BAF0C86CA"
 
 jobs:
   ci-security-and-build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -39,7 +41,7 @@ jobs:
       - name: Download source artifact
         if: env.SOURCE_ZIP_URL != ''
         run: |
-          curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
+          curl --fail --location --retry 3 "${SOURCE_ZIP_URL}" -o source.zip
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -65,69 +67,79 @@ jobs:
 
       - name: Install Trivy Scanner
         run: |
-          if ! command -v trivy &> /dev/null; then
+          if ! command -v trivy >/dev/null 2>&1; then
             echo "Installing Trivy via official apt repository..."
+            sudo apt-get update -y
             sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
-            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
-            sudo apt-get update -y && sudo apt-get install -y trivy || (curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin) || true
+
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+              | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+
+            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" \
+              | sudo tee /etc/apt/sources.list.d/trivy.list
+
+            sudo apt-get update -y
+            sudo apt-get install -y trivy
           fi
-          trivy --version || echo "Trivy installed"
+
+          trivy --version
 
       - name: Run Gitleaks Secret Detection
         run: |
           mkdir -p security-reports
+
           SCAN_DIR="/repo"
           if [ -d "$GITHUB_WORKSPACE/app" ]; then
             SCAN_DIR="/repo/app"
           fi
-          docker run --rm -v "$GITHUB_WORKSPACE:/repo" zricethezav/gitleaks:v8.18.4 detect             --no-git             --source="$SCAN_DIR"             --report-path="/repo/security-reports/gitleaks.json"             --report-format=json             --redact             --exit-code=0 || true
-          sudo chmod -R 777 security-reports || true
 
-      - name: Run Trivy Filesystem Scan (JSON & Summary)
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/repo" \
+            zricethezav/gitleaks:v8.18.4 detect \
+            --no-git \
+            --source="$SCAN_DIR" \
+            --report-path="/repo/security-reports/gitleaks.json" \
+            --report-format=json \
+            --redact \
+            --exit-code=0 || true
+
+      - name: Run Trivy Filesystem Scan
         continue-on-error: true
         run: |
           mkdir -p security-reports
+
           SCAN_DIR="."
           if [ -d "app" ]; then
             SCAN_DIR="app"
           fi
+
           echo "Executing Trivy filesystem scan on $SCAN_DIR..."
-          trivy fs --format json --output security-reports/dependencies.json --severity CRITICAL,HIGH,MEDIUM,LOW "$SCAN_DIR" || true
-          trivy fs --severity CRITICAL,HIGH,MEDIUM,LOW "$SCAN_DIR" || true
-          sudo chmod -R 777 security-reports || true
 
-      
-      - name: Set Sonar Sources
-        continue-on-error: true
-        run: |
-          
-          SONAR_SOURCES="."
-          if [ -d "app" ]; then
-            SONAR_SOURCES="app"
-          fi
-          echo "SONAR_SOURCES=$SONAR_SOURCES" >> $GITHUB_ENV
+          trivy fs \
+            --format json \
+            --output security-reports/dependencies.json \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            "$SCAN_DIR" || true
 
-      
-      - name: Run SonarQube / SonarCloud Scan
+          trivy fs \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            "$SCAN_DIR" || true
+
+      # SonarCloud values are hardcoded below.
+      - name: Run SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
-          SONAR_TOKEN: "5fd7aea66993be5b0d02699c7a7a11c384bd4bb7"
+          SONAR_TOKEN: 5fd7aea66993be5b0d02699c7a7a11c384bd4bb7
           SONAR_HOST_URL: "https://sonarcloud.io"
-          
         with:
           args: >
-            
-            
             -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
-            -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.organization=daas-poc
-            -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=app
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
-      
-      
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -136,7 +148,6 @@ jobs:
           username: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
-      
       - name: Build backend container image
         uses: docker/build-push-action@v5
         with:
@@ -145,23 +156,26 @@ jobs:
           push: false
           load: true
           tags: ${{ env.REGISTRY }}/backend:sha-7a2b184e
-          
-          
-          
 
-      - name: Run Trivy Image Scan for backend (JSON & Summary)
+      - name: Run Trivy Image Scan for backend
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-7a2b184e || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-7a2b184e || true
-          sudo chmod -R 777 security-reports || true
+
+          trivy image \
+            --format json \
+            --output security-reports/image-backend.json \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            "${REGISTRY}/backend:sha-7a2b184e" || true
+
+          trivy image \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            "${REGISTRY}/backend:sha-7a2b184e" || true
 
       - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/backend:sha-7a2b184e
-      
+          docker push "${REGISTRY}/backend:sha-7a2b184e"
+
       - name: Build frontend container image
         uses: docker/build-push-action@v5
         with:
@@ -170,34 +184,45 @@ jobs:
           push: false
           load: true
           tags: ${{ env.REGISTRY }}/frontend:sha-7a2b184e
-          
-          
-          
 
-      - name: Run Trivy Image Scan for frontend (JSON & Summary)
+      - name: Run Trivy Image Scan for frontend
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-7a2b184e || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-7a2b184e || true
-          sudo chmod -R 777 security-reports || true
+
+          trivy image \
+            --format json \
+            --output security-reports/image-frontend.json \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            "${REGISTRY}/frontend:sha-7a2b184e" || true
+
+          trivy image \
+            --severity CRITICAL,HIGH,MEDIUM,LOW \
+            "${REGISTRY}/frontend:sha-7a2b184e" || true
 
       - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/frontend:sha-7a2b184e
-      
+          docker push "${REGISTRY}/frontend:sha-7a2b184e"
 
       - name: Upload Security Reports to Azure Blob Storage
         if: always()
+        env:
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
         run: |
           mkdir -p security-reports
-          sudo chmod -R 777 security-reports || true
-          echo "Uploading security reports to Azure Blob container ${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}/${{ env.JOB_ID }}..."
-          if [ -n "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" ]; then
-            az storage blob upload-batch               --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"               --destination "${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}"               --source security-reports/               --destination-path "${{ env.JOB_ID }}"               --overwrite || echo "Warning: Azure storage upload failed, relying on artifact fallback."
+
+          echo "Uploading security reports to Azure Blob container ${AZURE_SECURITY_REPORTS_CONTAINER}/${JOB_ID}..."
+
+          if [ -n "$AZURE_STORAGE_CONNECTION_STRING" ]; then
+            az storage blob upload-batch \
+              --connection-string "$AZURE_STORAGE_CONNECTION_STRING" \
+              --destination "$AZURE_SECURITY_REPORTS_CONTAINER" \
+              --source security-reports/ \
+              --destination-path "$JOB_ID" \
+              --overwrite \
+              || echo "Warning: Azure storage upload failed; relying on artifact fallback."
           else
-            echo "AZURE_STORAGE_CONNECTION_STRING not configured in secrets. Using workflow artifact storage."
+            echo "Azure storage connection string not configured. Using workflow artifact storage."
           fi
 
       - name: Upload Security Reports as Workflow Artifact

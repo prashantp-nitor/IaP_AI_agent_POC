@@ -97,37 +97,30 @@ jobs:
           trivy fs --severity CRITICAL,HIGH,MEDIUM,LOW "$SCAN_DIR" || true
           sudo chmod -R 777 security-reports || true
 
-      
-      - name: Set Sonar Sources
-        continue-on-error: true
+      - name: Configure SonarCloud Properties
         run: |
-          
-          SONAR_SOURCES="."
-          if [ -d "app" ]; then
-            SONAR_SOURCES="app"
-          fi
-          echo "SONAR_SOURCES=$SONAR_SOURCES" >> $GITHUB_ENV
+          cat << 'EOF' > sonar-project.properties
+          sonar.host.url=https://sonarcloud.io
+          sonar.organization=daas-poc
+          sonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
+          sonar.sources=app
+          sonar.exclusions=**/*.tf,deployment-output/**,.github/**
+          sonar.scm.exclusions.disabled=true
+          EOF
 
-      
       - name: Run SonarQube / SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
-          SONAR_TOKEN: "5fd7aea66993be5b0d02699c7a7a11c384bd4bb7"
+          SONAR_TOKEN: "[REDACTED_GENERIC_API_KEY_5]"
           SONAR_HOST_URL: "https://sonarcloud.io"
-          
         with:
-          args: >
-            
-            
-            -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
-            -Dsonar.host.url=https://sonarcloud.io
+          args: >-
             -Dsonar.organization=daas-poc
-            -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
+            -Dsonar.projectKey=vaibhaav-nitor_3-tier-app-fitcart
+            -Dsonar.sources=app
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
-      
-      
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -136,7 +129,6 @@ jobs:
           username: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
-      
       - name: Build backend container image
         uses: docker/build-push-action@v5
         with:
@@ -145,9 +137,6 @@ jobs:
           push: false
           load: true
           tags: ${{ env.REGISTRY }}/backend:sha-7a2b184e
-          
-          
-          
 
       - name: Run Trivy Image Scan for backend (JSON & Summary)
         continue-on-error: true
@@ -170,9 +159,6 @@ jobs:
           push: false
           load: true
           tags: ${{ env.REGISTRY }}/frontend:sha-7a2b184e
-          
-          
-          
 
       - name: Run Trivy Image Scan for frontend (JSON & Summary)
         continue-on-error: true
@@ -186,7 +172,6 @@ jobs:
       - name: Push frontend image
         run: |
           docker push ${{ env.REGISTRY }}/frontend:sha-7a2b184e
-      
 
       - name: Upload Security Reports to Azure Blob Storage
         if: always()

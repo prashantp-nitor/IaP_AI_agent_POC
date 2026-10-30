@@ -1,0 +1,166 @@
+{
+  "build_services": [
+    {
+      "context_dir": "backend",
+      "dockerfile_path": "backend/Dockerfile",
+      "image_reference": "acrfitcartdevnmv9l9.azurecr.io/fitcart-backend:latest",
+      "image_tag": "latest",
+      "name": "backend",
+      "registry": "acrfitcartdevnmv9l9.azurecr.io",
+      "repo_name": "fitcart-backend",
+      "role": "backend"
+    },
+    {
+      "context_dir": "frontend",
+      "dockerfile_path": "frontend/Dockerfile",
+      "image_reference": "acrfitcartdevnmv9l9.azurecr.io/fitcart-frontend:latest",
+      "image_tag": "latest",
+      "name": "frontend",
+      "registry": "acrfitcartdevnmv9l9.azurecr.io",
+      "repo_name": "fitcart-frontend",
+      "role": "frontend"
+    }
+  ],
+  "cluster_name": "aks-fitcart-dev",
+  "config_digest": "d60bbd0aa6412f66b7985da52a02fa0cb1ccbd4ace62b80f7ae3ea4c523853a4",
+  "discovery_revision": "561c0baa4b64492b98380e456e2e1195",
+  "frontend_endpoint": {
+    "namespace": "test-cart-180-dcdca7",
+    "port": 80,
+    "scheme": "http",
+    "service_name": "frontend"
+  },
+  "job_id": "dcdca7e0-b4ea-4b8c-9eab-22ecf0d0a54b",
+  "namespace": "test-cart-180-dcdca7",
+  "project_name": "test-cart-180",
+  "provider": "azure",
+  "pull_secret": {
+    "name": "acr-pull-secret",
+    "registry": "acrfitcartdevnmv9l9.azurecr.io"
+  },
+  "releases": [
+    {
+      "chart_path": "helm/database",
+      "files": [
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/database/Chart.yaml",
+          "path": "helm/database/Chart.yaml",
+          "sha256": "22e451f71c099c1143265d6fd93ed63df452f84f29739f7ead6f44802a1d53c6",
+          "size_bytes": 175
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/database/templates/secret.yaml",
+          "path": "helm/database/templates/secret.yaml",
+          "sha256": "8c4c6d0d0cc10bac8957712310edc4ead456a5847be23ecbb70198a0b8f7b85c",
+          "size_bytes": 268
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/database/templates/service.yaml",
+          "path": "helm/database/templates/service.yaml",
+          "sha256": "de2950d0529d000f62aaabe904334cfa51789df9a5b7f6ccd0e4642be3459d26",
+          "size_bytes": 413
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/database/templates/statefulset.yaml",
+          "path": "helm/database/templates/statefulset.yaml",
+          "sha256": "07b3b9aa7eb4030a9f7a4c65696060dfc71aaaecd5a68f15f5d5f20121e8cbba",
+          "size_bytes": 2755
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/database/values.yaml",
+          "path": "helm/database/values.yaml",
+          "sha256": "8eb46a570d270b088d2523e93724fb5f0b7e97080a46bec2a43a2995eeb1a451",
+          "size_bytes": 539
+        }
+      ],
+      "package_path": "deployment-output/test-cart-180/existing/helm/database",
+      "release_name": "fitcart-database",
+      "role": "database",
+      "service_name": "postgres",
+      "workload_kind": "StatefulSet"
+    },
+    {
+      "chart_path": "helm/backend",
+      "files": [
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/backend/Chart.yaml",
+          "path": "helm/backend/Chart.yaml",
+          "sha256": "0b5fb23cb24269ab85db786714be9e6e97b40637d86a16a5036b6d9d7673a75c",
+          "size_bytes": 141
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/backend/templates/configmap.yaml",
+          "path": "helm/backend/templates/configmap.yaml",
+          "sha256": "d2692e82f4d6110cde971559f7aa106cadffa7fee30d0af0888df2db27a10b93",
+          "size_bytes": 370
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/backend/templates/deployment.yaml",
+          "path": "helm/backend/templates/deployment.yaml",
+          "sha256": "b73f2c21d3597d2f2441b77629b2ca49a6e98545d9239a65d57f863c6b507d47",
+          "size_bytes": 1954
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/backend/templates/secret.yaml",
+          "path": "helm/backend/templates/secret.yaml",
+          "sha256": "2575c9f4b096be94a3b21b04378ef32d46e6a2f4b87bd2318bb63c880db9067e",
+          "size_bytes": 247
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/backend/templates/service.yaml",
+          "path": "helm/backend/templates/service.yaml",
+          "sha256": "af226dfbc114d8534112d8bbff538fd0c12fda6058a13043823f39f2c4e7a2fb",
+          "size_bytes": 448
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/backend/values.yaml",
+          "path": "helm/backend/values.yaml",
+          "sha256": "a25d56a3d7a13c11790251212d64a2d09a1f18f0ef85792051a84431490fb084",
+          "size_bytes": 467
+        }
+      ],
+      "package_path": "deployment-output/test-cart-180/existing/helm/backend",
+      "release_name": "fitcart-backend",
+      "role": "backend",
+      "service_name": "backend",
+      "workload_kind": "Deployment"
+    },
+    {
+      "chart_path": "helm/frontend",
+      "files": [
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/frontend/Chart.yaml",
+          "path": "helm/frontend/Chart.yaml",
+          "sha256": "1dba96d06f8eb628f24d524475d276324a8a36fb2035ff239d3f5b9db6cb8a2d",
+          "size_bytes": 153
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/frontend/templates/deployment.yaml",
+          "path": "helm/frontend/templates/deployment.yaml",
+          "sha256": "9353837d54b514ebf4d90a1142a71ab440bed548d7eb4bd1450e34beb851e3cc",
+          "size_bytes": 1259
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/frontend/templates/service.yaml",
+          "path": "helm/frontend/templates/service.yaml",
+          "sha256": "9780e305dab1b66288b93461f56e5dd0bf13f6960151c991a4bdbdb14d741870",
+          "size_bytes": 404
+        },
+        {
+          "package_path": "deployment-output/test-cart-180/existing/helm/frontend/values.yaml",
+          "path": "helm/frontend/values.yaml",
+          "sha256": "b7202b79c8918cc5876d4524f1d81683f9d7affc09619738259e3d913cfd94cd",
+          "size_bytes": 427
+        }
+      ],
+      "image_repository_override": "acrfitcartdevnmv9l9.azurecr.io/fitcart-frontend",
+      "package_path": "deployment-output/test-cart-180/existing/helm/frontend",
+      "release_name": "fitcart-frontend",
+      "role": "frontend",
+      "service_name": "frontend",
+      "workload_kind": "Deployment"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "schema_version": 1
+}

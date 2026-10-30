@@ -1,0 +1,25 @@
+replicaCount: 2
+image:
+  repository: fitcart-backend
+  tag: v2.0.0
+  pullPolicy: IfNotPresent
+imagePullSecret: ''
+serviceName: backend
+service:
+  type: ClusterIP
+  port: 8080
+containerPort: 8080
+db:
+  host: postgres
+  port: 5432
+  name: backenddb
+  user: ''
+  password: ''
+frontendOrigin: http://frontend:80
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi

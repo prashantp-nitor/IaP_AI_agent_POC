@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "00000000-0000-0000-0000-000000000010"
+        default: "5696b1d8-e56a-4e68-8a1a-580e650b15ea"
 
 permissions:
   id-token: write

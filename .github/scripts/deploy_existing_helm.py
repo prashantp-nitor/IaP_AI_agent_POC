@@ -399,6 +399,8 @@ def main() -> None:
                 "--timeout", "5m0s",
                 "--reset-values",
             ]
+            if role in ("backend", "frontend") and rel.get("image_repository_override"):
+                helm_cmd.extend(["--set-string", f"image.repository={rel['image_repository_override']}"])
             helm_proc = _exec_command(args.helm_bin, helm_cmd, capture_output=True, text=True)
             if helm_proc.returncode != 0:
                 err = f"Helm install failed for release '{release_name}': {helm_proc.stderr.strip()}"
@@ -455,21 +457,21 @@ def main() -> None:
                     except Exception:
                         pass
 
-                # Check StatefulSet rollout status
+                # Follow the database chart's workload kind without rewriting its templates.
                 sts_proc = _exec_command(
                     args.kubectl_bin,
-                    ["rollout", "status", f"statefulset/{service_name}", "-n", namespace, "--timeout=300s"],
+                    ["rollout", "status", f"{workload_kind.lower()}/{service_name}", "-n", namespace, "--timeout=300s"],
                     capture_output=True,
                     text=True,
                 )
                 if sts_proc.returncode != 0:
-                    err = f"StatefulSet rollout failed for '{service_name}': {sts_proc.stderr.strip()}"
+                    err = f"{workload_kind} rollout failed for '{service_name}': {sts_proc.stderr.strip()}"
                     sys.stderr.write(f"{err}\n")
                     diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
                     write_result({
                         "status": "failed",
                         "failed_release": role,
-                        "failed_step": "statefulset_rollout",
+                        "failed_step": f"{workload_kind.lower()}_rollout",
                         "completed_releases": completed_releases,
                         "error_message": err,
                         "diagnostics": diag,

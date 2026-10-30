@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 05dbb194-27a1-4e7c-b96e-1c9c2877f68d
+# existing-helm-ci-dispatch: 4eebbc77-0784-4fb8-ada3-3c566e7dfc8b
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "5696b1d8-e56a-4e68-8a1a-580e650b15ea"
+        default: "cd4f77ca-c8df-4f67-8094-4885ccc7e505"
 
 permissions:
   id-token: write
@@ -21,11 +21,11 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: test-cart-171-5696b1
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/5696b1d8-e56a-4e68-8a1a-580e650b15ea/source.zip?se=2026-10-30T06%3A54%3A55Z&sp=r&sv=2026-06-06&sr=b&sig=zw15aRgji8QwDkpKEIH7ITI/bD0Ug2OV7Z0pmnPBRKw%3D"
-  JOB_ID: ${{ inputs.job_id || '5696b1d8-e56a-4e68-8a1a-580e650b15ea' }}
+  NAMESPACE: test-cart-172-cd4f77
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/cd4f77ca-c8df-4f67-8094-4885ccc7e505/source.zip?se=2026-10-30T07%3A16%3A20Z&sp=r&sv=2026-06-06&sr=b&sig=8Nw7TGQacQ5u6vPq0v74L5biXs1N/pAe8MGYxJtoW6I%3D"
+  JOB_ID: ${{ inputs.job_id || 'cd4f77ca-c8df-4f67-8094-4885ccc7e505' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "TEST_CART_171"
+  PROJECT_PREFIX: "TEST_CART_172"
 
 jobs:
   ci-security-and-build:
@@ -40,7 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "5155989e897819e1c0937f08ebc36686e2ee0b85e4a2f428f9edbd7858ed1a00  source.zip" | sha256sum -c -
+          echo "61a747697a2a537749f1185138ed8d9d6942107d030919f734e3536a88b02918  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -169,7 +169,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-test-cart-171
+            -Dsonar.projectKey=daas-test-cart-172
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true

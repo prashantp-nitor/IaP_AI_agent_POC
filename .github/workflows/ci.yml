@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 29457876-c3d3-4ea1-8984-9f87c2fea8f7
+# existing-helm-ci-dispatch: acff96a6-2d58-482a-b32d-ece589822e0e
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "dcdca7e0-b4ea-4b8c-9eab-22ecf0d0a54b"
+        default: "f531799a-89ea-417f-a5f7-8d425aa5d986"
 
 permissions:
   id-token: write
@@ -20,12 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: acrfitcartdevnmv9l9.azurecr.io
-  NAMESPACE: test-cart-180-dcdca7
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/dcdca7e0-b4ea-4b8c-9eab-22ecf0d0a54b/source.zip?se=2026-10-30T10%3A22%3A38Z&sp=r&sv=2026-06-06&sr=b&sig=aORcqDnGNrDRWbFaUSCWZS18Ov23E/nTm78MKljIZNE%3D"
-  JOB_ID: ${{ inputs.job_id || 'dcdca7e0-b4ea-4b8c-9eab-22ecf0d0a54b' }}
+  REGISTRY: azdaasdeployment.azurecr.io
+  NAMESPACE: test-cart-181-f53179
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/f531799a-89ea-417f-a5f7-8d425aa5d986/source.zip?se=2026-10-30T12%3A18%3A38Z&sp=r&sv=2026-06-06&sr=b&sig=VV4pK/esu1NaaBUSwYUr8Mf9km2/Y8NxteQCiVQZSGg%3D"
+  JOB_ID: ${{ inputs.job_id || 'f531799a-89ea-417f-a5f7-8d425aa5d986' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "TEST_CART_180"
+  PROJECT_PREFIX: "TEST_CART_181"
 
 jobs:
   ci-security-and-build:
@@ -40,7 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "ddc706e27d9d14fccdcf70dfbfecbfc848e4e49e9b961a53d0bd2fdf0e88f7b4  source.zip" | sha256sum -c -
+          echo "57b01cd888b932b9a9feb0286619d3c21fb3e55111d895c1452442b77c5a3cb4  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -169,7 +169,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-test-cart-180
+            -Dsonar.projectKey=daas-test-cart-181
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true

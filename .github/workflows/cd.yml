@@ -3,7 +3,7 @@ name: Deploy Existing Helm Workload
 on:
   push:
     branches:
-      - "main"
+      - "feature/test-custom-acr-login"
     paths:
       - ".deploy/helm-release.json"
       - "deployment-output/**"
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "5696b1d8-e56a-4e68-8a1a-580e650b15ea"
+        default: "cd4f77ca-c8df-4f67-8094-4885ccc7e505"
 
 permissions:
   id-token: write
@@ -79,8 +79,8 @@ jobs:
           output_file = os.environ.get("GITHUB_OUTPUT")
           if output_file:
               with open(output_file, "a", encoding="utf-8") as out:
-                  out.write(f"job_id={dispatch.get(\"job_id\", \"\")}\n")
-                  out.write(f"dispatch_id={dispatch.get(\"dispatch_id\", \"\")}\n")
+                  out.write("job_id={}\n".format(dispatch.get("job_id", "")))
+                  out.write("dispatch_id={}\n".format(dispatch.get("dispatch_id", "")))
                   out.write(f"manifest_path={manifest_path}\n")
                   out.write(f"target_key={target_key}\n")
                   out.write(f"project_name={project_name}\n")

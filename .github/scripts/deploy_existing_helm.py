@@ -396,7 +396,7 @@ def main() -> None:
                 "--namespace", namespace,
                 "--create-namespace",
                 "--wait",
-                "--timeout", "5m0s",
+                "--timeout", "10m0s",
                 "--reset-values",
             ]
             if role in ("backend", "frontend") and rel.get("image_repository_override"):
@@ -405,20 +405,28 @@ def main() -> None:
             if helm_proc.returncode != 0:
                 err = f"Helm install failed for release '{release_name}': {helm_proc.stderr.strip()}"
                 sys.stderr.write(f"{err}\n")
-                diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
-                write_result({
+                releases_status[role] = {
                     "status": "failed",
-                    "failed_release": role,
-                    "failed_step": "helm_install",
-                    "completed_releases": completed_releases,
-                    "error_message": err,
-                    "diagnostics": diag,
-                    "job_id": job_id,
-                    "dispatch_id": dispatch_id,
-                    "discovery_revision": discovery_revision,
-                    "config_digest": config_digest,
-                })
-                sys.exit(1)
+                    "release_name": release_name,
+                    "service_name": service_name,
+                    "error": err,
+                }
+                if role == "database":
+                    diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
+                    write_result({
+                        "status": "failed",
+                        "failed_release": role,
+                        "failed_step": "helm_install",
+                        "completed_releases": completed_releases,
+                        "error_message": err,
+                        "diagnostics": diag,
+                        "job_id": job_id,
+                        "dispatch_id": dispatch_id,
+                        "discovery_revision": discovery_revision,
+                        "config_digest": config_digest,
+                    })
+                    sys.exit(1)
+                continue
 
             # Explicit workload readiness check
             if role == "database":
@@ -493,20 +501,13 @@ def main() -> None:
                 if deploy_proc.returncode != 0:
                     err = f"Deployment rollout failed for '{service_name}': {deploy_proc.stderr.strip()}"
                     sys.stderr.write(f"{err}\n")
-                    diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
-                    write_result({
+                    releases_status[role] = {
                         "status": "failed",
-                        "failed_release": role,
-                        "failed_step": "deployment_rollout",
-                        "completed_releases": completed_releases,
-                        "error_message": err,
-                        "diagnostics": diag,
-                        "job_id": job_id,
-                        "dispatch_id": dispatch_id,
-                        "discovery_revision": discovery_revision,
-                        "config_digest": config_digest,
-                    })
-                    sys.exit(1)
+                        "release_name": release_name,
+                        "service_name": service_name,
+                        "error": err,
+                    }
+                    continue
 
             completed_releases.append(role)
             releases_status[role] = {
@@ -557,6 +558,29 @@ def main() -> None:
                 "completed_releases": completed_releases,
                 "error_message": err,
                 "diagnostics": diag,
+                "job_id": job_id,
+                "dispatch_id": dispatch_id,
+                "discovery_revision": discovery_revision,
+                "config_digest": config_digest,
+            })
+            sys.exit(1)
+
+        failed_releases = [
+            role for role, result in releases_status.items()
+            if result.get("status") == "failed"
+        ]
+
+        if failed_releases:
+            diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
+            write_result({
+                "status": "failed",
+                "failed_releases": failed_releases,
+                "completed_releases": completed_releases,
+                "error_message": f"One or more releases failed: {', '.join(failed_releases)}",
+                "diagnostics": diag,
+                "releases": releases_status,
+                "frontend_endpoint": fe_endpoint,
+                "public_url": public_url,
                 "job_id": job_id,
                 "dispatch_id": dispatch_id,
                 "discovery_revision": discovery_revision,

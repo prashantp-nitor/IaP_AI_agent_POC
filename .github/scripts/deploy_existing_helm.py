@@ -14,6 +14,7 @@ Executes:
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -27,6 +28,28 @@ import time
 from typing import Any
 
 SAFE_ROLES_ORDER = ["database", "backend", "frontend"]
+
+
+def _ensure_acr_pull_secret(kubectl_bin: str, namespace: str, registry: str, name: str) -> None:
+    username = os.environ.get("ACR_USERNAME") or os.environ.get("REGISTRY_USERNAME")
+    password = os.environ.get("ACR_PASSWORD") or os.environ.get("REGISTRY_PASSWORD")
+    if not registry or not username or not password:
+        raise ValueError("ACR pull secret requires a registry and durable ACR_USERNAME/ACR_PASSWORD credentials in CD secrets")
+    auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+    config = json.dumps({"auths": {registry: {"username": username, "password": password, "auth": auth}}})
+    secret = {
+        "apiVersion": "v1", "kind": "Secret",
+        "metadata": {"name": name, "namespace": namespace},
+        "type": "kubernetes.io/dockerconfigjson",
+        "data": {".dockerconfigjson": base64.b64encode(config.encode()).decode()},
+    }
+    try:
+        result = _exec_command(kubectl_bin, ["apply", "-f", "-", "-n", namespace],
+                               input=json.dumps(secret), capture_output=True, text=True)
+    except Exception:
+        raise RuntimeError("Failed to apply ACR pull secret before Helm installation") from None
+    if result.returncode != 0:
+        raise RuntimeError("Failed to apply ACR pull secret before Helm installation; check Kubernetes Secret permissions")
 
 
 def _exec_command(bin_path: str, args: list[str], **kwargs: Any) -> subprocess.CompletedProcess:
@@ -344,39 +367,7 @@ def main() -> None:
         pull_sec = manifest.get("pull_secret") or {}
         acr_registry = pull_sec.get("registry") or dispatch.get("acr_registry", "")
         secret_name = pull_sec.get("name", "acr-pull-secret")
-        if acr_registry:
-            acr_username = os.environ.get("ACR_USERNAME") or os.environ.get("REGISTRY_USERNAME")
-            acr_password = os.environ.get("ACR_PASSWORD") or os.environ.get("REGISTRY_PASSWORD")
-            if not acr_username or not acr_password:
-                try:
-                    acr_name = acr_registry.split(".")[0]
-                    az_res = _exec_command(
-                        args.az_bin,
-                        ["acr", "login", "--name", acr_name, "--expose-token", "--output", "json"],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if az_res.returncode == 0:
-                        az_data = json.loads(az_res.stdout)
-                        acr_username = "00000000-0000-0000-0000-000000000000"
-                        acr_password = az_data.get("accessToken")
-                except Exception:
-                    pass
-
-            if acr_username and acr_password:
-                _exec_command(
-                    args.kubectl_bin,
-                    [
-                        "create", "secret", "docker-registry", secret_name,
-                        f"--namespace={namespace}",
-                        f"--docker-server={acr_registry}",
-                        f"--docker-username={acr_username}",
-                        f"--docker-password={acr_password}",
-                        "--dry-run=client", "-o", "yaml",
-                    ],
-                    capture_output=True,
-                    text=True,
-                )
+        _ensure_acr_pull_secret(args.kubectl_bin, namespace, acr_registry, secret_name)
 
         # 3. Serial Release Installation & Readiness
         completed_releases: list[str] = []
@@ -396,37 +387,32 @@ def main() -> None:
                 "--namespace", namespace,
                 "--create-namespace",
                 "--wait",
-                "--timeout", "10m0s",
+                "--timeout", "5m0s",
                 "--reset-values",
             ]
             if role in ("backend", "frontend") and rel.get("image_repository_override"):
                 helm_cmd.extend(["--set-string", f"image.repository={rel['image_repository_override']}"])
+            if role in ("backend", "frontend"):
+                helm_cmd.extend(["--set-string", f"imagePullSecret={secret_name}",
+                                 "--set-json", "imagePullSecrets=" + json.dumps([{"name": secret_name}])])
             helm_proc = _exec_command(args.helm_bin, helm_cmd, capture_output=True, text=True)
             if helm_proc.returncode != 0:
                 err = f"Helm install failed for release '{release_name}': {helm_proc.stderr.strip()}"
                 sys.stderr.write(f"{err}\n")
-                releases_status[role] = {
+                diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
+                write_result({
                     "status": "failed",
-                    "release_name": release_name,
-                    "service_name": service_name,
-                    "error": err,
-                }
-                if role == "database":
-                    diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
-                    write_result({
-                        "status": "failed",
-                        "failed_release": role,
-                        "failed_step": "helm_install",
-                        "completed_releases": completed_releases,
-                        "error_message": err,
-                        "diagnostics": diag,
-                        "job_id": job_id,
-                        "dispatch_id": dispatch_id,
-                        "discovery_revision": discovery_revision,
-                        "config_digest": config_digest,
-                    })
-                    sys.exit(1)
-                continue
+                    "failed_release": role,
+                    "failed_step": "helm_install",
+                    "completed_releases": completed_releases,
+                    "error_message": err,
+                    "diagnostics": diag,
+                    "job_id": job_id,
+                    "dispatch_id": dispatch_id,
+                    "discovery_revision": discovery_revision,
+                    "config_digest": config_digest,
+                })
+                sys.exit(1)
 
             # Explicit workload readiness check
             if role == "database":
@@ -501,13 +487,20 @@ def main() -> None:
                 if deploy_proc.returncode != 0:
                     err = f"Deployment rollout failed for '{service_name}': {deploy_proc.stderr.strip()}"
                     sys.stderr.write(f"{err}\n")
-                    releases_status[role] = {
+                    diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
+                    write_result({
                         "status": "failed",
-                        "release_name": release_name,
-                        "service_name": service_name,
-                        "error": err,
-                    }
-                    continue
+                        "failed_release": role,
+                        "failed_step": "deployment_rollout",
+                        "completed_releases": completed_releases,
+                        "error_message": err,
+                        "diagnostics": diag,
+                        "job_id": job_id,
+                        "dispatch_id": dispatch_id,
+                        "discovery_revision": discovery_revision,
+                        "config_digest": config_digest,
+                    })
+                    sys.exit(1)
 
             completed_releases.append(role)
             releases_status[role] = {
@@ -558,29 +551,6 @@ def main() -> None:
                 "completed_releases": completed_releases,
                 "error_message": err,
                 "diagnostics": diag,
-                "job_id": job_id,
-                "dispatch_id": dispatch_id,
-                "discovery_revision": discovery_revision,
-                "config_digest": config_digest,
-            })
-            sys.exit(1)
-
-        failed_releases = [
-            role for role, result in releases_status.items()
-            if result.get("status") == "failed"
-        ]
-
-        if failed_releases:
-            diag = _collect_bounded_diagnostics(args.kubectl_bin, namespace)
-            write_result({
-                "status": "failed",
-                "failed_releases": failed_releases,
-                "completed_releases": completed_releases,
-                "error_message": f"One or more releases failed: {', '.join(failed_releases)}",
-                "diagnostics": diag,
-                "releases": releases_status,
-                "frontend_endpoint": fe_endpoint,
-                "public_url": public_url,
                 "job_id": job_id,
                 "dispatch_id": dispatch_id,
                 "discovery_revision": discovery_revision,

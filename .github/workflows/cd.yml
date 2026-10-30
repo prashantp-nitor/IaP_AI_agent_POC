@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "dcdca7e0-b4ea-4b8c-9eab-22ecf0d0a54b"
+        default: "f531799a-89ea-417f-a5f7-8d425aa5d986"
 
 permissions:
   id-token: write
@@ -125,6 +125,8 @@ jobs:
       - name: Deploy Existing Helm Releases
         id: deploy_releases
         env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
           JOB_ID: ${{ needs.prepare.outputs.job_id }}
         run: |
           python .github/scripts/deploy_existing_helm.py \

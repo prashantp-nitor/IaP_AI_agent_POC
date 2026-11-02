@@ -1,0 +1,84 @@
+{
+  "cluster_name": "helm-only-depl-aks",
+  "region": "eastus",
+  "kubernetes_version": "1.34",
+  "node_count": "1",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "high_availability": false,
+  "min_count": 1,
+  "max_count": 1,
+  "enable_auto_scaling": true,
+  "type": "virtual_network",
+  "clusterName": "helm-only-depl-aks",
+  "highAvailability": false,
+  "minNodes": 1,
+  "maxNodes": 1,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "field_values": {
+    "vnet_name": "helm-only-depl-network",
+    "address_space": "10.0.0.0/16"
+  },
+  "subnet_name": "db-subnet",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "helm-only-deploy",
+    "job_id": "04c4d593-9a8e-4203-a5da-f9caedfc0bcf",
+    "project_folder": "helm-only-deploy-04c4d5"
+  },
+  "server_name": "helm-only-depl-db",
+  "storage_mb": "32768",
+  "backup_retention_days": "14",
+  "engine": "PostgreSQL",
+  "version": "15",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "serverName": "helm-only-depl-db",
+  "subnetName": "db-subnet",
+  "skuName": "B_Standard_B1ms",
+  "storageGb": 32,
+  "backupRetentionDays": 14,
+  "adminPassword": "",
+  "vault_name": "helm-only-depl-kv-04c4d5",
+  "soft_delete_retention_days": 90,
+  "registry_name": "helmonlydeplacr04c4d5",
+  "admin_enabled": "False",
+  "frontend_repo": "helm-only-depl-frontend",
+  "backend_repo": "helm-only-depl-backend",
+  "registryName": "helmonlydeplacr04c4d5",
+  "adminEnabled": false,
+  "repositories": [
+    "helm-only-depl-frontend",
+    "helm-only-depl-backend"
+  ],
+  "frontendRepo": "helm-only-depl-frontend",
+  "backendRepo": "helm-only-depl-backend",
+  "vnet_name": "helm-only-depl-network",
+  "address_space": "10.0.0.0/16",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "vnetName": "helm-only-depl-network",
+  "addressSpace": "10.0.0.0/16",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

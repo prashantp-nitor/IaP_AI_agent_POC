@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 2774dc79-2bb8-4723-9c86-df8379c44ee5 @ 2026-11-02T12:02:30Z
+# existing-helm-ci-dispatch: bf7480c9-29d6-4bcf-897e-511996d35439
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "2774dc79-2bb8-4723-9c86-df8379c44ee5"
+        default: "a29ac5ff-5fb8-4e32-885f-aa5e8a15c9f4"
 
 permissions:
   id-token: write
@@ -21,11 +21,11 @@ permissions:
 
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
-  NAMESPACE: helm-only-deploy
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/2774dc79-2bb8-4723-9c86-df8379c44ee5/source.zip?se=2026-11-02T13%3A02%3A29Z&sp=r&sv=2026-06-06&sr=b&sig=xE1UuxFwBhsjVZnMtE7/h0DLWdAJBs6kf/G2AcwJknM%3D"
-  JOB_ID: ${{ inputs.job_id || '2774dc79-2bb8-4723-9c86-df8379c44ee5' }}
+  NAMESPACE: default
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a29ac5ff-5fb8-4e32-885f-aa5e8a15c9f4/source.zip?se=2026-11-03T04%3A24%3A01Z&sp=r&sv=2026-06-06&sr=b&sig=FHXExZXFgogDT8s7N7EziUhUKWrNuz176IWR5wr5xwo%3D"
+  JOB_ID: ${{ inputs.job_id || 'a29ac5ff-5fb8-4e32-885f-aa5e8a15c9f4' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "2774DC79_2BB8_4723_9C86_DF8379C44EE5"
+  PROJECT_PREFIX: "APP"
 
 jobs:
   ci-security-and-build:
@@ -40,6 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
+          echo "b0e32e70ece636dcea3f104d429c68b006299366edb5df4262acb02cea902bbb  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -168,7 +169,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-2774dc79-2bb8-4723-9c86-df8379c44ee5
+            -Dsonar.projectKey=daas-app
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -179,59 +180,9 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
-      
-      - name: Build backend container image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app/backend
-          file: ./app/backend/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.REGISTRY }}/backend:sha-2774dc79
-          
-          
-          
-
-      - name: Run Trivy Image Scan for backend (JSON & Summary)
-        continue-on-error: true
-        run: |
-          mkdir -p security-reports
-          echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-2774dc79 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-2774dc79 || true
-          sudo chmod -R 777 security-reports || true
-
-      - name: Push backend image
-        run: |
-          docker push ${{ env.REGISTRY }}/backend:sha-2774dc79
-      
-      - name: Build frontend container image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app/frontend
-          file: ./app/frontend/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.REGISTRY }}/frontend:sha-2774dc79
-          
-          
-          
-
-      - name: Run Trivy Image Scan for frontend (JSON & Summary)
-        continue-on-error: true
-        run: |
-          mkdir -p security-reports
-          echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-2774dc79 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-2774dc79 || true
-          sudo chmod -R 777 security-reports || true
-
-      - name: Push frontend image
-        run: |
-          docker push ${{ env.REGISTRY }}/frontend:sha-2774dc79
       
 
       - name: Upload Security Reports to Azure Blob Storage

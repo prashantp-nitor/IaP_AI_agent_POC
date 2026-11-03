@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "f531799a-89ea-417f-a5f7-8d425aa5d986"
+        default: "00000000-0000-0000-0000-000000000101"
 
 permissions:
   id-token: write
@@ -104,6 +104,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Install YAML support for approved image overlays
+        run: python -m pip install PyYAML==6.0.3
 
       - name: Azure CLI Login
         uses: azure/login@v2

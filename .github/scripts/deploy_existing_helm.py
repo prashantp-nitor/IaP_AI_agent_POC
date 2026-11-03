@@ -27,6 +27,8 @@ import tempfile
 import time
 from typing import Any
 
+import yaml
+
 SAFE_ROLES_ORDER = ["database", "backend", "frontend"]
 
 
@@ -169,6 +171,287 @@ def parse_chart_dependencies(chart_yaml_path: Path) -> list[str]:
     return deps
 
 
+def _set_path(document: dict[str, Any], path: list[str], value: str) -> None:
+    if not path or any(not isinstance(part, str) or not part for part in path):
+        raise ValueError("Image value paths must be non-empty string segments")
+    cursor = document
+    for part in path[:-1]:
+        child = cursor.setdefault(part, {})
+        if not isinstance(child, dict):
+            raise ValueError(f"Image value path crosses a non-mapping value at {part!r}")
+        cursor = child
+    cursor[path[-1]] = value
+
+
+def _approved_rendered_prerequisites(manifest: dict[str, Any], release: dict[str, Any]) -> dict[str, Any]:
+    validation = manifest.get("validation") or {}
+    effective_values = validation.get("effective_values") or {}
+    release_values = effective_values.get(release.get("release_name")) or {}
+    approved = release_values.get("rendered_prerequisites")
+    if not isinstance(approved, dict) or approved != release.get("rendered_prerequisites"):
+        raise ValueError(f"Validated prerequisites for release {release.get('release_name')!r} are missing or differ from the approved render")
+    storage_classes = approved.get("storage_classes", [])
+    workloads = approved.get("workloads", [])
+    if (not isinstance(storage_classes, list) or any(not isinstance(name, str) or not name for name in storage_classes)
+            or not isinstance(workloads, list)):
+        raise ValueError("Validated render prerequisites have an invalid shape")
+    for workload in workloads:
+        if not isinstance(workload, dict) or not isinstance(workload.get("namespace"), str):
+            raise ValueError("Validated workload prerequisite has an invalid namespace")
+        secrets = workload.get("image_pull_secrets", [])
+        if not isinstance(secrets, list) or any(not isinstance(name, str) or not name for name in secrets):
+            raise ValueError("Validated image pull Secret references are invalid")
+    return approved
+
+
+def _validate_application_prerequisites(manifest: dict[str, Any], releases: list[dict[str, Any]]) -> None:
+    validation_values = (manifest.get("validation") or {}).get("effective_values") or {}
+    releases_by_id = {release.get("id"): release for release in releases}
+    for app in manifest.get("applications", []):
+        release = releases_by_id.get(app.get("release_id"))
+        if release is None:
+            raise ValueError("Approved application maps to an unknown release")
+        values = validation_values.get(release.get("release_name")) or {}
+        targets = [item for item in values.get("rendered_images", [])
+                   if item.get("release_id") == app.get("release_id")
+                   and item.get("container") == app.get("container")]
+        if len(targets) != 1:
+            raise ValueError(f"Application {app.get('application_id')!r} has no unique approved rendered workload")
+        target = targets[0]
+        namespace = target.get("namespace") or release.get("namespace")
+        if namespace != release.get("namespace"):
+            raise ValueError("Approved application workload namespace differs from its release")
+        prerequisites = _approved_rendered_prerequisites(manifest, release)
+        workloads = [item for item in prerequisites["workloads"]
+                     if item.get("name") == target.get("workload") and item.get("namespace") == namespace]
+        if len(workloads) != 1:
+            raise ValueError("Application workload has no unique rendered prerequisite record")
+        expected_secrets = [{"name": name, "namespace": namespace}
+                            for name in workloads[0].get("image_pull_secrets", [])]
+        if app.get("namespace") != namespace or app.get("pull_secrets") != expected_secrets:
+            raise ValueError(f"Application {app.get('application_id')!r} pull access differs from its validated render")
+
+
+def deploy_onboarding_manifest(
+    manifest: dict[str, Any], dispatch: dict[str, Any], workspace: Path,
+    helm_bin: str, kubectl_bin: str, endpoint_attempts: int, endpoint_interval: float,
+) -> dict[str, Any]:
+    """Deploy an approved schema-v2 candidate without consulting the original chart tree."""
+    releases = manifest.get("releases")
+    if manifest.get("schema_version") != 2 or manifest.get("pipeline_mode") not in ("cd_only", "ci_then_cd"):
+        raise ValueError("Unsupported approved onboarding manifest")
+    if not isinstance(releases, list) or not releases:
+        raise ValueError("Approved onboarding manifest has no releases")
+    profile_order = manifest.get("profile_order")
+    roles = [release.get("role") for release in releases]
+    if manifest.get("profile") == "three_chart" and (profile_order != ["database", "backend", "frontend"] or roles != profile_order):
+        raise ValueError("Three-chart releases must remain database, backend, frontend")
+    if manifest.get("profile") == "single_chart" and len(releases) != 1:
+        raise ValueError("Single-chart onboarding requires exactly one release")
+    _validate_application_prerequisites(manifest, releases)
+
+    approved = manifest.get("candidate_files")
+    if not isinstance(approved, list) or not approved:
+        raise ValueError("Approved candidate file inventory is required")
+    if len({item.get("path") for item in approved}) != len(approved):
+        raise ValueError("Approved candidate file inventory contains duplicate paths")
+    expected_digest = hashlib.sha256("\n".join(
+        f"{item['path']}\0{item['sha256']}" for item in sorted(approved, key=lambda f: f["path"])
+    ).encode()).hexdigest()
+    if expected_digest != manifest.get("candidate_inventory_sha256"):
+        raise ValueError("Approved candidate inventory digest mismatch")
+    staged_root = Path(tempfile.mkdtemp(prefix="existing-helm-onboarding-"))
+    by_path = {}
+    approved_by_path = {item["path"]: item for item in approved}
+    try:
+        for item in approved:
+            rel = item["path"]
+            pkg = item["package_path"]
+            _check_safe_posix_path(rel)
+            _check_safe_posix_path(pkg)
+            source = workspace / pkg
+            if not source.is_file() or source.is_symlink():
+                raise FileNotFoundError(f"Approved candidate file missing: {pkg}")
+            data = source.read_bytes()
+            if len(data) != item["size_bytes"] or hashlib.sha256(data).hexdigest() != item["sha256"]:
+                raise ValueError(f"Approved candidate file integrity check failed: {rel}")
+            by_path[rel] = data
+
+        for release in releases:
+            release_id = release.get("id")
+            chart_path = release.get("chart_path")
+            _check_safe_posix_path(chart_path or "")
+            chart_dir = staged_root / str(release_id)
+            files = release.get("files")
+            if not isinstance(files, list) or not files:
+                raise ValueError(f"Release {release_id!r} has no approved files")
+            expected_chart_files = {path for path in by_path if Path(path).is_relative_to(Path(chart_path))}
+            declared_chart_files = {item.get("path") for item in files}
+            if declared_chart_files != expected_chart_files:
+                raise ValueError(f"Release {release_id!r} file list does not match its approved candidate inventory")
+            for item in files:
+                rel = item["path"]
+                _check_safe_posix_path(rel)
+                if rel not in by_path or not Path(rel).is_relative_to(Path(chart_path)):
+                    raise ValueError(f"Release file is outside the approved candidate inventory: {rel}")
+                if any(item.get(key) != approved_by_path[rel].get(key) for key in ("sha256", "size_bytes", "package_path")):
+                    raise ValueError(f"Release file metadata differs from the approved candidate inventory: {rel}")
+                dst = chart_dir / Path(rel).relative_to(Path(chart_path))
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes(by_path[rel])
+            if not (chart_dir / "Chart.yaml").is_file():
+                raise ValueError(f"Approved chart {release_id!r} is missing Chart.yaml")
+            for dependency in parse_chart_dependencies(chart_dir / "Chart.yaml"):
+                if not ((chart_dir / "charts" / dependency).exists() or (chart_dir / "charts" / f"{dependency}.tgz").exists()):
+                    raise FileNotFoundError(f"Unvendored chart dependency {dependency!r}")
+
+        namespaces = sorted({release.get("namespace") for release in releases if release.get("namespace")})
+        if not namespaces:
+            raise ValueError("Approved releases must identify their target namespaces")
+        namespace = releases[0].get("namespace")
+        for release_namespace in namespaces:
+            ns = _exec_command(kubectl_bin, ["get", "namespace", release_namespace, "-o", "json"], capture_output=True, text=True)
+            if ns.returncode != 0:
+                _exec_command(kubectl_bin, ["create", "namespace", release_namespace], capture_output=True, text=True)
+
+        checked_pull_secrets: set[tuple[str, str]] = set()
+        for release in releases:
+            prerequisites = _approved_rendered_prerequisites(manifest, release)
+            for workload in prerequisites.get("workloads", []):
+                workload_namespace = workload.get("namespace") or release.get("namespace")
+                for secret_name in workload.get("image_pull_secrets", []):
+                    key = (secret_name, workload_namespace)
+                    if key in checked_pull_secrets:
+                        continue
+                    found = _exec_command(kubectl_bin, ["get", "secret", secret_name, "-n", workload_namespace, "-o", "json"], capture_output=True, text=True)
+                    if found.returncode != 0:
+                        raise RuntimeError(f"Approved image pull Secret {secret_name!r} is missing from namespace {workload_namespace!r}; provide AKS-managed registry access or an existing namespace-local pull Secret")
+                    checked_pull_secrets.add(key)
+
+        build_refs = dispatch.get("build_image_references", {})
+        build_ids = {item.get("application_id") for item in manifest.get("build_services", [])}
+        if not isinstance(build_refs, dict) or set(build_refs) - build_ids:
+            raise ValueError("Runtime image references may only override approved build targets")
+        if build_ids - set(build_refs):
+            raise ValueError("Generated image references are required for every approved build target")
+        for service in manifest.get("build_services", []):
+            app_id = service.get("application_id")
+            registry, repository = service.get("registry"), service.get("repo_name")
+            if not registry or not repository:
+                raise ValueError(f"Approved build target {app_id!r} has no image destination")
+            image = build_refs[app_id]
+            if not isinstance(image, str):
+                raise ValueError(f"Generated image reference for {app_id!r} must be a string")
+            image_path, separator, tag = image.rpartition(":")
+            expected_path = f"{registry.rstrip('/')}/{repository}"
+            if not separator or image_path != expected_path or "@" in image or not tag:
+                raise ValueError(f"Generated image reference for {app_id!r} does not match its approved repository")
+            job_id = str(dispatch.get("job_id", "")).replace("-", "")[:8]
+            expected_tag = manifest.get("generated_image_tag") or (f"sha-{job_id}" if job_id else "")
+            if expected_tag and tag != expected_tag:
+                raise ValueError(f"Generated image reference for {app_id!r} does not use the current run tag")
+        statuses = {}
+        checked_storage_classes: set[str] = set()
+        for release in releases:
+            rel_apps = [app for app in manifest.get("applications", []) if app.get("release_id") == release.get("id")]
+            overlay_path = staged_root / f"{release['id']}-images.yaml"
+            overlay: dict[str, Any] = {}
+            for app in rel_apps:
+                reference = (build_refs[app["application_id"]] if app["application_id"] in build_ids
+                             else app["image_reference"])
+                if not isinstance(reference, str) or not reference:
+                    raise ValueError("Application image reference is missing")
+                bindings = app.get("image_bindings", [])
+                paths = {tuple(path) for binding in bindings for path in binding.get("value_paths", [])}
+                image_paths = app.get("image_value_paths", {})
+                if image_paths.get("repository"):
+                    paths.add(tuple(image_paths["repository"]))
+                if image_paths.get("tag"):
+                    paths.add(tuple(image_paths["tag"]))
+                if not paths:
+                    raise ValueError(f"Application {app.get('application_id')} has no approved image bindings")
+                repository, separator, tag = reference.partition("@")
+                if separator:
+                    image_repo, image_tag = repository, separator + tag
+                else:
+                    image_repo, _, image_tag = repository.rpartition(":")
+                for path in sorted(paths):
+                    # Bindings identify repository/tag fields explicitly; digest refs bind as a full image string.
+                    leaf = path[-1].lower()
+                    value = image_repo if leaf in ("repository", "repo") else image_tag if leaf in ("tag", "digest") else reference
+                    _set_path(overlay, list(path), value)
+            if overlay:
+                overlay_path.write_text(yaml.safe_dump(overlay, sort_keys=False), encoding="utf-8")
+            for storage_class in _approved_rendered_prerequisites(manifest, release).get("storage_classes", []):
+                if storage_class in checked_storage_classes:
+                    continue
+                preflight = _exec_command(kubectl_bin, ["get", "storageclass", storage_class, "-o", "json"], capture_output=True, text=True)
+                if preflight.returncode != 0:
+                    raise RuntimeError(f"Required StorageClass {storage_class!r} preflight failed: {preflight.stderr.strip()}")
+                checked_storage_classes.add(storage_class)
+            helm_cmd = ["upgrade", "--install", release["release_name"], str(staged_root / str(release["id"])),
+                        "--namespace", release.get("namespace", namespace), "--create-namespace", "--wait",
+                        "--timeout", "5m0s", "--reset-values"]
+            chart_dir = staged_root / str(release["id"])
+            for values_file in [*release.get("values_files", []), *release.get("overlays", [])]:
+                _check_safe_posix_path(values_file)
+                if not Path(values_file).is_relative_to(Path(release["chart_path"])):
+                    raise ValueError(f"Approved values file is outside chart {release['chart_path']}: {values_file}")
+                staged_values = chart_dir / Path(values_file).relative_to(Path(release["chart_path"]))
+                if not staged_values.is_file():
+                    raise FileNotFoundError(f"Approved values file missing from staged chart: {values_file}")
+                helm_cmd.extend(["--values", str(staged_values)])
+            if overlay:
+                helm_cmd.extend(["--values", str(overlay_path)])
+            result = _exec_command(helm_bin, helm_cmd, capture_output=True, text=True)
+            if result.returncode:
+                raise RuntimeError(f"Helm install failed for {release['release_name']}: {result.stderr.strip()[:2000]}")
+            for workload in release.get("workloads", []):
+                kind = workload.get("kind")
+                if kind not in ("Deployment", "StatefulSet"):
+                    raise ValueError(f"Unsupported readiness workload kind: {kind}")
+                target = f"{kind.lower()}/{workload['name']}"
+                ready = _exec_command(kubectl_bin, ["rollout", "status", target, "-n", workload.get("namespace", namespace), "--timeout=300s"], capture_output=True, text=True)
+                if ready.returncode:
+                    raise RuntimeError(f"{kind} rollout failed for {workload['name']}: {ready.stderr.strip()[:2000]}")
+            statuses[release["id"]] = {"status": "succeeded", "release_name": release["release_name"]}
+
+        endpoint = manifest.get("endpoint") or {}
+        protocol = endpoint.get("protocol", "http")
+        if endpoint.get("kind") == "Ingress":
+            result = _exec_command(kubectl_bin, ["get", "ingress", endpoint.get("name"), "-n", endpoint.get("namespace", namespace), "-o", "json"], capture_output=True, text=True)
+            if result.returncode:
+                raise RuntimeError(f"Selected Ingress endpoint {endpoint.get('name')!r} was not found")
+            rules = json.loads(result.stdout).get("spec", {}).get("rules", [])
+            host = next((rule.get("host") for rule in rules if rule.get("host")), None)
+            if not host:
+                raise ValueError("Selected Ingress has no rendered host")
+            public_url = f"{protocol}://{host}"
+        else:
+            service_name = endpoint.get("name")
+            public_url = None
+            for _ in range(endpoint_attempts):
+                result = _exec_command(kubectl_bin, ["get", "service", service_name, "-n", endpoint.get("namespace", namespace), "-o", "json"], capture_output=True, text=True)
+                if result.returncode == 0:
+                    try:
+                        ingress = json.loads(result.stdout).get("status", {}).get("loadBalancer", {}).get("ingress", [])
+                        if ingress:
+                            host = ingress[0].get("ip") or ingress[0].get("hostname")
+                            if host:
+                                port = endpoint.get("port")
+                                suffix = f":{port}" if port and not (port == 80 and protocol == "http") and not (port == 443 and protocol == "https") else ""
+                                public_url = f"{protocol}://{host}{suffix}"
+                                break
+                    except (ValueError, TypeError):
+                        pass
+                time.sleep(endpoint_interval)
+            if not public_url:
+                raise RuntimeError(f"Selected Service endpoint {service_name!r} did not receive a LoadBalancer address")
+        return {"status": "succeeded", "releases": statuses, "endpoint": endpoint, "public_url": public_url}
+    finally:
+        shutil.rmtree(staged_root, ignore_errors=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Deploy existing Helm releases to Kubernetes")
     parser.add_argument("--dispatch-file", default=".deploy/helm-release.json", help="Path to dispatch metadata JSON")
@@ -251,6 +534,35 @@ def main() -> None:
                 "job_id": dispatch.get("job_id"),
                 "dispatch_id": dispatch.get("dispatch_id"),
             })
+            sys.exit(1)
+
+    if manifest.get("schema_version") == 2:
+        for key in ("candidate_revision", "candidate_inventory_sha256", "validation_identity", "pipeline_mode"):
+            if key in dispatch and dispatch.get(key) != manifest.get(key):
+                err = f"Dispatch/manifest parity failure on '{key}'"
+                sys.stderr.write(f"{err}\n")
+                write_result({"status": "failed", "failed_step": "parity_validation", "error_message": err,
+                              "job_id": dispatch.get("job_id"), "dispatch_id": dispatch.get("dispatch_id")})
+                sys.exit(1)
+        try:
+            result = deploy_onboarding_manifest(
+                manifest, dispatch, workspace, args.helm_bin, args.kubectl_bin,
+                args.endpoint_attempts, args.endpoint_interval_seconds,
+            )
+            result.update({"job_id": dispatch.get("job_id"), "dispatch_id": dispatch.get("dispatch_id"),
+                           "discovery_revision": dispatch.get("discovery_revision"),
+                           "config_digest": dispatch.get("config_digest")})
+            write_result(result)
+            sys.exit(0)
+        except Exception as exc:
+            err = str(exc)
+            sys.stderr.write(f"Existing Helm onboarding deployment failed: {err}\n")
+            diagnostics = _collect_bounded_diagnostics(args.kubectl_bin, dispatch.get("namespace", "default"))
+            write_result({"status": "failed", "failed_step": "onboarding_deploy", "error_message": err,
+                          "diagnostics": diagnostics,
+                          "job_id": dispatch.get("job_id"), "dispatch_id": dispatch.get("dispatch_id"),
+                          "discovery_revision": dispatch.get("discovery_revision"),
+                          "config_digest": dispatch.get("config_digest")})
             sys.exit(1)
 
     namespace = dispatch.get("namespace") or manifest.get("namespace", "default")

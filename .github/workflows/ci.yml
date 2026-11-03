@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: bf7480c9-29d6-4bcf-897e-511996d35439
+# existing-helm-ci-dispatch: 2c8d83ef-64cc-4abb-9d85-23799ea7464d
 name: CI Security Scan and Container Build
 
 on:
@@ -22,7 +22,7 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a29ac5ff-5fb8-4e32-885f-aa5e8a15c9f4/source.zip?se=2026-11-03T04%3A24%3A01Z&sp=r&sv=2026-06-06&sr=b&sig=FHXExZXFgogDT8s7N7EziUhUKWrNuz176IWR5wr5xwo%3D"
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a29ac5ff-5fb8-4e32-885f-aa5e8a15c9f4/source.zip?se=2026-11-03T07%3A49%3A02Z&sp=r&sv=2026-06-06&sr=b&sig=TeshR3kAhevyAG%2B/8dhj96HTcIHpaSERn6h4IMW5AZs%3D"
   JOB_ID: ${{ inputs.job_id || 'a29ac5ff-5fb8-4e32-885f-aa5e8a15c9f4' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "APP"

@@ -1,0 +1,151 @@
+# ============================================================
+# DaaS Generated values.yaml for helm-only-deploy
+# Override at deploy time with:
+#   helm upgrade --install helm-only-deploy ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "helm-only-deploy"
+  # Container registry base URL
+  registry: "azdaasdeployment.azurecr.io"
+  # Ingress hostname
+  ingressHost: "helm-only-deploy.local"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "dev"
+  azureWorkloadIdentityClientId: ""
+  secretProviderClass: ""
+
+# ── Service Account ──────────────────────────────────────
+serviceAccount:
+  create: true
+  name: "helm-only-deploy-sa"
+  labels: {}
+  annotations:
+    
+
+imagePullSecrets: []
+
+# ── Resources ────────────────────────────────────────────
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts and applications run on clusters
+  # with insufficient resources.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  backend:
+    namespace: "helm-only-deploy-backend"
+    enabled: true
+    serviceName: "backend"
+    serviceType: "ClusterIP"
+    containerPort: 8080
+    replicaCount: 2
+    image:
+      repository: "azdaasdeployment.azurecr.io/backend"
+      tag: "sha-1466db9c"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+  
+  frontend:
+    namespace: "helm-only-deploy-frontend"
+    enabled: true
+    serviceName: "frontend"
+    serviceType: "LoadBalancer"
+    containerPort: 80
+    replicaCount: 2
+    image:
+      repository: "azdaasdeployment.azurecr.io/frontend"
+      tag: "sha-1466db9c"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+    env:
+      
+      
+      REACT_APP_API_URL: "http://backend.helm-only-deploy-backend.svc.cluster.local:8080"
+      
+      
+      
+      API_URL: "http://backend.helm-only-deploy-backend.svc.cluster.local:8080"
+      
+      
+  
+
+# ── Database ─────────────────────────────────────────────
+
+database:
+  enabled: true
+  inCluster: false
+  connectionString: ""
+  host: ""
+  port: 5432
+  name: "appdb"
+  user: "pgadmin"
+  password: ""
+  migrations:
+    enabled: false
+  
+
+
+# ── Ingress ──────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "azure-application-gateway"
+  host: "helm-only-deploy.local"
+  path: "/"
+  tls: false
+  tlsSecretName: "helm-only-deploy-tls-secret"
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+# ── Global Network Policy ─────────────────────────────────
+networkPolicy:
+  enabled: true
+  type: "global"
+  frontend_label: "frontend"
+  backend_label: "backend"
+  db_label: "database"
+  frontend_port: 80
+  backend_port: 8080
+  db_port: 5432

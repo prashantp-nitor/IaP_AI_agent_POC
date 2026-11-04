@@ -1,0 +1,115 @@
+# ============================================================
+# Calico GlobalNetworkPolicies for Multi-Service Isolation
+# ============================================================
+
+# ── 1. Baseline DNS Egress ──────────────────────────────────
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: helm-only-deploy-allow-dns
+spec:
+  namespaceSelector: projectcalico.org/name == 'helm-only-deploy'
+  types:
+    - Egress
+  egress:
+    - action: Allow
+      protocol: UDP
+      destination:
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 53
+---
+# ── 2. Frontend Tier Policy ─────────────────────────────────
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: helm-only-deploy-frontend-policy
+spec:
+  namespaceSelector: projectcalico.org/name == 'helm-only-deploy'
+  selector: app == 'frontend'
+  types:
+    - Ingress
+    - Egress
+  ingress:
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 80
+  egress:
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: app == 'backend'
+        ports:
+          - 8080
+    - action: Allow
+      protocol: UDP
+      destination:
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 53
+
+---
+# ── 3. Backend Tier Policy ──────────────────────────────────
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: helm-only-deploy-backend-policy
+spec:
+  namespaceSelector: projectcalico.org/name == 'helm-only-deploy'
+  selector: app == 'backend'
+  types:
+    - Ingress
+    - Egress
+  ingress:
+    - action: Allow
+      protocol: TCP
+      source:
+        selector: app == 'frontend'
+      destination:
+        ports:
+          - 8080
+    - action: Allow
+      protocol: TCP
+      source:
+        nets:
+          - 168.63.129.16/32
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
+      destination:
+        ports:
+          - 8080
+  egress:
+
+
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 5432
+
+    - action: Allow
+      protocol: UDP
+      destination:
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 443

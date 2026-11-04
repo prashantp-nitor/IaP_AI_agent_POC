@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 356e9d97-2ff5-4a86-9bb8-4c13a44ce8db
+# existing-helm-ci-dispatch: 9914056e-218a-4057-b10a-f3dda1c423a4
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "a5c43d46-3487-471b-a73d-cbd45bbb46bf"
+        default: "ed2d296a-615f-48f4-a553-3ee4f7ebc9d1"
 
 permissions:
   id-token: write
@@ -22,8 +22,8 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/a5c43d46-3487-471b-a73d-cbd45bbb46bf/source.zip?se=2026-11-04T16%3A04%3A19Z&sp=r&sv=2026-06-06&sr=b&sig=dPeo1kGbLwlQ/ScmjBuw48lHSbvkC4ql1ZFJ2ToEFe4%3D"
-  JOB_ID: ${{ inputs.job_id || 'a5c43d46-3487-471b-a73d-cbd45bbb46bf' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/ed2d296a-615f-48f4-a553-3ee4f7ebc9d1/source.zip?se=2026-11-04T16%3A48%3A35Z&sp=r&sv=2026-06-06&sr=b&sig=WV27WdOiSFytbIjPplStosU77f1Dodv2aTeu6jAxAew%3D"
+  JOB_ID: ${{ inputs.job_id || 'ed2d296a-615f-48f4-a553-3ee4f7ebc9d1' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "APP"
 
@@ -40,7 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "7d4425bafedb777b9e4d50424c7fcb1b000cd52346d4f3e68a92ee7f2bf9a95a  source.zip" | sha256sum -c -
+          echo "8b8b696a085296dab5e3e261e3393ec1b351308dd2a04a7437b72cbf169d4192  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 

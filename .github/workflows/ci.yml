@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 61245474-2809-4d62-b59e-f5e297161379
+# existing-helm-ci-dispatch: 957aa5ac-1a85-4c7b-85ca-141f28211dce
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "3ecc62fc-4775-4589-b88a-d711906bacb1"
+        default: "49a5d3b8-8349-4b64-a240-e27a9eb122e2"
 
 permissions:
   id-token: write
@@ -22,8 +22,8 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/3ecc62fc-4775-4589-b88a-d711906bacb1/source.zip?se=2026-11-03T12%3A06%3A53Z&sp=r&sv=2026-06-06&sr=b&sig=kKlYij3dUF1vEqD51ZuA0FY825QzjKUfDtBi1wi/MJo%3D"
-  JOB_ID: ${{ inputs.job_id || '3ecc62fc-4775-4589-b88a-d711906bacb1' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/49a5d3b8-8349-4b64-a240-e27a9eb122e2/source.zip?se=2026-11-04T14%3A43%3A47Z&sp=r&sv=2026-06-06&sr=b&sig=D35lfrIiGj4G7/WjocXJncaPx9/ysOeMqcWhKFF1Kcs%3D"
+  JOB_ID: ${{ inputs.job_id || '49a5d3b8-8349-4b64-a240-e27a9eb122e2' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "APP"
 
@@ -40,7 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "d01d65d5b67a61f14ac49a6be2ad2370b5c9a963448b89d52f4267e3468839a5  source.zip" | sha256sum -c -
+          echo "885e7d0e6298819ad5f0703dafe5473a734fbc372f40bede548dc3b1eda2306a  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -176,9 +176,6 @@ jobs:
       
       
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -186,93 +183,6 @@ jobs:
           username: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
-      - name: Azure CLI Login (Registry Fallback)
-        uses: azure/login@v2
-        continue-on-error: true
-        with:
-          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
-
-      - name: Authenticate ACR via Azure CLI
-        if: env.REGISTRY != ''
-        continue-on-error: true
-        run: |
-          az acr login --name "${{ env.REGISTRY }}" 2>/dev/null || true
-
-      - name: Verify application build context
-        run: |
-          if [ ! -d "app" ]; then
-            echo "Directory 'app' not found, copying workspace..."
-            mkdir -p app
-            if [ -f "source.zip" ]; then
-              unzip -q -o source.zip -d app
-            else
-              find . -maxdepth 1 ! -name . ! -name .git ! -name app -exec cp -r {} app/ \; 2>/dev/null || true
-            fi
-          fi
-          
-          if [ ! -f "./app/backend/Dockerfile" ] && [ -f "./backend/Dockerfile" ]; then
-            mkdir -p "$(dirname "./app/backend/Dockerfile")"
-            cp -r "./backend"/* "$(dirname "./app/backend/Dockerfile")"/ 2>/dev/null || true
-            cp "./backend/Dockerfile" "./app/backend/Dockerfile"
-          fi
-          
-          if [ ! -f "./app/frontend/Dockerfile" ] && [ -f "./frontend/Dockerfile" ]; then
-            mkdir -p "$(dirname "./app/frontend/Dockerfile")"
-            cp -r "./frontend"/* "$(dirname "./app/frontend/Dockerfile")"/ 2>/dev/null || true
-            cp "./frontend/Dockerfile" "./app/frontend/Dockerfile"
-          fi
-          
-
-      
-      - name: Build backend container image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app/backend
-          file: ./app/backend/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.REGISTRY }}/backend:latest
-          
-          
-          
-
-      - name: Run Trivy Image Scan for backend (JSON & Summary)
-        continue-on-error: true
-        run: |
-          mkdir -p security-reports
-          echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:latest || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:latest || true
-          sudo chmod -R 777 security-reports || true
-
-      - name: Push backend image
-        run: |
-          docker push ${{ env.REGISTRY }}/backend:latest
-      
-      - name: Build frontend container image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./app/frontend
-          file: ./app/frontend/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.REGISTRY }}/frontend:latest
-          
-          
-          
-
-      - name: Run Trivy Image Scan for frontend (JSON & Summary)
-        continue-on-error: true
-        run: |
-          mkdir -p security-reports
-          echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:latest || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:latest || true
-          sudo chmod -R 777 security-reports || true
-
-      - name: Push frontend image
-        run: |
-          docker push ${{ env.REGISTRY }}/frontend:latest
       
 
       - name: Upload Security Reports to Azure Blob Storage

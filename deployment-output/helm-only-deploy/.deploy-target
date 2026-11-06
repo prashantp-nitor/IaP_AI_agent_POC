@@ -3,5 +3,5 @@ resource_group: AZET-RG-Daas-Platform
 region: eastus
 cloud_provider: azure
 namespace: helm-only-deploy
-registry: azdaasdeployment.azurecr.io
+registry: helmonlydeplacr04c4d5.azurecr.io
 isolate_namespaces: true

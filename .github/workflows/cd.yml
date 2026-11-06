@@ -15,11 +15,11 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "1466db9c-7f3e-450d-9acb-2efee06ce7c5"
+        default: "ca3b7fb2-d4fc-47c8-a13d-8dea64eea6a6"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-1466db9c"
+        default: "sha-ca3b7fb2"
 
 permissions:
   id-token: write
@@ -28,7 +28,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: helm-only-deploy
-  JOB_ID: ${{ inputs.job_id || '1466db9c-7f3e-450d-9acb-2efee06ce7c5' }}
+  JOB_ID: ${{ inputs.job_id || 'ca3b7fb2-d4fc-47c8-a13d-8dea64eea6a6' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -118,7 +118,7 @@ jobs:
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-1466db9c' }}" --set-string "services.backend.namespace=helm-only-deploy-backend" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-1466db9c' }}" --set-string "services.frontend.namespace=helm-only-deploy-frontend" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-ca3b7fb2' }}" --set-string "services.backend.namespace=helm-only-deploy-backend" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-ca3b7fb2' }}" --set-string "services.frontend.namespace=helm-only-deploy-frontend" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
@@ -198,7 +198,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_4361ci", "POSTGRES_PASSWORD": "OI3T0y#ZlKyyN70fDfemj^Xz", "POSTGRES_USER": "post_rte5vv"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

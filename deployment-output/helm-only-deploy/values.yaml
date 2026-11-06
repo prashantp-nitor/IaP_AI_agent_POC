@@ -53,7 +53,7 @@ services:
     replicaCount: 2
     image:
       repository: "azdaasdeployment.azurecr.io/backend"
-      tag: "sha-1466db9c"
+      tag: "sha-ca3b7fb2"
       pullPolicy: IfNotPresent
     ports:
       
@@ -80,7 +80,7 @@ services:
     replicaCount: 2
     image:
       repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "sha-1466db9c"
+      tag: "sha-ca3b7fb2"
       pullPolicy: IfNotPresent
     ports:
       
@@ -111,15 +111,39 @@ services:
 
 database:
   enabled: true
-  inCluster: false
+  inCluster: true
   connectionString: ""
   host: ""
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: ""
+  password: "OI3T0y#ZlKyyN70fDfemj^Xz"
   migrations:
     enabled: false
+  
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  storage:
+    size: "10Gi"
+    storageClassName: "managed-csi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+  auth:
+    
+    POSTGRES_DB: "post_4361ci"
+    
+    POSTGRES_USER: "post_rte5vv"
+    
+    POSTGRES_PASSWORD: "OI3T0y#ZlKyyN70fDfemj^Xz"
+    
   
 
 

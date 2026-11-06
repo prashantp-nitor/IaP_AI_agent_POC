@@ -4,3 +4,4 @@ region: eastus
 cloud_provider: azure
 namespace: helm-only-deploy
 registry: azdaasdeployment.azurecr.io
+isolate_namespaces: true

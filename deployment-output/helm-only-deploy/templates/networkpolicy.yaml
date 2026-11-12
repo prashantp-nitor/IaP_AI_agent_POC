@@ -1,3 +1,4 @@
+{{- if .Values.networkPolicy.installManifests | default false }}
 # ============================================================
 # Calico GlobalNetworkPolicies for Multi-Service Isolation
 # ============================================================
@@ -194,3 +195,7 @@ spec:
           - 53
 
     - action: Deny
+
+
+
+{{- end }}

@@ -53,7 +53,7 @@ services:
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/backend"
-      tag: "sha-75b00b6f"
+      tag: "sha-7d22e41c"
       pullPolicy: IfNotPresent
     ports:
       
@@ -80,7 +80,7 @@ services:
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/frontend"
-      tag: "sha-75b00b6f"
+      tag: "sha-7d22e41c"
       pullPolicy: IfNotPresent
     ports:
       
@@ -112,12 +112,12 @@ services:
 database:
   enabled: true
   inCluster: true
-  connectionString: "postgresql://post_foj7o9:uTH#X4dlDO%2dA3HBxo&A%^M@postgresql-db:5432/post_nxm2yj"
-  host: "post_foj7o9"
+  connectionString: "postgresql://post_ulmuan:7o0kTwwuJikAlNDG**eg&SS3@postgresql-db:5432/post_2ifo7s"
+  host: "postgresql-db"
   port: 5432
-  name: "appdb"
-  user: "pgadmin"
-  password: "uTH#X4dlDO%2dA3HBxo&A%^M"
+  name: "post_2ifo7s"
+  user: "post_ulmuan"
+  password: "7o0kTwwuJikAlNDG**eg&SS3"
   migrations:
     enabled: false
   
@@ -138,11 +138,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_nxm2yj"
+    POSTGRES_DB: "post_2ifo7s"
     
-    POSTGRES_USER: "post_foj7o9"
+    POSTGRES_USER: "post_ulmuan"
     
-    POSTGRES_PASSWORD: "uTH#X4dlDO%2dA3HBxo&A%^M"
+    POSTGRES_PASSWORD: "7o0kTwwuJikAlNDG**eg&SS3"
     
   
 
@@ -167,6 +167,7 @@ autoscaling:
 networkPolicy:
   enabled: true
   type: "global"
+  installManifests: false
   frontend_label: "frontend"
   backend_label: "backend"
   db_label: "database"

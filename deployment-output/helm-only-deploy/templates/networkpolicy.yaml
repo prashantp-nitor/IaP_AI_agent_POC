@@ -8,7 +8,7 @@
 
 
 # ── 1. Baseline DNS Egress ──────────────────────────────────
-apiVersion: projectcalico.org/v3
+apiVersion: crd.projectcalico.org/v1
 kind: GlobalNetworkPolicy
 metadata:
   name: helm-only-deploy-allow-dns
@@ -32,7 +32,7 @@ spec:
           - 53
 ---
 # ── 2. Frontend Tier Policy ─────────────────────────────────
-apiVersion: projectcalico.org/v3
+apiVersion: crd.projectcalico.org/v1
 kind: GlobalNetworkPolicy
 metadata:
   name: helm-only-deploy-frontend-policy
@@ -78,7 +78,7 @@ spec:
 
 ---
 # ── 3. Backend Tier Policy ──────────────────────────────────
-apiVersion: projectcalico.org/v3
+apiVersion: crd.projectcalico.org/v1
 kind: GlobalNetworkPolicy
 metadata:
   name: helm-only-deploy-backend-policy
@@ -104,10 +104,8 @@ spec:
       protocol: TCP
       source:
         nets:
-          - 168.63.129.16/32
-          - 10.0.0.0/8
-          - 172.16.0.0/12
-          - 192.168.0.0/16
+          - [REDACTED_IPV4_ADDRESS_7]/32
+          - [REDACTED_IPV4_ADDRESS_1]/24
       destination:
         ports:
           - 8080
@@ -149,7 +147,7 @@ spec:
 
 ---
 # ── 4. Database Tier Policy ─────────────────────────────────
-apiVersion: projectcalico.org/v3
+apiVersion: crd.projectcalico.org/v1
 kind: GlobalNetworkPolicy
 metadata:
   name: helm-only-deploy-db-5432
@@ -175,10 +173,8 @@ spec:
       protocol: TCP
       source:
         nets:
-          - 168.63.129.16/32
-          - 10.0.0.0/8
-          - 172.16.0.0/12
-          - 192.168.0.0/16
+          - [REDACTED_IPV4_ADDRESS_7]/32
+          - [REDACTED_IPV4_ADDRESS_1]/24
       destination:
         ports:
           - 5432

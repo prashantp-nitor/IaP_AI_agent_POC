@@ -85,7 +85,7 @@ spec:
           
           resources:
             requests:
-              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "150m" }}"
               memory: "{{ .Values.services.backend.resources.requests.memory | default "512Mi" }}"
             limits:
               cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"

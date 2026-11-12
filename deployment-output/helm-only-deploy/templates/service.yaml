@@ -25,7 +25,7 @@ metadata:
   labels:
     app: frontend
 spec:
-  type: {{ .Values.services.frontend.serviceType | default "LoadBalancer" }}
+  type: {{ .Values.services.frontend.serviceType | default "ClusterIP" }}
   ports:
     
     - port: {{ index .Values.services.frontend.ports 0 | default 80 }}

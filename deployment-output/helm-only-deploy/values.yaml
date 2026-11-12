@@ -53,7 +53,7 @@ services:
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/backend"
-      tag: "sha-c175575d"
+      tag: "sha-b8d3039a"
       pullPolicy: IfNotPresent
     ports:
       
@@ -75,12 +75,12 @@ services:
     namespace: "helm-only-deploy-frontend"
     enabled: true
     serviceName: "frontend"
-    serviceType: "LoadBalancer"
+    serviceType: "ClusterIP"
     containerPort: 80
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/frontend"
-      tag: "sha-c175575d"
+      tag: "sha-b8d3039a"
       pullPolicy: IfNotPresent
     ports:
       
@@ -112,12 +112,12 @@ services:
 database:
   enabled: true
   inCluster: true
-  connectionString: "postgresql://post_e69wep:GQ45s^Ta*8CVn6Ukm0aL1x*9@postgresql-db:5432/post_6exspa"
+  connectionString: "postgresql://post_8y5zxq:UbLuZdEGq%m7xzKY5veG4yF2@postgresql-db:5432/post_6igge5"
   host: "postgresql-db"
   port: 5432
-  name: "post_6exspa"
-  user: "post_e69wep"
-  password: "GQ45s^Ta*8CVn6Ukm0aL1x*9"
+  name: "post_6igge5"
+  user: "post_8y5zxq"
+  password: "UbLuZdEGq%m7xzKY5veG4yF2"
   migrations:
     enabled: false
   
@@ -138,11 +138,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_6exspa"
+    POSTGRES_DB: "post_6igge5"
     
-    POSTGRES_USER: "post_e69wep"
+    POSTGRES_USER: "post_8y5zxq"
     
-    POSTGRES_PASSWORD: "GQ45s^Ta*8CVn6Ukm0aL1x*9"
+    POSTGRES_PASSWORD: "UbLuZdEGq%m7xzKY5veG4yF2"
     
   
 

@@ -53,7 +53,7 @@ services:
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/backend"
-      tag: "sha-b8d3039a"
+      tag: "sha-75b00b6f"
       pullPolicy: IfNotPresent
     ports:
       
@@ -75,12 +75,12 @@ services:
     namespace: "helm-only-deploy-frontend"
     enabled: true
     serviceName: "frontend"
-    serviceType: "ClusterIP"
+    serviceType: "LoadBalancer"
     containerPort: 80
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/frontend"
-      tag: "sha-b8d3039a"
+      tag: "sha-75b00b6f"
       pullPolicy: IfNotPresent
     ports:
       
@@ -112,12 +112,12 @@ services:
 database:
   enabled: true
   inCluster: true
-  connectionString: "postgresql://post_8y5zxq:UbLuZdEGq%m7xzKY5veG4yF2@postgresql-db:5432/post_6igge5"
-  host: "postgresql-db"
+  connectionString: "postgresql://post_foj7o9:uTH#X4dlDO%2dA3HBxo&A%^M@postgresql-db:5432/post_nxm2yj"
+  host: "post_foj7o9"
   port: 5432
-  name: "post_6igge5"
-  user: "post_8y5zxq"
-  password: "UbLuZdEGq%m7xzKY5veG4yF2"
+  name: "appdb"
+  user: "pgadmin"
+  password: "uTH#X4dlDO%2dA3HBxo&A%^M"
   migrations:
     enabled: false
   
@@ -138,11 +138,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_6igge5"
+    POSTGRES_DB: "post_nxm2yj"
     
-    POSTGRES_USER: "post_8y5zxq"
+    POSTGRES_USER: "post_foj7o9"
     
-    POSTGRES_PASSWORD: "UbLuZdEGq%m7xzKY5veG4yF2"
+    POSTGRES_PASSWORD: "uTH#X4dlDO%2dA3HBxo&A%^M"
     
   
 

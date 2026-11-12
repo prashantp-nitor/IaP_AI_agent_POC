@@ -104,8 +104,8 @@ spec:
       protocol: TCP
       source:
         nets:
-          - [REDACTED_IPV4_ADDRESS_7]/32
-          - [REDACTED_IPV4_ADDRESS_1]/24
+          - 168.63.129.16/32
+          - 10.0.1.10/32
       destination:
         ports:
           - 8080
@@ -173,8 +173,8 @@ spec:
       protocol: TCP
       source:
         nets:
-          - [REDACTED_IPV4_ADDRESS_7]/32
-          - [REDACTED_IPV4_ADDRESS_1]/24
+          - 168.63.129.16/32
+          - 10.0.1.10/32
       destination:
         ports:
           - 5432

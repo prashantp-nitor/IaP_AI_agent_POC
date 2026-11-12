@@ -90,12 +90,15 @@ spec:
             limits:
               cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
               memory: "{{ .Values.services.backend.resources.limits.memory | default "1Gi" }}"
+          
           {{- if .Values.global.secretProviderClass }}
           volumeMounts:
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
           {{- end }}
+          
+      
       {{- if .Values.global.secretProviderClass }}
       volumes:
         - name: secrets-store-inline
@@ -166,14 +169,24 @@ spec:
             limits:
               cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "100m" }}"
               memory: "{{ .Values.services.frontend.resources.limits.memory | default "128Mi" }}"
-          {{- if .Values.global.secretProviderClass }}
+          
           volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+          {{- if .Values.global.secretProviderClass }}
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
           {{- end }}
-      {{- if .Values.global.secretProviderClass }}
+          
+      
       volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ .Values.services.frontend.serviceName | default "frontend" }}-config
+      {{- if .Values.global.secretProviderClass }}
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io

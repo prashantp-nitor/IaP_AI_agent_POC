@@ -1,8 +1,8 @@
 {
-  "job_id": "dbe99158-04c5-466b-9855-9aad29e1eaf3",
-  "dispatched_at": "2026-11-12T14:04:58Z",
+  "job_id": "b7883a6c-cdfb-49b1-9439-10303929922b",
+  "dispatched_at": "2026-11-13T07:01:55Z",
   "target_cluster": "helm-only-depl-aks",
   "resource_group": "AZET-RG-Daas-Platform",
   "namespace": "helm-only-deploy",
-  "image_tag": "sha-dbe99158"
+  "image_tag": "sha-b7883a6c"
 }

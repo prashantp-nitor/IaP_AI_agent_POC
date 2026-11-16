@@ -1,6 +1,7 @@
 {{- if .Values.autoscaling.enabled }}
 
 
+{{- if (index .Values.services "backend" "enabled" | default true) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -13,7 +14,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Values.services.backend.serviceName | default "backend" }}
-  minReplicas: {{ .Values.autoscaling.minReplicas | default 1 }}
+  minReplicas: {{ .Values.autoscaling.minReplicas | default 2 }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas | default 10 }}
   metrics:
     - type: Resource
@@ -22,10 +23,10 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage | default 80 }}
-
 ---
+{{- end }}
 
-
+{{- if (index .Values.services "frontend" "enabled" | default true) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -38,7 +39,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ .Values.services.frontend.serviceName | default "frontend" }}
-  minReplicas: {{ .Values.autoscaling.minReplicas | default 1 }}
+  minReplicas: {{ .Values.autoscaling.minReplicas | default 2 }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas | default 10 }}
   metrics:
     - type: Resource
@@ -47,7 +48,8 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage | default 80 }}
-
+---
+{{- end }}
 
 
 {{- end }}

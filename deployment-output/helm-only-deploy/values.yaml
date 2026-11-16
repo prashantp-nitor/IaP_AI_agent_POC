@@ -53,7 +53,7 @@ services:
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/backend"
-      tag: "sha-b7883a6c"
+      tag: "sha-fdfff7fa"
       pullPolicy: IfNotPresent
     ports:
       
@@ -80,7 +80,7 @@ services:
     replicaCount: 2
     image:
       repository: "helmonlydeplacr04c4d5.azurecr.io/frontend"
-      tag: "sha-b7883a6c"
+      tag: "sha-fdfff7fa"
       pullPolicy: IfNotPresent
     ports:
       
@@ -112,12 +112,12 @@ services:
 database:
   enabled: true
   inCluster: true
-  connectionString: "postgresql://post_vvhrv6:^Rp%N*m0fvj1unUQ*fKtr&iI@postgresql-db:5432/post_dqozxd"
+  connectionString: "postgresql://post_ulmuan:7o0kTwwuJikAlNDG**eg&SS3@postgresql-db:5432/post_2ifo7s"
   host: "postgresql-db"
   port: 5432
-  name: "post_dqozxd"
-  user: "post_vvhrv6"
-  password: "^Rp%N*m0fvj1unUQ*fKtr&iI"
+  name: "post_2ifo7s"
+  user: "post_ulmuan"
+  password: "7o0kTwwuJikAlNDG**eg&SS3"
   migrations:
     enabled: false
   
@@ -138,11 +138,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_dqozxd"
+    POSTGRES_DB: "post_2ifo7s"
     
-    POSTGRES_USER: "post_vvhrv6"
+    POSTGRES_USER: "post_ulmuan"
     
-    POSTGRES_PASSWORD: "^Rp%N*m0fvj1unUQ*fKtr&iI"
+    POSTGRES_PASSWORD: "7o0kTwwuJikAlNDG**eg&SS3"
     
   
 
@@ -159,7 +159,7 @@ ingress:
 # ── Autoscaling ──────────────────────────────────────────
 autoscaling:
   enabled: false
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 

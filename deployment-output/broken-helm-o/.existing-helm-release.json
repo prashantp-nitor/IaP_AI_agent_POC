@@ -1,0 +1,913 @@
+{
+  "applications": [
+    {
+      "application_id": "backend",
+      "container": "backend",
+      "context": "backend",
+      "dockerfile": "backend/Dockerfile",
+      "image_bindings": [],
+      "image_reference": "azdaasdeployment.azurecr.io/fitcart-backend:latest",
+      "image_value_paths": {
+        "repository": [
+          "image",
+          "repository"
+        ],
+        "tag": [
+          "image",
+          "tag"
+        ]
+      },
+      "namespace": "broken-helm-o-4ea768",
+      "pull_secrets": [],
+      "release_id": "backend-release"
+    },
+    {
+      "application_id": "frontend",
+      "container": "frontend",
+      "context": "frontend",
+      "dockerfile": "frontend/Dockerfile",
+      "image_bindings": [],
+      "image_reference": "azdaasdeployment.azurecr.io/fitcart-frontend:latest",
+      "image_value_paths": {
+        "repository": [
+          "image",
+          "repository"
+        ],
+        "tag": [
+          "image",
+          "tag"
+        ]
+      },
+      "namespace": "broken-helm-o-4ea768",
+      "pull_secrets": [
+        {
+          "name": "acr-pull-secret",
+          "namespace": "broken-helm-o-4ea768"
+        }
+      ],
+      "release_id": "frontend-release"
+    }
+  ],
+  "build_services": [
+    {
+      "application_id": "backend",
+      "context_dir": "backend",
+      "dockerfile_path": "backend/Dockerfile",
+      "image_reference": "azdaasdeployment.azurecr.io/fitcart-backend:latest",
+      "image_tag": "latest",
+      "name": "backend",
+      "registry": "azdaasdeployment.azurecr.io",
+      "repo_name": "fitcart-backend",
+      "role": "backend"
+    },
+    {
+      "application_id": "frontend",
+      "context_dir": "frontend",
+      "dockerfile_path": "frontend/Dockerfile",
+      "image_reference": "azdaasdeployment.azurecr.io/fitcart-frontend:latest",
+      "image_tag": "latest",
+      "name": "frontend",
+      "registry": "azdaasdeployment.azurecr.io",
+      "repo_name": "fitcart-frontend",
+      "role": "frontend"
+    }
+  ],
+  "candidate_files": [
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/.mvn/wrapper/maven-wrapper.jar",
+      "path": "backend/.mvn/wrapper/maven-wrapper.jar",
+      "sha256": "e63a53cfb9c4d291ebe3c2b0edacb7622bbc480326beaa5a0456e412f52f066a",
+      "size_bytes": 62547
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/.mvn/wrapper/maven-wrapper.properties",
+      "path": "backend/.mvn/wrapper/maven-wrapper.properties",
+      "sha256": "9302b14026b52700d110ac8043ffc94e25b754cd83c5712aa0b6f76a3e9e69d5",
+      "size_bytes": 235
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/Dockerfile",
+      "path": "backend/Dockerfile",
+      "sha256": "adce14aa089e0f6eb866330c78dc3b59069e902b59f7a27d7763a1a86aa64279",
+      "size_bytes": 313
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/mvnw",
+      "path": "backend/mvnw",
+      "sha256": "c281386fd59332ce247332ce68cdf0deb006964f7ddd54331fd135877b197b60",
+      "size_bytes": 11598
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/mvnw.cmd",
+      "path": "backend/mvnw.cmd",
+      "sha256": "26994a76bb5f5551244e607c143177eb7a798d022c4a3b118a31b39eb17d8af9",
+      "size_bytes": 7797
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/pom.xml",
+      "path": "backend/pom.xml",
+      "sha256": "1bbf2e8efd60bf2d51bedbd17760b96042cca9928dd2fa9da2468c4709465981",
+      "size_bytes": 2387
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/BackendApplication.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/BackendApplication.java",
+      "sha256": "d64b997b7bc5a15c6354e886c0f386a5c76101da91b2ad34f8813bfddb64f1f3",
+      "size_bytes": 425
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/config/RestExceptionHandler.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/config/RestExceptionHandler.java",
+      "sha256": "29588f89f4cac3fa3b62b742b7d2262cf7a6ddb63d2324bc6e8902a7dd8559af",
+      "size_bytes": 731
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/config/WebConfig.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/config/WebConfig.java",
+      "sha256": "591c4b9f3742296108adc9b54d50bd2936b8d642232649ac7de1731757a9726b",
+      "size_bytes": 985
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/controllers/RecordsController.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/controllers/RecordsController.java",
+      "sha256": "fe055e2d8f1192d78d393d947e5ba4ef2c43aa745de249e9c689801e2fe06504",
+      "size_bytes": 3998
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/dtos/ErrorDto.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/dtos/ErrorDto.java",
+      "sha256": "d143f2f38acabbcaa68996dce6512304a5c7b501711ea75861ac58b17e99f4c7",
+      "size_bytes": 86
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/dtos/GymRecordDto.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/dtos/GymRecordDto.java",
+      "sha256": "977629d1863f057fc19ba8d7a22431b596ef55a292abde2126516f2ee69b01a1",
+      "size_bytes": 602
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/entities/GymRecord.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/entities/GymRecord.java",
+      "sha256": "b02bf68f1cff7dd693a8bc20686f16d192f40f542f3f6a96818c1d93383bd649",
+      "size_bytes": 1279
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/exceptions/AppException.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/exceptions/AppException.java",
+      "sha256": "791b0c96072ac80f2a8dce6eb5401cf7f6e565f110af88fcd22e2ee0ff279ebf",
+      "size_bytes": 386
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/mappers/GymRecordMapper.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/mappers/GymRecordMapper.java",
+      "sha256": "6047307a3ffd4b092ac6dbe8a0a0028a47bf493beb6f3307c3fd3dff5afd8d4a",
+      "size_bytes": 888
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/repositories/GymRecordsRepository.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/repositories/GymRecordsRepository.java",
+      "sha256": "a1e61eea49917ce44bda2658a1a2b14abba7d75595e1a3c2f54a7833b6fa5386",
+      "size_bytes": 249
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/java/com/sergio/crud/backend/services/RecordsService.java",
+      "path": "backend/src/main/java/com/sergio/crud/backend/services/RecordsService.java",
+      "sha256": "68cbdc17833b0711d1a69c3ad914032264c2b4985acb08732762180b8653ca3c",
+      "size_bytes": 5056
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/main/resources/application.yml",
+      "path": "backend/src/main/resources/application.yml",
+      "sha256": "dd6e61be7f7634d1c04bab9123a760578de03c817d4de67a28aa717e48a3eb29",
+      "size_bytes": 348
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/backend/src/test/java/com/sergio/crud/backend/BackendApplicationTests.java",
+      "path": "backend/src/test/java/com/sergio/crud/backend/BackendApplicationTests.java",
+      "sha256": "d4224a18bfb9862b09d5be8a8a98cb90ab8db75d375ed8a4abe0facfa1730312",
+      "size_bytes": 229
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/.gitignore",
+      "path": "frontend/.gitignore",
+      "sha256": "d50ab07e11fa4bf3b1c7c3312e1d7baeab56cca756832ccf40476823ad2a38b7",
+      "size_bytes": 277
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/Dockerfile",
+      "path": "frontend/Dockerfile",
+      "sha256": "c7a1356b027ce4b2c0abcfbd9c446b5be8b7505a28fad7c18e04f1cff7b5e4dd",
+      "size_bytes": 307
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/eslint.config.js",
+      "path": "frontend/eslint.config.js",
+      "sha256": "8072e235e93520431830159f220f3ce18ddae8ec581f4503446173dd009b4e15",
+      "size_bytes": 792
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/index.html",
+      "path": "frontend/index.html",
+      "sha256": "b8a7ce4641707b05f768478413b8ab336e4d64fccdc9d91eb52c51a5083687ba",
+      "size_bytes": 357
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/nginx.conf",
+      "path": "frontend/nginx.conf",
+      "sha256": "dc4dd24db2c8b366bb9e3492d11e1caafa096b5096721ebf55d7ccccb99c0e2d",
+      "size_bytes": 378
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/package-lock.json",
+      "path": "frontend/package-lock.json",
+      "sha256": "bc40f199a73e43597d131e58e475dd3e683d200667cf5a9b0ab166cb32234930",
+      "size_bytes": 93233
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/package.json",
+      "path": "frontend/package.json",
+      "sha256": "52dbee432b355c69dffbf6a0925b60055e18b9171bbe8188e3e93413f240d9b9",
+      "size_bytes": 631
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/public/vite.svg",
+      "path": "frontend/public/vite.svg",
+      "sha256": "4a748afd443918bb16591c834c401dae33e87861ab5dbad0811c3a3b4a9214fb",
+      "size_bytes": 1497
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/App.css",
+      "path": "frontend/src/App.css",
+      "sha256": "8db45712e5abff055afa6ad25e517684696fe4ee565707e810e97bb6a55cb1f9",
+      "size_bytes": 8813
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/App.jsx",
+      "path": "frontend/src/App.jsx",
+      "sha256": "d87e639267af71c0f29c84b5efb4304096ecbb6e2f33ae1fcc941554e2c49323",
+      "size_bytes": 5248
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/app/App.css",
+      "path": "frontend/src/app/App.css",
+      "sha256": "f47578eb74f44520f629139c57412bb922e42a96b769b38d1c086a4280c2870f",
+      "size_bytes": 265
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/app/App.jsx",
+      "path": "frontend/src/app/App.jsx",
+      "sha256": "14ee4978203db32d4de1b0519edca987629202bbe2f6f03456991856574137b0",
+      "size_bytes": 4145
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/assets/.gitkeep",
+      "path": "frontend/src/assets/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size_bytes": 0
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/assets/react.svg",
+      "path": "frontend/src/assets/react.svg",
+      "sha256": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5",
+      "size_bytes": 4126
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/content-box/ContentBox.css",
+      "path": "frontend/src/content-box/ContentBox.css",
+      "sha256": "cb5d738bd07a247d12a9986a93e49d451edfd3e1b4c976a95f58b012f946e081",
+      "size_bytes": 5768
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/content-box/CreateContentBox.jsx",
+      "path": "frontend/src/content-box/CreateContentBox.jsx",
+      "sha256": "5c41eeaea683a3c932c320294010c801c708fc7462f0ddc46a985ea99fc33322",
+      "size_bytes": 2283
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/content-box/DeleteContentBox.jsx",
+      "path": "frontend/src/content-box/DeleteContentBox.jsx",
+      "sha256": "63c4cf88c3001e134cad78a4e28e1f1cc61e2cd1edb46061474f01d4e95e6d4c",
+      "size_bytes": 1808
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/content-box/ReadContentBox.jsx",
+      "path": "frontend/src/content-box/ReadContentBox.jsx",
+      "sha256": "24273cb9d71e0cbbd623b6000f16401e3dce5ad46159ae9133f757b6d28f4b1e",
+      "size_bytes": 1757
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/content-box/UpdateContentBox.jsx",
+      "path": "frontend/src/content-box/UpdateContentBox.jsx",
+      "sha256": "7bc657537127c2539937112dbacc5de85711be8c13e0983662a0846f7b8a754f",
+      "size_bytes": 1865
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/fitness-advisor/FitnessAdvisor.css",
+      "path": "frontend/src/fitness-advisor/FitnessAdvisor.css",
+      "sha256": "0bf1c542fd330badb8da6842dd274a7cb937b906f852833aca91f904003e5f4b",
+      "size_bytes": 9859
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/fitness-advisor/FitnessAdvisor.jsx",
+      "path": "frontend/src/fitness-advisor/FitnessAdvisor.jsx",
+      "sha256": "d8a0c4cc271aa8173c6fc219adeaa894c56f883a2db4ffc1a8752ab2406a9f74",
+      "size_bytes": 18193
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/index.css",
+      "path": "frontend/src/index.css",
+      "sha256": "2f7a15c45dd896af326b76c1d5b343e520ca793413ba9dfc83bb51a918e0d8ee",
+      "size_bytes": 306
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/main.jsx",
+      "path": "frontend/src/main.jsx",
+      "sha256": "ae81f1c01f2c8018a1ba5cf73171921c8982d90b049bb6b039ea82f8e1dec958",
+      "size_bytes": 239
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/vertical-container/VerticalContainer.css",
+      "path": "frontend/src/vertical-container/VerticalContainer.css",
+      "sha256": "e2fef5a7c308fe1c2927d2369b2055ccc8ae2e855d9c756ac9fae4dc25eae2f3",
+      "size_bytes": 628
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/src/vertical-container/VerticalContainer.jsx",
+      "path": "frontend/src/vertical-container/VerticalContainer.jsx",
+      "sha256": "ab06e54e35f085abc1a0854a456cd9952ba47ebe79637b45a850ac968f58833e",
+      "size_bytes": 243
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/frontend/vite.config.js",
+      "path": "frontend/vite.config.js",
+      "sha256": "5cabb639b6b62e19064337abc9f5b4fda0f83e50a47396ca9a3bba388abfdd13",
+      "size_bytes": 168
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend/Chart.yaml",
+      "path": "helm/backend/Chart.yaml",
+      "sha256": "0b5fb23cb24269ab85db786714be9e6e97b40637d86a16a5036b6d9d7673a75c",
+      "size_bytes": 141
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/configmap.yaml",
+      "path": "helm/backend/templates/configmap.yaml",
+      "sha256": "d2692e82f4d6110cde971559f7aa106cadffa7fee30d0af0888df2db27a10b93",
+      "size_bytes": 370
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/deployment.yaml",
+      "path": "helm/backend/templates/deployment.yaml",
+      "sha256": "b73f2c21d3597d2f2441b77629b2ca49a6e98545d9239a65d57f863c6b507d47",
+      "size_bytes": 1954
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/secret.yaml",
+      "path": "helm/backend/templates/secret.yaml",
+      "sha256": "2575c9f4b096be94a3b21b04378ef32d46e6a2f4b87bd2318bb63c880db9067e",
+      "size_bytes": 247
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/service.yaml",
+      "path": "helm/backend/templates/service.yaml",
+      "sha256": "9a11cfc3776d0e19bd0c5147f2a269b7805faf0bfd4d1f8a775e76cb4ccfa738",
+      "size_bytes": 447
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend/values.yaml",
+      "path": "helm/backend/values.yaml",
+      "sha256": "fd35113c62297d1d6894209ee7d961b3f8639835a0a39eb5e62fd4ac3f0013ec",
+      "size_bytes": 453
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/database/Chart.yaml",
+      "path": "helm/database/Chart.yaml",
+      "sha256": "22e451f71c099c1143265d6fd93ed63df452f84f29739f7ead6f44802a1d53c6",
+      "size_bytes": 175
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/database/templates/secret.yaml",
+      "path": "helm/database/templates/secret.yaml",
+      "sha256": "8c4c6d0d0cc10bac8957712310edc4ead456a5847be23ecbb70198a0b8f7b85c",
+      "size_bytes": 268
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/database/templates/service.yaml",
+      "path": "helm/database/templates/service.yaml",
+      "sha256": "de2950d0529d000f62aaabe904334cfa51789df9a5b7f6ccd0e4642be3459d26",
+      "size_bytes": 413
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/database/templates/statefulset.yaml",
+      "path": "helm/database/templates/statefulset.yaml",
+      "sha256": "07b3b9aa7eb4030a9f7a4c65696060dfc71aaaecd5a68f15f5d5f20121e8cbba",
+      "size_bytes": 2755
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/database/values.yaml",
+      "path": "helm/database/values.yaml",
+      "sha256": "8eb46a570d270b088d2523e93724fb5f0b7e97080a46bec2a43a2995eeb1a451",
+      "size_bytes": 539
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/Chart.yaml",
+      "path": "helm/frontend/Chart.yaml",
+      "sha256": "1dba96d06f8eb628f24d524475d276324a8a36fb2035ff239d3f5b9db6cb8a2d",
+      "size_bytes": 153
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/templates/deployment.yaml",
+      "path": "helm/frontend/templates/deployment.yaml",
+      "sha256": "9353837d54b514ebf4d90a1142a71ab440bed548d7eb4bd1450e34beb851e3cc",
+      "size_bytes": 1259
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/templates/service.yaml",
+      "path": "helm/frontend/templates/service.yaml",
+      "sha256": "9780e305dab1b66288b93461f56e5dd0bf13f6960151c991a4bdbdb14d741870",
+      "size_bytes": 404
+    },
+    {
+      "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/values.yaml",
+      "path": "helm/frontend/values.yaml",
+      "sha256": "b7202b79c8918cc5876d4524f1d81683f9d7affc09619738259e3d913cfd94cd",
+      "size_bytes": 427
+    }
+  ],
+  "candidate_inventory_sha256": "b17eef963b873c2f91aa20a287fcf978091680e55181bcfaddf0b2041ef71ebd",
+  "candidate_revision": 1,
+  "config_digest": "510886b7e26369aa66eef6cfaf8977a0e0ce22687c053cbf071d40690a63184b",
+  "discovery_revision": "7f53213152b7709e74f8a9c6b8d917760ba0a9e325513cc0595c59357cf23f34",
+  "endpoint": {
+    "kind": "Service",
+    "name": "frontend",
+    "namespace": "broken-helm-o-4ea768",
+    "port": 80,
+    "protocol": "http",
+    "release_id": "frontend-release",
+    "release_name": "fitcart-frontend"
+  },
+  "external_prerequisites": [
+    {
+      "application_id": "backend",
+      "image_pull_secrets": [],
+      "kind": "registry_pull_access",
+      "namespace": "broken-helm-o-4ea768",
+      "registry": "azdaasdeployment.azurecr.io",
+      "requirement": "AKS must authorize this registry through the mapped namespace imagePullSecrets or its managed identity."
+    },
+    {
+      "application_id": "frontend",
+      "image_pull_secrets": [
+        "acr-pull-secret"
+      ],
+      "kind": "registry_pull_access",
+      "namespace": "broken-helm-o-4ea768",
+      "registry": "azdaasdeployment.azurecr.io",
+      "requirement": "AKS must authorize this registry through the mapped namespace imagePullSecrets or its managed identity."
+    }
+  ],
+  "image_checks": [
+    {
+      "application_id": "backend",
+      "candidate_revision": 1,
+      "checked_at": "2026-11-16T10:21:12.567766Z",
+      "config_digest": "510886b7e26369aa66eef6cfaf8977a0e0ce22687c053cbf071d40690a63184b",
+      "connection_identity": "f9d0e4e2f18e334d4556585211af1ed8c63d7ba0d15c4118c4219f40eee09add",
+      "container": "backend",
+      "digest": null,
+      "reason": null,
+      "registry": "azdaasdeployment.azurecr.io",
+      "repository": "fitcart-backend",
+      "resolved_digest": "sha256:bc24afd8a19056070f95340985025b146589bbbea26d0051673ed779e9ddbfe4",
+      "status": "present",
+      "tag": "latest"
+    },
+    {
+      "application_id": "frontend",
+      "candidate_revision": 1,
+      "checked_at": "2026-11-16T10:21:16.899669Z",
+      "config_digest": "510886b7e26369aa66eef6cfaf8977a0e0ce22687c053cbf071d40690a63184b",
+      "connection_identity": "f9d0e4e2f18e334d4556585211af1ed8c63d7ba0d15c4118c4219f40eee09add",
+      "container": "frontend",
+      "digest": null,
+      "reason": null,
+      "registry": "azdaasdeployment.azurecr.io",
+      "repository": "fitcart-frontend",
+      "resolved_digest": "sha256:d24e61a606e292f8859dc12d24c773d7dc44eeba4be3638ce98485bb831bae67",
+      "status": "present",
+      "tag": "latest"
+    }
+  ],
+  "job_id": "4ea76829-3ea9-423c-a9b5-ba7721d6d0bb",
+  "pipeline_mode": "ci_then_cd",
+  "profile": "three_chart",
+  "profile_order": [
+    "database",
+    "backend",
+    "frontend"
+  ],
+  "project_name": "broken-helm-o",
+  "releases": [
+    {
+      "chart_path": "helm/database",
+      "files": [
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/database/Chart.yaml",
+          "path": "helm/database/Chart.yaml",
+          "sha256": "22e451f71c099c1143265d6fd93ed63df452f84f29739f7ead6f44802a1d53c6",
+          "size_bytes": 175
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/database/templates/secret.yaml",
+          "path": "helm/database/templates/secret.yaml",
+          "sha256": "8c4c6d0d0cc10bac8957712310edc4ead456a5847be23ecbb70198a0b8f7b85c",
+          "size_bytes": 268
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/database/templates/service.yaml",
+          "path": "helm/database/templates/service.yaml",
+          "sha256": "de2950d0529d000f62aaabe904334cfa51789df9a5b7f6ccd0e4642be3459d26",
+          "size_bytes": 413
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/database/templates/statefulset.yaml",
+          "path": "helm/database/templates/statefulset.yaml",
+          "sha256": "07b3b9aa7eb4030a9f7a4c65696060dfc71aaaecd5a68f15f5d5f20121e8cbba",
+          "size_bytes": 2755
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/database/values.yaml",
+          "path": "helm/database/values.yaml",
+          "sha256": "8eb46a570d270b088d2523e93724fb5f0b7e97080a46bec2a43a2995eeb1a451",
+          "size_bytes": 539
+        }
+      ],
+      "id": "database-release",
+      "namespace": "broken-helm-o-4ea768",
+      "overlays": [],
+      "package_path": "deployment-output/broken-helm-o/existing/helm/database",
+      "release_name": "fitcart-database",
+      "rendered_prerequisites": {
+        "storage_classes": [
+          "managed-csi"
+        ],
+        "workloads": [
+          {
+            "image_pull_secrets": [],
+            "kind": "StatefulSet",
+            "name": "postgres",
+            "namespace": "broken-helm-o-4ea768"
+          }
+        ]
+      },
+      "role": "database",
+      "values_files": [
+        "helm/database/values.yaml"
+      ],
+      "workloads": [
+        {
+          "kind": "StatefulSet",
+          "name": "postgres",
+          "namespace": "broken-helm-o-4ea768",
+          "release_id": "database-release",
+          "release_name": "fitcart-database"
+        }
+      ]
+    },
+    {
+      "chart_path": "helm/backend",
+      "files": [
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/backend/Chart.yaml",
+          "path": "helm/backend/Chart.yaml",
+          "sha256": "0b5fb23cb24269ab85db786714be9e6e97b40637d86a16a5036b6d9d7673a75c",
+          "size_bytes": 141
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/configmap.yaml",
+          "path": "helm/backend/templates/configmap.yaml",
+          "sha256": "d2692e82f4d6110cde971559f7aa106cadffa7fee30d0af0888df2db27a10b93",
+          "size_bytes": 370
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/deployment.yaml",
+          "path": "helm/backend/templates/deployment.yaml",
+          "sha256": "b73f2c21d3597d2f2441b77629b2ca49a6e98545d9239a65d57f863c6b507d47",
+          "size_bytes": 1954
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/secret.yaml",
+          "path": "helm/backend/templates/secret.yaml",
+          "sha256": "2575c9f4b096be94a3b21b04378ef32d46e6a2f4b87bd2318bb63c880db9067e",
+          "size_bytes": 247
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/backend/templates/service.yaml",
+          "path": "helm/backend/templates/service.yaml",
+          "sha256": "9a11cfc3776d0e19bd0c5147f2a269b7805faf0bfd4d1f8a775e76cb4ccfa738",
+          "size_bytes": 447
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/backend/values.yaml",
+          "path": "helm/backend/values.yaml",
+          "sha256": "fd35113c62297d1d6894209ee7d961b3f8639835a0a39eb5e62fd4ac3f0013ec",
+          "size_bytes": 453
+        }
+      ],
+      "id": "backend-release",
+      "namespace": "broken-helm-o-4ea768",
+      "overlays": [],
+      "package_path": "deployment-output/broken-helm-o/existing/helm/backend",
+      "release_name": "fitcart-backend",
+      "rendered_prerequisites": {
+        "storage_classes": [],
+        "workloads": [
+          {
+            "image_pull_secrets": [],
+            "kind": "Deployment",
+            "name": "backend",
+            "namespace": "broken-helm-o-4ea768"
+          }
+        ]
+      },
+      "role": "backend",
+      "values_files": [
+        "helm/backend/values.yaml"
+      ],
+      "workloads": [
+        {
+          "kind": "Deployment",
+          "name": "backend",
+          "namespace": "broken-helm-o-4ea768",
+          "release_id": "backend-release",
+          "release_name": "fitcart-backend"
+        }
+      ]
+    },
+    {
+      "chart_path": "helm/frontend",
+      "files": [
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/Chart.yaml",
+          "path": "helm/frontend/Chart.yaml",
+          "sha256": "1dba96d06f8eb628f24d524475d276324a8a36fb2035ff239d3f5b9db6cb8a2d",
+          "size_bytes": 153
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/templates/deployment.yaml",
+          "path": "helm/frontend/templates/deployment.yaml",
+          "sha256": "9353837d54b514ebf4d90a1142a71ab440bed548d7eb4bd1450e34beb851e3cc",
+          "size_bytes": 1259
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/templates/service.yaml",
+          "path": "helm/frontend/templates/service.yaml",
+          "sha256": "9780e305dab1b66288b93461f56e5dd0bf13f6960151c991a4bdbdb14d741870",
+          "size_bytes": 404
+        },
+        {
+          "package_path": "deployment-output/broken-helm-o/existing/helm/frontend/values.yaml",
+          "path": "helm/frontend/values.yaml",
+          "sha256": "b7202b79c8918cc5876d4524f1d81683f9d7affc09619738259e3d913cfd94cd",
+          "size_bytes": 427
+        }
+      ],
+      "id": "frontend-release",
+      "namespace": "broken-helm-o-4ea768",
+      "overlays": [],
+      "package_path": "deployment-output/broken-helm-o/existing/helm/frontend",
+      "release_name": "fitcart-frontend",
+      "rendered_prerequisites": {
+        "storage_classes": [],
+        "workloads": [
+          {
+            "image_pull_secrets": [
+              "acr-pull-secret"
+            ],
+            "kind": "Deployment",
+            "name": "frontend",
+            "namespace": "broken-helm-o-4ea768"
+          }
+        ]
+      },
+      "role": "frontend",
+      "values_files": [
+        "helm/frontend/values.yaml"
+      ],
+      "workloads": [
+        {
+          "kind": "Deployment",
+          "name": "frontend",
+          "namespace": "broken-helm-o-4ea768",
+          "release_id": "frontend-release",
+          "release_name": "fitcart-frontend"
+        }
+      ]
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "archive_sha256": "7f53213152b7709e74f8a9c6b8d917760ba0a9e325513cc0595c59357cf23f34",
+    "inventory_sha256": "97232eb36cb624e79d8cacf0e9a7b28637fc11a7ae1127ecf9ac9ef9fe4ef2df",
+    "job_id": "4ea76829-3ea9-423c-a9b5-ba7721d6d0bb",
+    "source_revision": "7f53213152b7709e74f8a9c6b8d917760ba0a9e325513cc0595c59357cf23f34"
+  },
+  "validation": {
+    "candidate_revision": 1,
+    "checks": [
+      {
+        "check_name": "helm-lint",
+        "file": "helm/database",
+        "message": "Helm SDK lint passed",
+        "status": "PASS"
+      },
+      {
+        "check_name": "helm-template",
+        "file": "helm/database",
+        "message": "Helm SDK rendered the candidate with effective inputs",
+        "status": "PASS"
+      },
+      {
+        "check_name": "helm-lint",
+        "file": "helm/backend",
+        "message": "Helm SDK lint passed",
+        "status": "PASS"
+      },
+      {
+        "check_name": "helm-template",
+        "file": "helm/backend",
+        "message": "Helm SDK rendered the candidate with effective inputs",
+        "status": "PASS"
+      },
+      {
+        "check_name": "helm-lint",
+        "file": "helm/frontend",
+        "message": "Helm SDK lint passed",
+        "status": "PASS"
+      },
+      {
+        "check_name": "helm-template",
+        "file": "helm/frontend",
+        "message": "Helm SDK rendered the candidate with effective inputs",
+        "status": "PASS"
+      },
+      {
+        "check_name": "image-binding",
+        "message": "Sentinel reached container backend",
+        "status": "PASS"
+      },
+      {
+        "check_name": "image-binding",
+        "message": "Sentinel reached container frontend",
+        "status": "PASS"
+      }
+    ],
+    "config_digest": "510886b7e26369aa66eef6cfaf8977a0e0ce22687c053cbf071d40690a63184b",
+    "effective_values": {
+      "fitcart-backend": {
+        "k8s_version": null,
+        "namespace": "broken-helm-o-4ea768",
+        "overrides": {},
+        "release_id": "backend-release",
+        "rendered_images": [
+          {
+            "container": "backend",
+            "digest": null,
+            "namespace": "",
+            "registry": "acrfitcartdevnmv9l9.azurecr.io",
+            "registry_source": "image_reference",
+            "release_id": "backend-release",
+            "release_name": "fitcart-backend",
+            "repository": "fitcart-backend",
+            "status": "resolved",
+            "tag": "latest",
+            "workload": "backend"
+          }
+        ],
+        "rendered_prerequisites": {
+          "storage_classes": [],
+          "workloads": [
+            {
+              "image_pull_secrets": [],
+              "kind": "Deployment",
+              "name": "backend",
+              "namespace": "broken-helm-o-4ea768"
+            }
+          ]
+        },
+        "values_files": [
+          "helm/backend/values.yaml"
+        ]
+      },
+      "fitcart-database": {
+        "k8s_version": null,
+        "namespace": "broken-helm-o-4ea768",
+        "overrides": {},
+        "release_id": "database-release",
+        "rendered_images": [
+          {
+            "container": "postgres",
+            "digest": null,
+            "namespace": "",
+            "registry": "azdaasdeployment.azurecr.io",
+            "registry_source": "default",
+            "release_id": "database-release",
+            "release_name": "fitcart-database",
+            "repository": "postgres",
+            "status": "resolved",
+            "tag": "14",
+            "workload": "postgres"
+          }
+        ],
+        "rendered_prerequisites": {
+          "storage_classes": [
+            "managed-csi"
+          ],
+          "workloads": [
+            {
+              "image_pull_secrets": [],
+              "kind": "StatefulSet",
+              "name": "postgres",
+              "namespace": "broken-helm-o-4ea768"
+            }
+          ]
+        },
+        "values_files": [
+          "helm/database/values.yaml"
+        ]
+      },
+      "fitcart-frontend": {
+        "k8s_version": null,
+        "namespace": "broken-helm-o-4ea768",
+        "overrides": {},
+        "release_id": "frontend-release",
+        "rendered_images": [
+          {
+            "container": "frontend",
+            "digest": null,
+            "namespace": "",
+            "registry": "azdaasdeployment.azurecr.io",
+            "registry_source": "default",
+            "release_id": "frontend-release",
+            "release_name": "fitcart-frontend",
+            "repository": "fitcart-frontend",
+            "status": "resolved",
+            "tag": "latest",
+            "workload": "frontend"
+          }
+        ],
+        "rendered_prerequisites": {
+          "storage_classes": [],
+          "workloads": [
+            {
+              "image_pull_secrets": [
+                "acr-pull-secret"
+              ],
+              "kind": "Deployment",
+              "name": "frontend",
+              "namespace": "broken-helm-o-4ea768"
+            }
+          ]
+        },
+        "values_files": [
+          "helm/frontend/values.yaml"
+        ]
+      }
+    },
+    "errors": [],
+    "passed": true,
+    "render_hashes": {
+      "fitcart-backend": "8dfd838a199d503cf42af4d373a0d1b268503181ce597c82e8a90021da72d27c",
+      "fitcart-database": "b994df7e0d358a1f88ce3fa5e20d7f4c60ec1266475641c318e6f5e43146db5b",
+      "fitcart-frontend": "2bfb5bbc71018bbe31e723b1e392ba8556090d5ad9fdf9acd746aa31e6b04f03"
+    },
+    "validator_versions": {
+      "helm": "v3.22.1"
+    }
+  },
+  "validation_identity": "468b57ea09a74d27e8e781b7f02a910c7b5df04ffa7897d048afd2c69a2f7a69",
+  "workloads": [
+    {
+      "kind": "StatefulSet",
+      "name": "postgres",
+      "namespace": "broken-helm-o-4ea768",
+      "release_id": "database-release",
+      "release_name": "fitcart-database"
+    },
+    {
+      "kind": "Deployment",
+      "name": "backend",
+      "namespace": "broken-helm-o-4ea768",
+      "release_id": "backend-release",
+      "release_name": "fitcart-backend"
+    },
+    {
+      "kind": "Deployment",
+      "name": "frontend",
+      "namespace": "broken-helm-o-4ea768",
+      "release_id": "frontend-release",
+      "release_name": "fitcart-frontend"
+    }
+  ]
+}

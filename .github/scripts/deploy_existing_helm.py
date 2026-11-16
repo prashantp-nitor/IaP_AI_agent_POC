@@ -315,6 +315,22 @@ def deploy_onboarding_manifest(
                 _exec_command(kubectl_bin, ["create", "namespace", release_namespace], capture_output=True, text=True)
 
         checked_pull_secrets: set[tuple[str, str]] = set()
+        acr_registry = (
+            dispatch.get("acr_registry")
+            or (manifest.get("pull_secret") or {}).get("registry")
+            or next(
+                (item.get("registry") for item in manifest.get("build_services", []) if isinstance(item, dict) and item.get("registry")),
+                "",
+            )
+            or next(
+                (item.get("registry") for item in manifest.get("external_prerequisites", []) if isinstance(item, dict) and item.get("registry")),
+                "",
+            )
+        )
+        has_acr_creds = bool(
+            (os.environ.get("ACR_USERNAME") or os.environ.get("REGISTRY_USERNAME"))
+            and (os.environ.get("ACR_PASSWORD") or os.environ.get("REGISTRY_PASSWORD"))
+        )
         for release in releases:
             prerequisites = _approved_rendered_prerequisites(manifest, release)
             for workload in prerequisites.get("workloads", []):
@@ -325,7 +341,10 @@ def deploy_onboarding_manifest(
                         continue
                     found = _exec_command(kubectl_bin, ["get", "secret", secret_name, "-n", workload_namespace, "-o", "json"], capture_output=True, text=True)
                     if found.returncode != 0:
-                        raise RuntimeError(f"Approved image pull Secret {secret_name!r} is missing from namespace {workload_namespace!r}; provide AKS-managed registry access or an existing namespace-local pull Secret")
+                        if acr_registry and has_acr_creds:
+                            _ensure_acr_pull_secret(kubectl_bin, workload_namespace, acr_registry, secret_name)
+                        else:
+                            raise RuntimeError(f"Approved image pull Secret {secret_name!r} is missing from namespace {workload_namespace!r}; provide AKS-managed registry access or an existing namespace-local pull Secret")
                     checked_pull_secrets.add(key)
 
         build_refs = dispatch.get("build_image_references", {})

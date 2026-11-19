@@ -1,0 +1,116 @@
+{
+  "cluster_name": "three-tier-ang-aks",
+  "region": "eastus",
+  "kubernetes_version": "1.34",
+  "node_count": "1",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "high_availability": false,
+  "min_count": 1,
+  "max_count": 2,
+  "enable_auto_scaling": true,
+  "node_pools": [
+    {
+      "id": "pool-default",
+      "name": "agentpool",
+      "poolType": "vmss",
+      "mode": "System",
+      "osType": "Linux",
+      "osSku": "Ubuntu",
+      "vmSku": "Standard_D2s_v3",
+      "minNodes": 2,
+      "maxNodes": 5,
+      "zones": "1, 2, 3",
+      "isPrimary": true
+    }
+  ],
+  "type": "virtual_network",
+  "clusterName": "three-tier-ang-aks",
+  "highAvailability": false,
+  "minNodes": 1,
+  "maxNodes": 2,
+  "vmSku": "Standard_D2s_v3",
+  "k8sVersion": "1.34 (Latest)",
+  "autoScaling": true,
+  "nodePools": [
+    {
+      "id": "pool-default",
+      "name": "agentpool",
+      "poolType": "vmss",
+      "mode": "System",
+      "osType": "Linux",
+      "osSku": "Ubuntu",
+      "vmSku": "Standard_D2s_v3",
+      "minNodes": 2,
+      "maxNodes": 5,
+      "zones": "1, 2, 3",
+      "isPrimary": true
+    }
+  ],
+  "field_values": {
+    "vnet_name": "three-tier-ang-network",
+    "address_space": "10.0.0.0/16"
+  },
+  "subnet_name": "db-subnet",
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "three-tier-angular-dotnet",
+    "job_id": "028afec8-20df-4391-8cdb-1da5bb9adc1d",
+    "project_folder": "three-tier-angular-dotnet-028afe"
+  },
+  "server_name": "three-tier-ang-db",
+  "storage_mb": "32768",
+  "backup_retention_days": "14",
+  "engine": "PostgreSQL",
+  "version": "15",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "serverName": "three-tier-ang-db",
+  "subnetName": "db-subnet",
+  "skuName": "standard",
+  "storageGb": 32,
+  "backupRetentionDays": 14,
+  "adminPassword": "",
+  "vault_name": "three-tier-ang-kv-028afe",
+  "soft_delete_retention_days": 90,
+  "vaultName": "three-tier-ang-kv-028afe",
+  "softDeleteRetentionDays": 90,
+  "registry_name": "threetierangacr028afe",
+  "admin_enabled": "False",
+  "frontend_repo": "three-tier-ang-frontend",
+  "backend_repo": "three-tier-ang-backend",
+  "registryName": "threetierangacr028afe",
+  "adminEnabled": false,
+  "repositories": [
+    "three-tier-ang-frontend",
+    "three-tier-ang-backend"
+  ],
+  "frontendRepo": "three-tier-ang-frontend",
+  "backendRepo": "three-tier-ang-backend",
+  "vnet_name": "three-tier-ang-network",
+  "address_space": "10.0.0.0/16",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "vnetName": "three-tier-ang-network",
+  "addressSpace": "10.0.0.0/16",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}

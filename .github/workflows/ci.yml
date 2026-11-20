@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: ef6f95b5-f3de-4167-8565-80cc61c8c576 @ 2026-11-20T09:18:18Z
+# DaaS CI Dispatch: 254d58b9-799c-4828-872c-d6059c35c928 @ 2026-11-20T18:43:58Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "ef6f95b5-f3de-4167-8565-80cc61c8c576"
+        default: "254d58b9-799c-4828-872c-d6059c35c928"
 
 permissions:
   id-token: write
@@ -22,10 +22,10 @@ permissions:
 env:
   REGISTRY: dotnetappdeacr00cde1.azurecr.io
   NAMESPACE: dot-net-app-deploy
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/ef6f95b5-f3de-4167-8565-80cc61c8c576/source.zip?se=2026-11-27T09%3A18%3A18Z&sp=r&sv=2026-06-06&sr=b&sig=72JCEabZzdLig4w/Fj9PRONqhxhgTRXj0atBYSDoYfM%3D"
-  JOB_ID: ${{ inputs.job_id || 'ef6f95b5-f3de-4167-8565-80cc61c8c576' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/254d58b9-799c-4828-872c-d6059c35c928/source.zip?se=2026-11-27T18%3A43%3A57Z&sp=r&sv=2026-06-06&sr=b&sig=Hqa7S9nbGv%2BoGhx3Yk3svwx2ISbne6%2BDo5W1ym3zmik%3D"
+  JOB_ID: ${{ inputs.job_id || '254d58b9-799c-4828-872c-d6059c35c928' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "EF6F95B5_F3DE_4167_8565_80CC61C8C576"
+  PROJECT_PREFIX: "254D58B9_799C_4828_872C_D6059C35C928"
 
 jobs:
   ci-security-and-build:
@@ -192,7 +192,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-ef6f95b5-f3de-4167-8565-80cc61c8c576
+            -Dsonar.projectKey=daas-254d58b9-799c-4828-872c-d6059c35c928
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -215,7 +215,7 @@ jobs:
           file: ./app/ElectronicEquipmentAngular/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/angular-image:sha-ef6f95b5
+          tags: ${{ env.REGISTRY }}/angular-image:sha-254d58b9
           
           
           
@@ -225,13 +225,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for angular..."
-          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-ef6f95b5 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-ef6f95b5 || true
+          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-254d58b9 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-254d58b9 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push angular image
         run: |
-          docker push ${{ env.REGISTRY }}/angular-image:sha-ef6f95b5
+          docker push ${{ env.REGISTRY }}/angular-image:sha-254d58b9
       
       
       
@@ -242,7 +242,7 @@ jobs:
           file: ./app/ElectricEquipmentDotNetCoreAPI/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/dotnet-image:sha-ef6f95b5
+          tags: ${{ env.REGISTRY }}/dotnet-image:sha-254d58b9
           
           
           
@@ -252,13 +252,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for dotnetcoreapi..."
-          trivy image --format json --output security-reports/image-dotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-ef6f95b5 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-ef6f95b5 || true
+          trivy image --format json --output security-reports/image-dotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-254d58b9 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-254d58b9 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push dotnetcoreapi image
         run: |
-          docker push ${{ env.REGISTRY }}/dotnet-image:sha-ef6f95b5
+          docker push ${{ env.REGISTRY }}/dotnet-image:sha-254d58b9
       
       
 

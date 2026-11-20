@@ -64,8 +64,8 @@ services:
       []
       
     image:
-      repository: "dotnetappdeacr00cde1.azurecr.io/backend"
-      tag: "sha-ef6f95b5"
+      repository: "dotnetappdeacr00cde1.azurecr.io/angular-image"
+      tag: "sha-254d58b9"
       pullPolicy: IfNotPresent
     ports:
       
@@ -97,8 +97,8 @@ services:
       []
       
     image:
-      repository: "dotnetappdeacr00cde1.azurecr.io/backend"
-      tag: "sha-ef6f95b5"
+      repository: "mcr.microsoft.com/mssql/server"
+      tag: "sha-254d58b9"
       pullPolicy: IfNotPresent
     ports:
       
@@ -136,8 +136,8 @@ services:
       []
       
     image:
-      repository: "dotnetappdeacr00cde1.azurecr.io/backend"
-      tag: "sha-ef6f95b5"
+      repository: "dotnetappdeacr00cde1.azurecr.io/dotnet-image"
+      tag: "sha-254d58b9"
       pullPolicy: IfNotPresent
     ports:
       
@@ -170,7 +170,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "air3N&m7E1jjU!I4SphjNemf"
+  password: "4Wa#*Iv23JSBmzq*l0*k1DGF"
   migrations:
     enabled: false
   
@@ -191,11 +191,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_h4gtc2"
+    POSTGRES_DB: "post_ezzfe3"
     
-    POSTGRES_USER: "post_6qe7is"
+    POSTGRES_USER: "post_jr4epu"
     
-    POSTGRES_PASSWORD: "air3N&m7E1jjU!I4SphjNemf"
+    POSTGRES_PASSWORD: "4Wa#*Iv23JSBmzq*l0*k1DGF"
     
   
 

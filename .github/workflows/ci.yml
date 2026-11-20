@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 78b06070-57b9-4f30-9b79-2b8d5e286ea9
+# existing-helm-ci-dispatch: 8991eacc-72eb-4ca7-9599-bce2daaba04f
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "026d6e49-c29b-4138-9b72-9ba94c7a086f"
+        default: "3fad6354-195d-481d-b009-d293e44087e7"
 
 permissions:
   id-token: write
@@ -22,10 +22,10 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/026d6e49-c29b-4138-9b72-9ba94c7a086f/source.zip?se=2026-11-20T09%3A43%3A09Z&sp=r&sv=2026-06-06&sr=b&sig=qGy/5F2GvXy%2B7CWHqcZ1NnNn2Ly10oE/4%2BkbX4BMX/w%3D"
-  JOB_ID: ${{ inputs.job_id || '026d6e49-c29b-4138-9b72-9ba94c7a086f' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/3fad6354-195d-481d-b009-d293e44087e7/source.zip?se=2026-11-20T10%3A44%3A59Z&sp=r&sv=2026-06-06&sr=b&sig=/4AJWCkjkoGSqdWTVTMGODQ2I1P%2Bf8niDraNmE2Cq6I%3D"
+  JOB_ID: ${{ inputs.job_id || '3fad6354-195d-481d-b009-d293e44087e7' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "3_TIER_APPLICATION_TO_AZURE_AKS_PERSONAL"
+  PROJECT_PREFIX: "3_TIER_APPLICATION_TO_AZURE_AKS_PERSONAL_12"
 
 jobs:
   ci-security-and-build:
@@ -40,7 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "209ba3eb09a1fff4ea97c06474dcd72ff851d5d3e2ad119fe316c1bbfa1d3ea5  source.zip" | sha256sum -c -
+          echo "aefc40c9a6bc38665d2a39bb27142b78f75332cdc9bcd1fa68bcd2e9e5dac477  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -169,7 +169,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-3-tier-application-to-azure-aks-personal
+            -Dsonar.projectKey=daas-3-tier-application-to-azure-aks-personal-12
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -191,7 +191,7 @@ jobs:
           file: ./app/backend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/fitcart-backend:sha-026d6e49
+          tags: ${{ env.REGISTRY }}/fitcart-backend:sha-3fad6354
           
           
           
@@ -201,13 +201,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:sha-026d6e49 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:sha-026d6e49 || true
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:sha-3fad6354 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-backend:sha-3fad6354 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/fitcart-backend:sha-026d6e49
+          docker push ${{ env.REGISTRY }}/fitcart-backend:sha-3fad6354
       
       - name: Build frontend container image
         uses: docker/build-push-action@v5
@@ -216,7 +216,7 @@ jobs:
           file: ./app/frontend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/fitcart-frontend:sha-026d6e49
+          tags: ${{ env.REGISTRY }}/fitcart-frontend:sha-3fad6354
           
           
           
@@ -226,13 +226,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:sha-026d6e49 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:sha-026d6e49 || true
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:sha-3fad6354 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/fitcart-frontend:sha-3fad6354 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/fitcart-frontend:sha-026d6e49
+          docker push ${{ env.REGISTRY }}/fitcart-frontend:sha-3fad6354
       
 
       - name: Upload Security Reports to Azure Blob Storage

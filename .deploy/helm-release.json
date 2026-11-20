@@ -1,27 +1,8 @@
 {
-  "schema_version": 2,
-  "dispatch_id": "b8acbb02-4946-4412-8efb-bb8e1bad40f6",
-  "job_id": "4ea76829-3ea9-423c-a9b5-ba7721d6d0bb",
-  "project_name": "broken-helm-o",
-  "discovery_revision": "7f53213152b7709e74f8a9c6b8d917760ba0a9e325513cc0595c59357cf23f34",
-  "config_digest": "510886b7e26369aa66eef6cfaf8977a0e0ce22687c053cbf071d40690a63184b",
-  "manifest_path": "deployment-output/broken-helm-o/.existing-helm-release.json",
-  "cluster_name": "helm-only-depl-aks",
+  "job_id": "e84f0fd0-c9c6-4ec7-9250-1429761823b6",
+  "dispatched_at": "2026-11-20T08:32:14Z",
+  "target_cluster": "helm-only-depl-aks",
   "resource_group": "AZET-RG-Daas-Platform",
-  "namespace": "",
-  "acr_registry": "azdaasdeployment.azurecr.io",
-  "target_key": "azet-rg-daas-platform/helm-only-depl-aks",
-  "ci_dispatch_id": "3dd706ed-8d41-4a32-be11-71615fdcaccc",
-  "ci_commit_sha": "513ae65e59ed4a17af5594a1319f3e696bd6d67e",
-  "ci_run_id": "513ae65e59ed4a17af5594a1319f3e696bd6d67e",
-  "dispatched_at": "2026-11-16T10:24:59.280245+00:00",
-  "source_revision": "7f53213152b7709e74f8a9c6b8d917760ba0a9e325513cc0595c59357cf23f34",
-  "pipeline_mode": "ci_then_cd",
-  "candidate_revision": 1,
-  "candidate_inventory_sha256": "b17eef963b873c2f91aa20a287fcf978091680e55181bcfaddf0b2041ef71ebd",
-  "validation_identity": "468b57ea09a74d27e8e781b7f02a910c7b5df04ffa7897d048afd2c69a2f7a69",
-  "build_image_references": {
-    "backend": "azdaasdeployment.azurecr.io/fitcart-backend:sha-4ea76829",
-    "frontend": "azdaasdeployment.azurecr.io/fitcart-frontend:sha-4ea76829"
-  }
+  "namespace": "broken-helm-ak",
+  "image_tag": "sha-e84f0fd0"
 }

@@ -1,0 +1,437 @@
+/* ── Page wrapper ─────────────────────────────────────── */
+.page-wrapper {
+  min-height: 100vh;
+  background-color: #F4F5F6;
+  font-family: 'Arial', Helvetica, sans-serif;
+}
+
+/* ── Top bar ──────────────────────────────────────────── */
+.topbar {
+  background-color: #1D2671;
+  color: #CBD5E1;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 24px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+.dec-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  height: 68px;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Logo */
+.dec-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.dec-logo-text {
+  font-size: 26px;
+  font-weight: 900;
+  color: #0082C3;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.dec-logo-badge {
+  font-size: 26px;
+  font-weight: 900;
+  color: #1D2033;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+/* Search */
+.dec-search {
+  flex: 1;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  background: #F4F5F6;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dec-search:focus-within {
+  border-color: #0082C3;
+  box-shadow: 0 0 0 3px rgba(0,130,195,0.12);
+  background: #fff;
+}
+
+.search-icon {
+  padding: 0 12px;
+  font-size: 16px;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.dec-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #1D2033;
+  min-width: 0;
+}
+
+.dec-search input::placeholder {
+  color: #9CA3AF;
+}
+
+.dec-search-btn {
+  background-color: #0082C3;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 20px;
+  height: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+.dec-search-btn:hover {
+  background-color: #006CA4;
+}
+
+/* Header actions */
+.dec-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  gap: 2px;
+  transition: background-color 0.15s;
+  position: relative;
+}
+
+.action-btn:hover {
+  background-color: #F4F5F6;
+}
+
+.action-icon { font-size: 20px; }
+
+.action-label {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cart-btn {
+  background-color: #0082C3 !important;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 4px;
+}
+
+.cart-btn .action-label { color: white; }
+.cart-btn:hover { background-color: #006CA4 !important; }
+
+.cart-count {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  background: #EF4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Main nav ─────────────────────────────────────────── */
+.dec-nav {
+  background: #ffffff;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.nav-link {
+  color: #374151;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 14px 16px;
+  display: inline-block;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  letter-spacing: 0.1px;
+}
+
+.nav-link:hover { color: #0082C3; border-bottom-color: #0082C3; }
+.nav-link.active { color: #0082C3; border-bottom-color: #0082C3; }
+.nav-link.sale { color: #EF4444; }
+.nav-link.sale:hover { color: #DC2626; border-bottom-color: #DC2626; }
+
+/* ── Hero banner ──────────────────────────────────────── */
+.dec-hero {
+  background: linear-gradient(120deg, #0082C3 0%, #004F7C 60%, #003057 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.dec-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.07) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, transparent 0, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 41px);
+  pointer-events: none;
+}
+
+.dec-hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-tag {
+  font-size: 11px;
+  font-weight: 800;
+  color: #7DD3FC;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.dec-hero-text h1 {
+  font-size: 48px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  letter-spacing: -1px;
+}
+
+.dec-hero-text h1 span {
+  color: #7DD3FC;
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,0.72);
+  max-width: 420px;
+  line-height: 1.65;
+  margin-bottom: 28px;
+}
+
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.hero-cta-primary {
+  background: #ffffff;
+  color: #0082C3;
+  border: none;
+  padding: 13px 28px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.hero-cta-primary:hover {
+  background: #E0F0FA;
+  transform: translateY(-1px);
+}
+
+.hero-cta-secondary {
+  background: transparent;
+  color: #ffffff;
+  border: 2px solid rgba(255,255,255,0.5);
+  padding: 13px 28px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.hero-cta-secondary:hover { border-color: #fff; }
+
+/* Hero stat badges */
+.dec-hero-badges {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-badge {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 22px 26px;
+  text-align: center;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-icon { font-size: 28px; }
+
+.badge-num {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.badge-lbl {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ── Sport category strip ─────────────────────────────── */
+.sport-strip {
+  background: #ffffff;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 20px 0;
+}
+
+.sport-strip-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.sport-strip-inner::-webkit-scrollbar { display: none; }
+
+.sport-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.sport-chip:hover { background-color: #EFF6FF; }
+
+.sport-chip-icon {
+  width: 48px;
+  height: 48px;
+  background: #EFF6FF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 2px solid #DBEAFE;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.sport-chip:hover .sport-chip-icon {
+  background-color: #DBEAFE;
+  border-color: #0082C3;
+}
+
+.sport-chip-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ── Records section ──────────────────────────────────── */
+.records-section {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+.records-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 28px 0 20px;
+  border-bottom: 1px solid #E5E7EB;
+  margin-bottom: 4px;
+}
+
+.records-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1D2033;
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+
+.records-sub {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.records-tag {
+  background: #EFF6FF;
+  color: #0082C3;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #BFDBFE;
+}

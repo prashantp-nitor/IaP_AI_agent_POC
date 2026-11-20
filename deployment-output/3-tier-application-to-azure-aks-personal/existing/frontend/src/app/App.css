@@ -1,0 +1,16 @@
+.main-component {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 0 0;
+  flex-wrap: wrap;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1100px) {
+  .main-component {
+    flex-direction: column;
+    align-items: center;
+  }
+}

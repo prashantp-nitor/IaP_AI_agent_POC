@@ -1,0 +1,30 @@
+.vertical-container {
+  background-color: #ffffff;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  min-height: 420px;
+  padding-bottom: 16px;
+  overflow: hidden;
+  min-width: 300px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.vertical-container:hover {
+  box-shadow: 0 4px 16px rgba(0,130,195,0.12);
+}
+
+.vertical-container h2 {
+  background-color: #0082C3;
+  color: #ffffff;
+  padding: 13px 20px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  border-bottom: none;
+  margin: 0;
+}

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.angular.serviceName | default "angular" }}
+  namespace: {{ .Values.services.angular.namespace | default .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  type: {{ .Values.services.angular.serviceType | default "ClusterIP" }}
+  ports:
+    
+    - port: {{ index .Values.services.angular.ports 0 | default 80 }}
+      targetPort: {{ .Values.services.angular.containerPort | default 80 }}
+      protocol: TCP
+      name: http
+    
+  selector:
+    app: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.sqlserver.serviceName | default "sqlserver" }}
+  namespace: {{ .Values.services.sqlserver.namespace | default .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  type: {{ .Values.services.sqlserver.serviceType | default "ClusterIP" }}
+  ports:
+    
+    - port: {{ index .Values.services.sqlserver.ports 0 | default 1433 }}
+      targetPort: {{ .Values.services.sqlserver.containerPort | default 1433 }}
+      protocol: TCP
+      name: http
+    
+  selector:
+    app: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.dotnetcoreapi.serviceName | default "dotnetcoreapi" }}
+  namespace: {{ .Values.services.dotnetcoreapi.namespace | default .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  type: {{ .Values.services.dotnetcoreapi.serviceType | default "ClusterIP" }}
+  ports:
+    
+    - port: {{ index .Values.services.dotnetcoreapi.ports 0 | default 80 }}
+      targetPort: {{ .Values.services.dotnetcoreapi.containerPort | default 80 }}
+      protocol: TCP
+      name: http
+    
+  selector:
+    app: backend

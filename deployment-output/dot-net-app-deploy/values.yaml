@@ -1,0 +1,217 @@
+# ============================================================
+# DaaS Generated values.yaml for dot-net-app-deploy
+# Override at deploy time with:
+#   helm upgrade --install dot-net-app-deploy ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "dot-net-app-deploy"
+  # Container registry base URL
+  registry: "dotnetappdeacr00cde1.azurecr.io"
+  # Ingress hostname
+  ingressHost: "dot-net-app-deploy.local"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "dev"
+  azureWorkloadIdentityClientId: ""
+  secretProviderClass: ""
+
+# ── Service Account ──────────────────────────────────────
+serviceAccount:
+  create: true
+  name: "dot-net-app-deploy-sa"
+  labels: {}
+  annotations:
+    
+
+imagePullSecrets: []
+
+# ── Resources ────────────────────────────────────────────
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts and applications run on clusters
+  # with insufficient resources.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ── Node Scheduling Defaults ─────────────────────────────
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations: []
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  angular:
+    namespace: "dot-net-app-deploy"
+    enabled: true
+    serviceName: "angular"
+    serviceType: "ClusterIP"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "dotnetappdeacr00cde1.azurecr.io/backend"
+      tag: "sha-ef6f95b5"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+  
+  sqlserver:
+    namespace: "dot-net-app-deploy"
+    enabled: true
+    serviceName: "sqlserver"
+    serviceType: "ClusterIP"
+    containerPort: 1433
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "dotnetappdeacr00cde1.azurecr.io/backend"
+      tag: "sha-ef6f95b5"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 1433
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+      
+      ACCEPT_EULA: ""
+      
+      
+      
+      
+  
+  dotnetcoreapi:
+    namespace: "dot-net-app-deploy"
+    enabled: true
+    serviceName: "dotnetcoreapi"
+    serviceType: "ClusterIP"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "dotnetappdeacr00cde1.azurecr.io/backend"
+      tag: "sha-ef6f95b5"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+      
+      DBHOST: ""
+      
+      
+  
+
+# ── Database ─────────────────────────────────────────────
+
+database:
+  enabled: true
+  inCluster: true
+  connectionString: ""
+  host: ""
+  port: 5432
+  name: "appdb"
+  user: "pgadmin"
+  password: "air3N&m7E1jjU!I4SphjNemf"
+  migrations:
+    enabled: false
+  
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  storage:
+    size: "10Gi"
+    storageClassName: "managed-csi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+  auth:
+    
+    POSTGRES_DB: "post_h4gtc2"
+    
+    POSTGRES_USER: "post_6qe7is"
+    
+    POSTGRES_PASSWORD: "air3N&m7E1jjU!I4SphjNemf"
+    
+  
+
+
+# ── Ingress ──────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "azure-application-gateway"
+  host: "dot-net-app-deploy.local"
+  path: "/"
+  tls: false
+  tlsSecretName: "dot-net-app-deploy-tls-secret"
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80

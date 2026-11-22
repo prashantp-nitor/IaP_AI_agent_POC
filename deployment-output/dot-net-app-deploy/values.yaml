@@ -54,7 +54,7 @@ services:
     namespace: "dot-net-app-deploy"
     enabled: true
     serviceName: "angular"
-    serviceType: "ClusterIP"
+    serviceType: "LoadBalancer"
     containerPort: 80
     replicaCount: 2
     nodeSelector:
@@ -65,7 +65,7 @@ services:
       
     image:
       repository: "dotnetappdeacr00cde1.azurecr.io/angular-image"
-      tag: "sha-a757a000"
+      tag: "sha-8d22bba4"
       pullPolicy: IfNotPresent
     ports:
       
@@ -75,12 +75,24 @@ services:
       
     resources:
       requests:
-        cpu: "500m"
-        memory: "512Mi"
+        cpu: "100m"
+        memory: "128Mi"
       limits:
-        cpu: "1000m"
-        memory: "1Gi"
+        cpu: "100m"
+        memory: "128Mi"
     env:
+      
+      
+      REACT_APP_API_URL: "http://sqlserver:1433"
+      
+      
+      
+      API_URL: "http://sqlserver:1433"
+      
+      
+      
+      BACKEND_URL: "http://sqlserver:1433"
+      
       
   
   sqlserver:
@@ -89,7 +101,7 @@ services:
     serviceName: "sqlserver"
     serviceType: "ClusterIP"
     containerPort: 1433
-    replicaCount: 2
+    replicaCount: 1
     nodeSelector:
       kubernetes.io/os: "linux"
     tolerations:
@@ -116,7 +128,7 @@ services:
     env:
       
       
-      ACCEPT_EULA: ""
+      ACCEPT_EULA: "Y"
       
       
       
@@ -137,7 +149,7 @@ services:
       
     image:
       repository: "dotnetappdeacr00cde1.azurecr.io/dotnet-image"
-      tag: "sha-a757a000"
+      tag: "sha-8d22bba4"
       pullPolicy: IfNotPresent
     ports:
       
@@ -155,7 +167,9 @@ services:
     env:
       
       
-      DBHOST: ""
+      DBHOST: "sqlserver"
+      
+      
       
       
   
@@ -163,40 +177,16 @@ services:
 # ── Database ─────────────────────────────────────────────
 
 database:
-  enabled: true
-  inCluster: true
+  enabled: false
+  inCluster: false
   connectionString: ""
-  host: ""
-  port: 5432
+  host: "sqlserver"
+  port: 1433
   name: "appdb"
   user: "pgadmin"
-  password: "lNFoyiaAna8tI7z80Jy%3rLv"
+  password: "zHr45VvzjaZphcI4MdV1weL!"
   migrations:
     enabled: false
-  
-  engine: "postgresql"
-  image:
-    repository: "postgres"
-    tag: "15-alpine"
-    pullPolicy: IfNotPresent
-  storage:
-    size: "10Gi"
-    storageClassName: "managed-csi"
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "250m"
-      memory: "256Mi"
-  auth:
-    
-    POSTGRES_DB: "post_fl7d12"
-    
-    POSTGRES_USER: "post_9pzooc"
-    
-    POSTGRES_PASSWORD: "lNFoyiaAna8tI7z80Jy%3rLv"
-    
   
 
 

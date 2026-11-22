@@ -97,12 +97,6 @@ spec:
         - protocol: TCP
           port: 80
         
-        - protocol: TCP
-          port: 1433
-        
-        - protocol: TCP
-          port: 80
-        
     # DNS resolution
     - to:
         - namespaceSelector: {}
@@ -143,12 +137,6 @@ spec:
         - protocol: TCP
           port: 80
         
-        - protocol: TCP
-          port: 1433
-        
-        - protocol: TCP
-          port: 80
-        
     # Preserve AKS & Kubelet Health Probes
     - from:
         - ipBlock:
@@ -164,19 +152,13 @@ spec:
         - protocol: TCP
           port: 80
         
-        - protocol: TCP
-          port: 1433
-        
-        - protocol: TCP
-          port: 80
-        
   egress:
     
     # Egress to in-cluster Database pod ONLY on database port
     - to:
         - podSelector:
             matchLabels:
-              app: database
+              app: sqlserver
       ports:
         - protocol: TCP
           port: 5432
@@ -206,7 +188,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: database-network-policy
+  name: sqlserver-network-policy
   namespace: dot-net-app-deploy
   labels:
     app.kubernetes.io/name: dot-net-app-deploy
@@ -214,7 +196,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: database
+      app: sqlserver
   policyTypes:
     - Ingress
     - Egress

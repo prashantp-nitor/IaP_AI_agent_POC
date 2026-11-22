@@ -1,21 +1,36 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: angular-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: angular
+data:
+  
+  REACT_APP_API_URL: "http://sqlserver:1433"
+  
+  API_URL: "http://sqlserver:1433"
+  
+  BACKEND_URL: "http://sqlserver:1433"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: sqlserver-config
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: sqlserver
 data:
   
-  ACCEPT_EULA: ""
+  ACCEPT_EULA: "Y"
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: dotnetcoreapi-config
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: dotnetcoreapi
 data:
   
-  DBHOST: ""
+  DBHOST: "sqlserver"

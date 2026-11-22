@@ -5,16 +5,16 @@ metadata:
   name: {{ .Values.services.angular.serviceName | default "angular" }}
   namespace: {{ .Values.services.angular.namespace | default .Release.Namespace }}
   labels:
-    app: backend
+    app: frontend
 spec:
   replicas: {{ .Values.services.angular.replicaCount | default 2 }}
   selector:
     matchLabels:
-      app: backend
+      app: frontend
   template:
     metadata:
       labels:
-        app: backend
+        app: frontend
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy.name" .)) }}
       {{- if gt (len .Values.imagePullSecrets) 0 }}
@@ -40,70 +40,49 @@ spec:
           
           env:
             
-            - name: DATABASE_URL
+            - name: REACT_APP_API_URL
               
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: DATABASE_URL
+              value: "http://sqlserver:1433"
               
             
-            - name: DB_HOST
+            - name: API_URL
               
-              value: "postgresql-db"
-              
-            
-            - name: DB_PORT
-              
-              value: "5432"
+              value: "http://sqlserver:1433"
               
             
-            - name: DB_NAME
+            - name: BACKEND_URL
               
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_DB
-              
-            
-            - name: DB_USER
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_USER
-              
-            
-            - name: DB_PASSWORD
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_PASSWORD
+              value: "http://sqlserver:1433"
               
             
           
           resources:
             requests:
-              cpu: "{{ .Values.services.angular.resources.requests.cpu | default "500m" }}"
-              memory: "{{ .Values.services.angular.resources.requests.memory | default "512Mi" }}"
+              cpu: "{{ .Values.services.angular.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.angular.resources.requests.memory | default "128Mi" }}"
             limits:
-              cpu: "{{ .Values.services.angular.resources.limits.cpu | default "1000m" }}"
-              memory: "{{ .Values.services.angular.resources.limits.memory | default "1Gi" }}"
-          {{- if .Values.global.secretProviderClass }}
+              cpu: "{{ .Values.services.angular.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.angular.resources.limits.memory | default "128Mi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
           volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if .Values.global.secretProviderClass }}
+      {{- if or .Values.global.secretProviderClass false }}
       volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
       {{- end }}
       {{- $svcNodeSelector := index .Values.services "angular" "nodeSelector" }}
       {{- if or $svcNodeSelector .Values.nodeSelector }}
@@ -131,16 +110,16 @@ metadata:
   name: {{ .Values.services.sqlserver.serviceName | default "sqlserver" }}
   namespace: {{ .Values.services.sqlserver.namespace | default .Release.Namespace }}
   labels:
-    app: backend
+    app: sqlserver
 spec:
-  replicas: {{ .Values.services.sqlserver.replicaCount | default 2 }}
+  replicas: {{ .Values.services.sqlserver.replicaCount | default 1 }}
   selector:
     matchLabels:
-      app: backend
+      app: sqlserver
   template:
     metadata:
       labels:
-        app: backend
+        app: sqlserver
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy.name" .)) }}
       {{- if gt (len .Values.imagePullSecrets) 0 }}
@@ -168,7 +147,7 @@ spec:
             
             - name: ACCEPT_EULA
               
-              value: ""
+              value: "Y"
               
             
             - name: SA_PASSWORD
@@ -179,48 +158,6 @@ spec:
                   key: SA_PASSWORD
               
             
-            - name: DATABASE_URL
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: DATABASE_URL
-              
-            
-            - name: DB_HOST
-              
-              value: "postgresql-db"
-              
-            
-            - name: DB_PORT
-              
-              value: "5432"
-              
-            
-            - name: DB_NAME
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_DB
-              
-            
-            - name: DB_USER
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_USER
-              
-            
-            - name: DB_PASSWORD
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_PASSWORD
-              
-            
           
           resources:
             requests:
@@ -229,20 +166,33 @@ spec:
             limits:
               cpu: "{{ .Values.services.sqlserver.resources.limits.cpu | default "1000m" }}"
               memory: "{{ .Values.services.sqlserver.resources.limits.memory | default "1Gi" }}"
-          {{- if .Values.global.secretProviderClass }}
+          {{- if or .Values.global.secretProviderClass true }}
           volumeMounts:
+            
+            - name: sqlserver-data
+              mountPath: /var/opt/mssql
+            
+            {{- if .Values.global.secretProviderClass }}
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if .Values.global.secretProviderClass }}
+      {{- if or .Values.global.secretProviderClass true }}
       volumes:
+        
+        - name: sqlserver-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.services.sqlserver.serviceName | default "sqlserver" }}-data
+        
+        {{- if .Values.global.secretProviderClass }}
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
       {{- end }}
       {{- $svcNodeSelector := index .Values.services "sqlserver" "nodeSelector" }}
       {{- if or $svcNodeSelector .Values.nodeSelector }}
@@ -307,49 +257,15 @@ spec:
             
             - name: DBHOST
               
-              value: ""
+              value: "sqlserver"
               
             
-            - name: DATABASE_URL
+            - name: ConnectionStrings__Database
               
               valueFrom:
                 secretKeyRef:
-                  name: postgresql-db-secret
-                  key: DATABASE_URL
-              
-            
-            - name: DB_HOST
-              
-              value: "postgresql-db"
-              
-            
-            - name: DB_PORT
-              
-              value: "5432"
-              
-            
-            - name: DB_NAME
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_DB
-              
-            
-            - name: DB_USER
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_USER
-              
-            
-            - name: DB_PASSWORD
-              
-              valueFrom:
-                secretKeyRef:
-                  name: postgresql-db-secret
-                  key: POSTGRES_PASSWORD
+                  name: dotnetcoreapi-secrets
+                  key: ConnectionStrings__Database
               
             
           
@@ -360,20 +276,26 @@ spec:
             limits:
               cpu: "{{ .Values.services.dotnetcoreapi.resources.limits.cpu | default "1000m" }}"
               memory: "{{ .Values.services.dotnetcoreapi.resources.limits.memory | default "1Gi" }}"
-          {{- if .Values.global.secretProviderClass }}
+          {{- if or .Values.global.secretProviderClass false }}
           volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if .Values.global.secretProviderClass }}
+      {{- if or .Values.global.secretProviderClass false }}
       volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
       {{- end }}
       {{- $svcNodeSelector := index .Values.services "dotnetcoreapi" "nodeSelector" }}
       {{- if or $svcNodeSelector .Values.nodeSelector }}

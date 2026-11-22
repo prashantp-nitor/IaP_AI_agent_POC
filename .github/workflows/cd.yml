@@ -15,11 +15,11 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "a757a000-4d2b-468f-913c-838c7861a2ff"
+        default: "8d22bba4-c691-4c9a-820e-5a8a212129ad"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-a757a000"
+        default: "sha-8d22bba4"
 
 permissions:
   id-token: write
@@ -28,7 +28,7 @@ permissions:
 env:
   REGISTRY: dotnetappdeacr00cde1.azurecr.io
   NAMESPACE: dot-net-app-deploy
-  JOB_ID: ${{ inputs.job_id || 'a757a000-4d2b-468f-913c-838c7861a2ff' }}
+  JOB_ID: ${{ inputs.job_id || '8d22bba4-c691-4c9a-820e-5a8a212129ad' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -118,14 +118,14 @@ jobs:
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.angular.image.repository=${{ env.REGISTRY }}/angular-image" --set-string "services.angular.image.tag=${{ inputs.image_tag || 'sha-a757a000' }}" --set-string "services.angular.namespace=dot-net-app-deploy" --set-string "services.sqlserver.image.repository=mcr.microsoft.com/mssql/server" --set-string "services.sqlserver.image.tag=2019-latest" --set-string "services.sqlserver.namespace=dot-net-app-deploy" --set-string "services.dotnetcoreapi.image.repository=${{ env.REGISTRY }}/dotnet-image" --set-string "services.dotnetcoreapi.image.tag=${{ inputs.image_tag || 'sha-a757a000' }}" --set-string "services.dotnetcoreapi.namespace=dot-net-app-deploy" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.angular.image.repository=${{ env.REGISTRY }}/angular-image" --set-string "services.angular.image.tag=${{ inputs.image_tag || 'sha-8d22bba4' }}" --set-string "services.angular.namespace=dot-net-app-deploy" --set-string "services.sqlserver.image.repository=mcr.microsoft.com/mssql/server" --set-string "services.sqlserver.image.tag=2019-latest" --set-string "services.sqlserver.namespace=dot-net-app-deploy" --set-string "services.dotnetcoreapi.image.repository=${{ env.REGISTRY }}/dotnet-image" --set-string "services.dotnetcoreapi.image.tag=${{ inputs.image_tag || 'sha-8d22bba4' }}" --set-string "services.dotnetcoreapi.namespace=dot-net-app-deploy" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
-          FRONTEND_SVC=""
-          FRONTEND_NS=""
+          FRONTEND_SVC="angular"
+          FRONTEND_NS="dot-net-app-deploy"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -155,8 +155,8 @@ jobs:
       - name: Retrieve Public IP & Report URL
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
-          FRONTEND_SVC=""
-          FRONTEND_NS=""
+          FRONTEND_SVC="angular"
+          FRONTEND_NS="dot-net-app-deploy"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -197,8 +197,8 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
-          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "angular", "is_frontend": false, "ports": [80]},{"name": "sqlserver", "is_frontend": false, "ports": [1433]},{"name": "dotnetcoreapi", "is_frontend": false, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_fl7d12", "POSTGRES_PASSWORD": "lNFoyiaAna8tI7z80Jy%3rLv", "POSTGRES_USER": "post_9pzooc"}'
+          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "angular", "is_frontend": true, "ports": [80]},{"name": "sqlserver", "is_frontend": false, "ports": [1433]},{"name": "dotnetcoreapi", "is_frontend": false, "ports": [80]}]}'
+          DB_CONFIG_JSON: '{}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

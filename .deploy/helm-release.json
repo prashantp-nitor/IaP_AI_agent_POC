@@ -1,10 +1,10 @@
 {
-  "job_id": "a757a000-4d2b-468f-913c-838c7861a2ff",
-  "dispatched_at": "2026-11-22T14:03:15Z",
+  "job_id": "8d22bba4-c691-4c9a-820e-5a8a212129ad",
+  "dispatched_at": "2026-11-22T19:08:17Z",
   "target_cluster": "dot-net-app-de-aks",
   "cluster_name": "dot-net-app-de-aks",
   "resource_group": "AZET-RG-Daas-Platform",
   "subscription_id": "37edf351-2797-441e-8f2a-b27c5a9ed9e2",
   "namespace": "dot-net-app-deploy",
-  "image_tag": "sha-a757a000"
+  "image_tag": "sha-8d22bba4"
 }

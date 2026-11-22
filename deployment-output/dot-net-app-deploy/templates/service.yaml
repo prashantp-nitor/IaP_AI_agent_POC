@@ -4,9 +4,9 @@ metadata:
   name: {{ .Values.services.angular.serviceName | default "angular" }}
   namespace: {{ .Values.services.angular.namespace | default .Release.Namespace }}
   labels:
-    app: backend
+    app: frontend
 spec:
-  type: {{ .Values.services.angular.serviceType | default "ClusterIP" }}
+  type: {{ .Values.services.angular.serviceType | default "LoadBalancer" }}
   ports:
     
     - port: {{ index .Values.services.angular.ports 0 | default 80 }}
@@ -15,7 +15,7 @@ spec:
       name: http
     
   selector:
-    app: backend
+    app: frontend
 ---
 apiVersion: v1
 kind: Service
@@ -23,7 +23,7 @@ metadata:
   name: {{ .Values.services.sqlserver.serviceName | default "sqlserver" }}
   namespace: {{ .Values.services.sqlserver.namespace | default .Release.Namespace }}
   labels:
-    app: backend
+    app: sqlserver
 spec:
   type: {{ .Values.services.sqlserver.serviceType | default "ClusterIP" }}
   ports:
@@ -34,7 +34,7 @@ spec:
       name: http
     
   selector:
-    app: backend
+    app: sqlserver
 ---
 apiVersion: v1
 kind: Service

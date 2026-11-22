@@ -65,7 +65,7 @@ services:
       
     image:
       repository: "dotnetappdeacr00cde1.azurecr.io/angular-image"
-      tag: "sha-254d58b9"
+      tag: "sha-10220810"
       pullPolicy: IfNotPresent
     ports:
       
@@ -98,7 +98,7 @@ services:
       
     image:
       repository: "mcr.microsoft.com/mssql/server"
-      tag: "sha-254d58b9"
+      tag: "2019-latest"
       pullPolicy: IfNotPresent
     ports:
       
@@ -137,7 +137,7 @@ services:
       
     image:
       repository: "dotnetappdeacr00cde1.azurecr.io/dotnet-image"
-      tag: "sha-254d58b9"
+      tag: "sha-10220810"
       pullPolicy: IfNotPresent
     ports:
       
@@ -170,7 +170,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "4Wa#*Iv23JSBmzq*l0*k1DGF"
+  password: "pVWrYat2Os99xjs96k!^%yeM"
   migrations:
     enabled: false
   
@@ -191,11 +191,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_ezzfe3"
+    POSTGRES_DB: "post_3w44ta"
     
-    POSTGRES_USER: "post_jr4epu"
+    POSTGRES_USER: "post_w1lyyl"
     
-    POSTGRES_PASSWORD: "4Wa#*Iv23JSBmzq*l0*k1DGF"
+    POSTGRES_PASSWORD: "pVWrYat2Os99xjs96k!^%yeM"
     
   
 

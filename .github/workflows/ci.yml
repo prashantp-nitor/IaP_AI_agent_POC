@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 97965331-8d61-4184-97f8-cebe0de4a15d
+# DaaS CI Dispatch: 8d22bba4-c691-4c9a-820e-5a8a212129ad @ 2026-11-22T19:05:53Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "b3a93c96-28a3-4073-9486-104bb646b528"
+        default: "8d22bba4-c691-4c9a-820e-5a8a212129ad"
 
 permissions:
   id-token: write
@@ -20,12 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
-  NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/b3a93c96-28a3-4073-9486-104bb646b528/source.zip?se=2026-11-22T18%3A21%3A46Z&sp=r&sv=2026-06-06&sr=b&sig=ojzMyTo3VjK%2Bu%2BGlXEsKnWlkonmR2fy2Ylhelb%2Bh9l4%3D"
-  JOB_ID: ${{ inputs.job_id || 'b3a93c96-28a3-4073-9486-104bb646b528' }}
+  REGISTRY: dotnetappdeacr00cde1.azurecr.io
+  NAMESPACE: dot-net-app-deploy
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/8d22bba4-c691-4c9a-820e-5a8a212129ad/source.zip?se=2026-11-29T19%3A05%3A52Z&sp=r&sv=2026-06-06&sr=b&sig=pPquLGgC9uAaO6fqyKBebfoL1HtWnGtqfBISrf3jvOk%3D"
+  JOB_ID: ${{ inputs.job_id || '8d22bba4-c691-4c9a-820e-5a8a212129ad' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "APP"
+  PROJECT_PREFIX: "8D22BBA4_C691_4C9A_820E_5A8A212129AD"
 
 jobs:
   ci-security-and-build:
@@ -36,22 +36,45 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download source artifact
-        if: env.SOURCE_ZIP_URL != ''
+      - name: Acquire Application Source Artifact
         run: |
-          curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "1980d5b91727060f3a4cf701b805a56de1ed3ea9ca5b7c6c12b9d75925bed15a  source.zip" | sha256sum -c -
           mkdir -p app
-          unzip -q source.zip -d app
+          SOURCE_DOWNLOADED=false
+          if [ -n "${{ env.SOURCE_ZIP_URL }}" ]; then
+            echo "Attempting to download source artifact from SOURCE_ZIP_URL..."
+            if curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip; then
+              
+              unzip -q source.zip -d app
+              SOURCE_DOWNLOADED=true
+            else
+              echo "::warning::Download from SOURCE_ZIP_URL failed."
+            fi
+          fi
 
-      - name: Cache Maven Dependencies
-        continue-on-error: true
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          if [ "$SOURCE_DOWNLOADED" != "true" ]; then
+            EXPECTED_REPO=""
+            EXPECTED_COMMIT=""
+            CURRENT_REPO="${GITHUB_REPOSITORY:-}"
+            CURRENT_COMMIT="${GITHUB_SHA:-}"
+
+            # Strict requirement: BOTH expected_repo and expected_commit MUST be present and match
+            if [ -n "$EXPECTED_REPO" ] && [ -n "$EXPECTED_COMMIT" ] &&                [ "$EXPECTED_REPO" = "$CURRENT_REPO" ] && [ "$EXPECTED_COMMIT" = "$CURRENT_COMMIT" ]; then
+              echo "Repository identity ($CURRENT_REPO) and commit ($CURRENT_COMMIT) verified. Populating app/ from verified workspace."
+              find . -maxdepth 1 ! -name . ! -name app ! -name .git ! -name .github ! -name deployment-output ! -name helm ! -name terraform -exec cp -r {} app/ \;
+            else
+              echo "::error::Source artifact URL expired or unreachable, and workspace verification failed."
+              echo "::error::Expected: repo='$EXPECTED_REPO' commit='$EXPECTED_COMMIT' | Current: repo='$CURRENT_REPO' commit='$CURRENT_COMMIT'"
+              echo "::error::Cannot proceed with unverified workspace. Please re-trigger CI from DaaS to obtain a fresh signed URL."
+              exit 1
+            fi
+          fi
+
+          if [ ! -d "app" ] || [ -z "$(ls -A app 2>/dev/null)" ]; then
+            echo "::error::Application source directory 'app/' is empty. Aborting build."
+            exit 1
+          fi
+
+      
 
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.16
@@ -169,7 +192,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-app
+            -Dsonar.projectKey=daas-8d22bba4-c691-4c9a-820e-5a8a212129ad
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -183,6 +206,60 @@ jobs:
           username: ${{ secrets.ACR_USERNAME || secrets.ACR_username || secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
+      
+      
+      - name: Build angular container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/ElectronicEquipmentAngular
+          file: ./app/ElectronicEquipmentAngular/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/angular-image:sha-8d22bba4
+          
+          
+          
+
+      - name: Run Trivy Image Scan for angular (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy container image scan for angular..."
+          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-8d22bba4 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-8d22bba4 || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Push angular image
+        run: |
+          docker push ${{ env.REGISTRY }}/angular-image:sha-8d22bba4
+      
+      
+      
+      - name: Build dotnetcoreapi container image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/ElectricEquipmentDotNetCoreAPI
+          file: ./app/ElectricEquipmentDotNetCoreAPI/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4
+          
+          
+          
+
+      - name: Run Trivy Image Scan for dotnetcoreapi (JSON & Summary)
+        continue-on-error: true
+        run: |
+          mkdir -p security-reports
+          echo "Executing Trivy container image scan for dotnetcoreapi..."
+          trivy image --format json --output security-reports/image-dotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4 || true
+          sudo chmod -R 777 security-reports || true
+
+      - name: Push dotnetcoreapi image
+        run: |
+          docker push ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4
+      
       
 
       - name: Upload Security Reports to Azure Blob Storage

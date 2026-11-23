@@ -1,0 +1,13 @@
+# Patterns to ignore when packaging Helm charts.
+.git/
+.gitignore
+*.bak
+*.tmp
+*~
+.DS_Store
+.deploy-target
+*.tgz
+values-local.yaml
+*.override.yaml
+.github/
+save_outputs.py

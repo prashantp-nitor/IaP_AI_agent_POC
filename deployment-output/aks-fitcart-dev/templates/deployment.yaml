@@ -1,0 +1,240 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.backend.serviceName | default "backend" }}
+  namespace: {{ .Values.services.backend.namespace | default .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.services.backend.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "aks-fitcart-dev.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: backend
+          image: "{{ .Values.services.backend.image.repository }}:{{ .Values.services.backend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.backend.image.pullPolicy }}"
+          
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.backend.containerPort | default 8080 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: DATABASE_URL
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: DATABASE_URL
+              
+            
+            - name: DB_HOST
+              
+              value: "postgresql-db"
+              
+            
+            - name: DB_PORT
+              
+              value: "5432"
+              
+            
+            - name: DB_NAME
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_DB
+              
+            
+            - name: DB_USER
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_USER
+              
+            
+            - name: DB_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-db-secret
+                  key: POSTGRES_PASSWORD
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "512Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "1Gi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
+          volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.global.secretProviderClass false }}
+      volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "backend" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "backend" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.frontend.serviceName | default "frontend" }}
+  namespace: {{ .Values.services.frontend.namespace | default .Release.Namespace }}
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.services.frontend.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "aks-fitcart-dev.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: frontend
+          image: "{{ .Values.services.frontend.image.repository }}:{{ .Values.services.frontend.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.frontend.image.pullPolicy }}"
+          
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.frontend.containerPort | default 80 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: REACT_APP_API_URL
+              
+              value: "http://backend:8080"
+              
+            
+            - name: API_URL
+              
+              value: "http://backend:8080"
+              
+            
+            - name: BACKEND_URL
+              
+              value: "http://backend:8080"
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.requests.memory | default "128Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "128Mi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
+          volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.global.secretProviderClass false }}
+      volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "frontend" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "frontend" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}

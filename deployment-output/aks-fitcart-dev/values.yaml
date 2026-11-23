@@ -1,0 +1,186 @@
+# ============================================================
+# DaaS Generated values.yaml for aks-fitcart-dev
+# Override at deploy time with:
+#   helm upgrade --install aks-fitcart-dev ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "aks-fitcart-dev"
+  # Container registry base URL
+  registry: "acrdaassystem7c5fa1fa.azurecr.io"
+  # Ingress hostname
+  ingressHost: "aks-fitcart-dev.local"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "dev"
+  azureWorkloadIdentityClientId: ""
+  secretProviderClass: ""
+
+# ── Service Account ──────────────────────────────────────
+serviceAccount:
+  create: true
+  name: "aks-fitcart-dev-sa"
+  labels: {}
+  annotations:
+    
+
+imagePullSecrets: []
+
+# ── Resources ────────────────────────────────────────────
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts and applications run on clusters
+  # with insufficient resources.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ── Node Scheduling Defaults ─────────────────────────────
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations: []
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  backend:
+    namespace: "aks-fitcart-dev"
+    enabled: true
+    serviceName: "backend"
+    serviceType: "ClusterIP"
+    containerPort: 8080
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "acrdaassystem7c5fa1fa.azurecr.io/backend"
+      tag: "sha-7c5fa1fa"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 8080
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+  
+  frontend:
+    namespace: "aks-fitcart-dev"
+    enabled: true
+    serviceName: "frontend"
+    serviceType: "LoadBalancer"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "acrdaassystem7c5fa1fa.azurecr.io/frontend"
+      tag: "sha-7c5fa1fa"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+    env:
+      
+      
+      REACT_APP_API_URL: "http://backend:8080"
+      
+      
+      
+      API_URL: "http://backend:8080"
+      
+      
+      
+      BACKEND_URL: "http://backend:8080"
+      
+      
+  
+
+# ── Database ─────────────────────────────────────────────
+
+database:
+  enabled: true
+  inCluster: true
+  connectionString: ""
+  host: ""
+  port: 5432
+  name: "appdb"
+  user: "pgadmin"
+  password: "s#2tyxqQx0B0zNRYv!WbjkSq"
+  migrations:
+    enabled: false
+  
+  engine: "postgresql"
+  image:
+    repository: "postgres"
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  storage:
+    size: "10Gi"
+    storageClassName: "managed-csi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+  auth:
+    
+    POSTGRES_DB: "post_bdr0d9"
+    
+    POSTGRES_USER: "post_93s2wg"
+    
+    POSTGRES_PASSWORD: "s#2tyxqQx0B0zNRYv!WbjkSq"
+    
+  
+
+
+# ── Ingress ──────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "azure-application-gateway"
+  host: "aks-fitcart-dev.local"
+  path: "/"
+  tls: false
+  tlsSecretName: "aks-fitcart-dev-tls-secret"
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80

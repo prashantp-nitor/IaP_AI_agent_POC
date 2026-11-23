@@ -1,10 +1,10 @@
 {
-  "job_id": "8d22bba4-c691-4c9a-820e-5a8a212129ad",
-  "dispatched_at": "2026-11-22T19:08:17Z",
-  "target_cluster": "dot-net-app-de-aks",
-  "cluster_name": "dot-net-app-de-aks",
+  "job_id": "7c5fa1fa-04e1-4340-8cc2-3061edd32e9f",
+  "dispatched_at": "2026-11-23T06:52:15Z",
+  "target_cluster": "aks-fitcart-dev",
+  "cluster_name": "aks-fitcart-dev",
   "resource_group": "AZET-RG-Daas-Platform",
   "subscription_id": "37edf351-2797-441e-8f2a-b27c5a9ed9e2",
-  "namespace": "dot-net-app-deploy",
-  "image_tag": "sha-8d22bba4"
+  "namespace": "aks-fitcart-dev",
+  "image_tag": "sha-7c5fa1fa"
 }

@@ -1,0 +1,6 @@
+cluster_name: python-fitcart-aks
+resource_group: AZET-RG-Daas-Platform
+subscription_id: 37edf351-2797-441e-8f2a-b27c5a9ed9e2
+region: eastus
+cloud_provider: azure
+namespace: python-fitcart-app-test

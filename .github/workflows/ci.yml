@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 8d22bba4-c691-4c9a-820e-5a8a212129ad @ 2026-11-22T19:05:53Z
+# DaaS CI Dispatch: 7c5fa1fa-04e1-4340-8cc2-3061edd32e9f @ 2026-11-23T06:49:43Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "8d22bba4-c691-4c9a-820e-5a8a212129ad"
+        default: "7c5fa1fa-04e1-4340-8cc2-3061edd32e9f"
 
 permissions:
   id-token: write
@@ -20,12 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: dotnetappdeacr00cde1.azurecr.io
-  NAMESPACE: dot-net-app-deploy
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/8d22bba4-c691-4c9a-820e-5a8a212129ad/source.zip?se=2026-11-29T19%3A05%3A52Z&sp=r&sv=2026-06-06&sr=b&sig=pPquLGgC9uAaO6fqyKBebfoL1HtWnGtqfBISrf3jvOk%3D"
-  JOB_ID: ${{ inputs.job_id || '8d22bba4-c691-4c9a-820e-5a8a212129ad' }}
+  REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
+  NAMESPACE: aks-fitcart-dev
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7c5fa1fa-04e1-4340-8cc2-3061edd32e9f/source.zip?se=2026-11-30T06%3A49%3A42Z&sp=r&sv=2026-06-06&sr=b&sig=skPhu0V4pbrlS/9U3H5hzUJm0x50IHjvEan/SSpaRpY%3D"
+  JOB_ID: ${{ inputs.job_id || '7c5fa1fa-04e1-4340-8cc2-3061edd32e9f' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "8D22BBA4_C691_4C9A_820E_5A8A212129AD"
+  PROJECT_PREFIX: "7C5FA1FA_04E1_4340_8CC2_3061EDD32E9F"
 
 jobs:
   ci-security-and-build:
@@ -192,7 +192,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-8d22bba4-c691-4c9a-820e-5a8a212129ad
+            -Dsonar.projectKey=daas-7c5fa1fa-04e1-4340-8cc2-3061edd32e9f
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -208,57 +208,57 @@ jobs:
 
       
       
-      - name: Build angular container image
+      - name: Build backend container image
         uses: docker/build-push-action@v5
         with:
-          context: ./app/ElectronicEquipmentAngular
-          file: ./app/ElectronicEquipmentAngular/Dockerfile
+          context: ./app/backend
+          file: ./app/backend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/angular-image:sha-8d22bba4
+          tags: ${{ env.REGISTRY }}/backend:sha-7c5fa1fa
           
           
           
 
-      - name: Run Trivy Image Scan for angular (JSON & Summary)
+      - name: Run Trivy Image Scan for backend (JSON & Summary)
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for angular..."
-          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-8d22bba4 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-8d22bba4 || true
+          echo "Executing Trivy container image scan for backend..."
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-7c5fa1fa || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-7c5fa1fa || true
           sudo chmod -R 777 security-reports || true
 
-      - name: Push angular image
+      - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/angular-image:sha-8d22bba4
+          docker push ${{ env.REGISTRY }}/backend:sha-7c5fa1fa
       
       
       
-      - name: Build dotnetcoreapi container image
+      - name: Build frontend container image
         uses: docker/build-push-action@v5
         with:
-          context: ./app/ElectricEquipmentDotNetCoreAPI
-          file: ./app/ElectricEquipmentDotNetCoreAPI/Dockerfile
+          context: ./app/frontend
+          file: ./app/frontend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4
+          tags: ${{ env.REGISTRY }}/frontend:sha-7c5fa1fa
           
           
           
 
-      - name: Run Trivy Image Scan for dotnetcoreapi (JSON & Summary)
+      - name: Run Trivy Image Scan for frontend (JSON & Summary)
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for dotnetcoreapi..."
-          trivy image --format json --output security-reports/image-dotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4 || true
+          echo "Executing Trivy container image scan for frontend..."
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-7c5fa1fa || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-7c5fa1fa || true
           sudo chmod -R 777 security-reports || true
 
-      - name: Push dotnetcoreapi image
+      - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/dotnet-image:sha-8d22bba4
+          docker push ${{ env.REGISTRY }}/frontend:sha-7c5fa1fa
       
       
 

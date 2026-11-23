@@ -1,10 +1,10 @@
 {
-  "job_id": "7c65e6c5-c023-4ebd-8689-06ca1baff048",
-  "dispatched_at": "2026-11-23T15:59:18Z",
+  "job_id": "b07795f0-229f-4799-85cc-5435b250230b",
+  "dispatched_at": "2026-11-23T16:22:24Z",
   "target_cluster": "python-fitcart-aks",
   "cluster_name": "python-fitcart-aks",
   "resource_group": "AZET-RG-Daas-Platform",
   "subscription_id": "37edf351-2797-441e-8f2a-b27c5a9ed9e2",
   "namespace": "python-fitcart-app-test",
-  "image_tag": "sha-7c65e6c5"
+  "image_tag": "sha-b07795f0"
 }

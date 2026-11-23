@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "aks-fitcart-dev"
   # Container registry base URL
-  registry: "acrdaassystem7c5fa1fa.azurecr.io"
+  registry: "azdaasdeployment.azurecr.io"
   # Ingress hostname
   ingressHost: "aks-fitcart-dev.local"
   # Deployment strategy: rolling | blue-green | canary
@@ -64,8 +64,8 @@ services:
       []
       
     image:
-      repository: "acrdaassystem7c5fa1fa.azurecr.io/backend"
-      tag: "sha-7c5fa1fa"
+      repository: "azdaasdeployment.azurecr.io/backend"
+      tag: "sha-af311d3a"
       pullPolicy: IfNotPresent
     ports:
       
@@ -97,8 +97,8 @@ services:
       []
       
     image:
-      repository: "acrdaassystem7c5fa1fa.azurecr.io/frontend"
-      tag: "sha-7c5fa1fa"
+      repository: "azdaasdeployment.azurecr.io/frontend"
+      tag: "sha-af311d3a"
       pullPolicy: IfNotPresent
     ports:
       
@@ -139,7 +139,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "s#2tyxqQx0B0zNRYv!WbjkSq"
+  password: "OuyF8Nd2w6GmFPFjT#v1gS^*"
   migrations:
     enabled: false
   
@@ -160,11 +160,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_bdr0d9"
+    POSTGRES_DB: "post_5f46vp"
     
-    POSTGRES_USER: "post_93s2wg"
+    POSTGRES_USER: "post_gmmu1p"
     
-    POSTGRES_PASSWORD: "s#2tyxqQx0B0zNRYv!WbjkSq"
+    POSTGRES_PASSWORD: "OuyF8Nd2w6GmFPFjT#v1gS^*"
     
   
 

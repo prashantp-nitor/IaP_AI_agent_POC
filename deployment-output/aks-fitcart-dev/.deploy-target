@@ -3,5 +3,5 @@ resource_group: AZET-RG-Daas-Platform
 region: eastus
 cloud_provider: azure
 namespace: aks-fitcart-dev
-registry: acrdaassystem7c5fa1fa.azurecr.io
+registry: azdaasdeployment.azurecr.io
 subscription_id: 37edf351-2797-441e-8f2a-b27c5a9ed9e2

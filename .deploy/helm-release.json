@@ -1,10 +1,10 @@
 {
-  "job_id": "7c5fa1fa-04e1-4340-8cc2-3061edd32e9f",
-  "dispatched_at": "2026-11-23T06:52:15Z",
+  "job_id": "af311d3a-6ab8-40a4-9f78-28564a284042",
+  "dispatched_at": "2026-11-23T07:23:40Z",
   "target_cluster": "aks-fitcart-dev",
   "cluster_name": "aks-fitcart-dev",
   "resource_group": "AZET-RG-Daas-Platform",
   "subscription_id": "37edf351-2797-441e-8f2a-b27c5a9ed9e2",
   "namespace": "aks-fitcart-dev",
-  "image_tag": "sha-7c5fa1fa"
+  "image_tag": "sha-af311d3a"
 }

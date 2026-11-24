@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: b07795f0-229f-4799-85cc-5435b250230b @ 2026-11-23T16:17:44Z
+# DaaS CI Dispatch: 2853e60b-5cfd-4741-8b1d-0fdd4f093261 @ 2026-11-24T11:50:16Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "b07795f0-229f-4799-85cc-5435b250230b"
+        default: "2853e60b-5cfd-4741-8b1d-0fdd4f093261"
 
 permissions:
   id-token: write
@@ -20,12 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: pythonfitcartacr111ccf.azurecr.io
-  NAMESPACE: python-fitcart-app-test
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/b07795f0-229f-4799-85cc-5435b250230b/source.zip?se=2026-11-30T16%3A17%3A43Z&sp=r&sv=2026-06-06&sr=b&sig=LNzRYZ4lcV7XzA2r/IRRLYLCRj9uQE/E0hgmhXCsafE%3D"
-  JOB_ID: ${{ inputs.job_id || 'b07795f0-229f-4799-85cc-5435b250230b' }}
+  REGISTRY: testdemo4acr04ca12.azurecr.io
+  NAMESPACE: test-demo-4
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/2853e60b-5cfd-4741-8b1d-0fdd4f093261/source.zip?se=2026-11-24T12%3A50%3A16Z&sp=r&sv=2026-06-06&sr=b&sig=swVIeapf7pvmdbKRs3zKuouHpI8l1oDMMs4pKAQPr9U%3D"
+  JOB_ID: ${{ inputs.job_id || '2853e60b-5cfd-4741-8b1d-0fdd4f093261' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "B07795F0_229F_4799_85CC_5435B250230B"
+  PROJECT_PREFIX: "2853E60B_5CFD_4741_8B1D_0FDD4F093261"
 
 jobs:
   ci-security-and-build:
@@ -36,45 +36,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Acquire Application Source Artifact
+      - name: Download source artifact
+        if: env.SOURCE_ZIP_URL != ''
         run: |
+          curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
           mkdir -p app
-          SOURCE_DOWNLOADED=false
-          if [ -n "${{ env.SOURCE_ZIP_URL }}" ]; then
-            echo "Attempting to download source artifact from SOURCE_ZIP_URL..."
-            if curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip; then
-              
-              unzip -q source.zip -d app
-              SOURCE_DOWNLOADED=true
-            else
-              echo "::warning::Download from SOURCE_ZIP_URL failed."
-            fi
-          fi
+          unzip -q source.zip -d app
 
-          if [ "$SOURCE_DOWNLOADED" != "true" ]; then
-            EXPECTED_REPO=""
-            EXPECTED_COMMIT=""
-            CURRENT_REPO="${GITHUB_REPOSITORY:-}"
-            CURRENT_COMMIT="${GITHUB_SHA:-}"
-
-            # Strict requirement: BOTH expected_repo and expected_commit MUST be present and match
-            if [ -n "$EXPECTED_REPO" ] && [ -n "$EXPECTED_COMMIT" ] &&                [ "$EXPECTED_REPO" = "$CURRENT_REPO" ] && [ "$EXPECTED_COMMIT" = "$CURRENT_COMMIT" ]; then
-              echo "Repository identity ($CURRENT_REPO) and commit ($CURRENT_COMMIT) verified. Populating app/ from verified workspace."
-              find . -maxdepth 1 ! -name . ! -name app ! -name .git ! -name .github ! -name deployment-output ! -name helm ! -name terraform -exec cp -r {} app/ \;
-            else
-              echo "::error::Source artifact URL expired or unreachable, and workspace verification failed."
-              echo "::error::Expected: repo='$EXPECTED_REPO' commit='$EXPECTED_COMMIT' | Current: repo='$CURRENT_REPO' commit='$CURRENT_COMMIT'"
-              echo "::error::Cannot proceed with unverified workspace. Please re-trigger CI from DaaS to obtain a fresh signed URL."
-              exit 1
-            fi
-          fi
-
-          if [ ! -d "app" ] || [ -z "$(ls -A app 2>/dev/null)" ]; then
-            echo "::error::Application source directory 'app/' is empty. Aborting build."
-            exit 1
-          fi
-
-      
+      - name: Cache Maven Dependencies
+        continue-on-error: true
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.16
@@ -192,7 +168,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-b07795f0-229f-4799-85cc-5435b250230b
+            -Dsonar.projectKey=daas-2853e60b-5cfd-4741-8b1d-0fdd4f093261
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -207,7 +183,6 @@ jobs:
           password: ${{ secrets.ACR_PASSWORD || secrets.ACR_password || secrets.REGISTRY_PASSWORD }}
 
       
-      
       - name: Build backend container image
         uses: docker/build-push-action@v5
         with:
@@ -215,7 +190,7 @@ jobs:
           file: ./app/backend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/backend:sha-b07795f0
+          tags: ${{ env.REGISTRY }}/backend:sha-2853e60b
           
           
           
@@ -225,15 +200,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for backend..."
-          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-b07795f0 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-b07795f0 || true
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-2853e60b || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-2853e60b || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/backend:sha-b07795f0
-      
-      
+          docker push ${{ env.REGISTRY }}/backend:sha-2853e60b
       
       - name: Build frontend container image
         uses: docker/build-push-action@v5
@@ -242,7 +215,7 @@ jobs:
           file: ./app/frontend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/frontend:sha-b07795f0
+          tags: ${{ env.REGISTRY }}/frontend:sha-2853e60b
           
           
           
@@ -252,14 +225,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for frontend..."
-          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-b07795f0 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-b07795f0 || true
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-2853e60b || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-2853e60b || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/frontend:sha-b07795f0
-      
+          docker push ${{ env.REGISTRY }}/frontend:sha-2853e60b
       
 
       - name: Upload Security Reports to Azure Blob Storage

@@ -1,4 +1,4 @@
-# existing-helm-ci-dispatch: 2c814189-f8b1-42bf-bc16-1bff7d7a7ae4
+# existing-helm-ci-dispatch: 8fbe175c-40de-405b-a47a-7da25bcb2a69
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "7f6b3172-b697-45c2-b35f-f49792422109"
+        default: "74c820e1-aa19-4df5-83df-fb72e4d3b530"
 
 permissions:
   id-token: write
@@ -22,8 +22,8 @@ permissions:
 env:
   REGISTRY: ${{ secrets.ACR_NAME != '' && format('{0}.azurecr.io', secrets.ACR_NAME) || vars.ACR_NAME != '' && format('{0}.azurecr.io', vars.ACR_NAME) || '' }}
   NAMESPACE: default
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7f6b3172-b697-45c2-b35f-f49792422109/source.zip?se=2026-11-24T13%3A50%3A37Z&sp=r&sv=2026-06-06&sr=b&sig=RGpRcuulVpGk5SGwSbNbfeWmVlSVDuXUTay61HziViI%3D"
-  JOB_ID: ${{ inputs.job_id || '7f6b3172-b697-45c2-b35f-f49792422109' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/74c820e1-aa19-4df5-83df-fb72e4d3b530/source.zip?se=2026-11-24T18%3A29%3A17Z&sp=r&sv=2026-06-06&sr=b&sig=ShI5tVKr6I7lilDTeL8Kn2kxACCKUlInYuknOp/5gbs%3D"
+  JOB_ID: ${{ inputs.job_id || '74c820e1-aa19-4df5-83df-fb72e4d3b530' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
   PROJECT_PREFIX: "APP"
 
@@ -40,7 +40,7 @@ jobs:
         if: env.SOURCE_ZIP_URL != ''
         run: |
           curl --fail --location --retry 3 "${{ env.SOURCE_ZIP_URL }}" -o source.zip
-          echo "2497764b7261b8dccda35653bf6e82ac41435d1f593672ae0470782a578a265e  source.zip" | sha256sum -c -
+          echo "21a17e385d525b34b10986cbba2bb97e1c3244fbf9a0d6cd3327f6a45167c426  source.zip" | sha256sum -c -
           mkdir -p app
           unzip -q source.zip -d app
 
@@ -192,18 +192,6 @@ jobs:
           name: images-contract-${{ env.JOB_ID }}
           path: deployment-output/
           retention-days: 30
-
-      - name: Upload Security Reports to Azure Blob Storage
-        if: always()
-        run: |
-          mkdir -p security-reports
-          sudo chmod -R 777 security-reports || true
-          echo "Uploading security reports to Azure Blob container ${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}/${{ env.JOB_ID }}..."
-          if [ -n "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" ]; then
-            az storage blob upload-batch               --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"               --destination "${{ env.AZURE_SECURITY_REPORTS_CONTAINER }}"               --source security-reports/               --destination-path "${{ env.JOB_ID }}"               --overwrite || echo "Warning: Azure storage upload failed, relying on artifact fallback."
-          else
-            echo "AZURE_STORAGE_CONNECTION_STRING not configured in secrets. Using workflow artifact storage."
-          fi
 
       - name: Upload Security Reports as Workflow Artifact
         if: always()

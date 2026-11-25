@@ -8,18 +8,18 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/dot-net-app-deploy/**"
+      - "deployment-output/dot-net-app-deploy-test/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "77cb1b04-689c-4069-bc16-8b5cb29dd148"
+        default: "845b6ef9-3b6e-40c1-9184-cd5fb11a0c56"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-77cb1b04"
+        default: "sha-845b6ef9"
 
 permissions:
   id-token: write
@@ -27,8 +27,8 @@ permissions:
 
 env:
   REGISTRY: testdemo4acr04ca12.azurecr.io
-  NAMESPACE: dot-net-app-deploy
-  JOB_ID: ${{ inputs.job_id || '77cb1b04-689c-4069-bc16-8b5cb29dd148' }}
+  NAMESPACE: dot-net-app-deploy-test
+  JOB_ID: ${{ inputs.job_id || '845b6ef9-3b6e-40c1-9184-cd5fb11a0c56' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -45,7 +45,7 @@ jobs:
       - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/dot-net-app-deploy/.deploy-target"
+          DEPLOY_TARGET_FILE="deployment-output/dot-net-app-deploy-test/.deploy-target"
           if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
             DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
           fi
@@ -91,7 +91,7 @@ jobs:
         run: |
           PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
           if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/dot-net-app-deploy"
+            PROJECT_DIR="deployment-output/dot-net-app-deploy-test"
           fi
           if [ ! -d "$PROJECT_DIR" ]; then
             PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
@@ -110,22 +110,22 @@ jobs:
           fi
 
           for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "dot-net-app-deploy")
+            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "dot-net-app-deploy-test")
             if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="dot-net-app-deploy"
+              CHART_NAME="dot-net-app-deploy-test"
             fi
             echo "=========================================="
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.angular.image.repository=${{ env.REGISTRY }}/angular-image" --set-string "services.angular.image.tag=${{ inputs.image_tag || 'sha-77cb1b04' }}" --set-string "services.angular.namespace=dot-net-app-deploy" --set-string "services.sqlserver.image.repository=mcr.microsoft.com/mssql/server" --set-string "services.sqlserver.image.tag=2019-latest" --set-string "services.sqlserver.namespace=dot-net-app-deploy" --set-string "services.dotnetcoreapi.image.repository=dotnet-image" --set-string "services.dotnetcoreapi.image.tag=sha-77cb1b04" --set-string "services.dotnetcoreapi.namespace=dot-net-app-deploy" --set-string "services.electricequipmentdotnetcoreapi.image.repository=${{ env.REGISTRY }}/electricequipmentdotnetcoreapi" --set-string "services.electricequipmentdotnetcoreapi.image.tag=${{ inputs.image_tag || 'sha-77cb1b04' }}" --set-string "services.electricequipmentdotnetcoreapi.namespace=dot-net-app-deploy" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.angular.image.repository=${{ env.REGISTRY }}/angular-image" --set-string "services.angular.image.tag=${{ inputs.image_tag || 'sha-845b6ef9' }}" --set-string "services.angular.namespace=dot-net-app-deploy-test" --set-string "services.sqlserver.image.repository=mcr.microsoft.com/mssql/server" --set-string "services.sqlserver.image.tag=2019-latest" --set-string "services.sqlserver.namespace=dot-net-app-deploy-test" --set-string "services.dotnetcoreapi.image.repository=dotnet-image" --set-string "services.dotnetcoreapi.image.tag=sha-845b6ef9" --set-string "services.dotnetcoreapi.namespace=dot-net-app-deploy-test" --set-string "services.electricequipmentdotnetcoreapi.image.repository=${{ env.REGISTRY }}/electricequipmentdotnetcoreapi" --set-string "services.electricequipmentdotnetcoreapi.image.tag=${{ inputs.image_tag || 'sha-845b6ef9' }}" --set-string "services.electricequipmentdotnetcoreapi.namespace=dot-net-app-deploy-test" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
           FRONTEND_SVC="angular"
-          FRONTEND_NS="dot-net-app-deploy"
+          FRONTEND_NS="dot-net-app-deploy-test"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -156,7 +156,7 @@ jobs:
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
           FRONTEND_SVC="angular"
-          FRONTEND_NS="dot-net-app-deploy"
+          FRONTEND_NS="dot-net-app-deploy-test"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -191,7 +191,7 @@ jobs:
           REGION: "eastus"
           ENVIRONMENT: "dev"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "dot-net-app-deploy"
+          PROJECT_NAME: "dot-net-app-deploy-test"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
@@ -214,4 +214,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall dot-net-app-deploy -n ${{ env.NAMESPACE }} || true
+          helm uninstall dot-net-app-deploy-test -n ${{ env.NAMESPACE }} || true

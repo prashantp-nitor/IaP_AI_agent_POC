@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: angular-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: angular
+data:
+  
+  REACT_APP_API_URL: "http://sqlserver:1433"
+  
+  API_URL: "http://sqlserver:1433"
+  
+  BACKEND_URL: "http://sqlserver:1433"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sqlserver-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: sqlserver
+data:
+  
+  ACCEPT_EULA: "Y"
+  
+  HOME: "/var/opt/mssql"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dotnetcoreapi-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: dotnetcoreapi
+data:
+  
+  DBHOST: "sqlserver"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: electricequipmentdotnetcoreapi-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: electricequipmentdotnetcoreapi
+data:
+  
+  REACT_APP_API_URL: "http://sqlserver:1433"
+  
+  API_URL: "http://sqlserver:1433"
+  
+  BACKEND_URL: "http://sqlserver:1433"

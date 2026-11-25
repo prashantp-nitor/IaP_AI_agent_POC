@@ -1,0 +1,440 @@
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.angular.serviceName | default "angular" }}
+  namespace: {{ .Values.services.angular.namespace | default .Release.Namespace }}
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.services.angular.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy-test.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: angular
+          image: "{{ .Values.services.angular.image.repository }}:{{ .Values.services.angular.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.angular.image.pullPolicy }}"
+          
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.angular.containerPort | default 80 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: REACT_APP_API_URL
+              
+              value: "http://sqlserver:1433"
+              
+            
+            - name: API_URL
+              
+              value: "http://sqlserver:1433"
+              
+            
+            - name: BACKEND_URL
+              
+              value: "http://sqlserver:1433"
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.angular.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.angular.resources.requests.memory | default "128Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.angular.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.angular.resources.limits.memory | default "128Mi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
+          volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.global.secretProviderClass false }}
+      volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "angular" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "angular" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.sqlserver.serviceName | default "sqlserver" }}
+  namespace: {{ .Values.services.sqlserver.namespace | default .Release.Namespace }}
+  labels:
+    app: sqlserver
+spec:
+  replicas: {{ .Values.services.sqlserver.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: sqlserver
+  template:
+    metadata:
+      labels:
+        app: sqlserver
+    spec:
+      
+      securityContext:
+        fsGroup: 10001
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy-test.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: sqlserver
+          image: "{{ .Values.services.sqlserver.image.repository }}:{{ .Values.services.sqlserver.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.sqlserver.image.pullPolicy }}"
+          
+          workingDir: /var/opt/mssql
+          
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.sqlserver.containerPort | default 1433 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: ACCEPT_EULA
+              
+              value: "Y"
+              
+            
+            - name: SA_PASSWORD
+              
+              valueFrom:
+                secretKeyRef:
+                  name: sqlserver-secrets
+                  key: SA_PASSWORD
+              
+            
+            - name: HOME
+              
+              value: "/var/opt/mssql"
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.sqlserver.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.sqlserver.resources.requests.memory | default "512Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.sqlserver.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.sqlserver.resources.limits.memory | default "1Gi" }}"
+          {{- if or .Values.global.secretProviderClass true }}
+          volumeMounts:
+            
+            - name: sqlserver-data
+              mountPath: /var/opt/mssql
+            
+            {{- if .Values.global.secretProviderClass }}
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.global.secretProviderClass true }}
+      volumes:
+        
+        - name: sqlserver-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.services.sqlserver.serviceName | default "sqlserver" }}-data
+        
+        {{- if .Values.global.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "sqlserver" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "sqlserver" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.dotnetcoreapi.serviceName | default "dotnetcoreapi" }}
+  namespace: {{ .Values.services.dotnetcoreapi.namespace | default .Release.Namespace }}
+  labels:
+    app: backend
+spec:
+  replicas: {{ .Values.services.dotnetcoreapi.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy-test.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: dotnetcoreapi
+          image: "{{ .Values.services.dotnetcoreapi.image.repository }}:{{ .Values.services.dotnetcoreapi.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.dotnetcoreapi.image.pullPolicy }}"
+          
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.dotnetcoreapi.containerPort | default 80 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: DBHOST
+              
+              value: "sqlserver"
+              
+            
+            - name: ConnectionStrings__Database
+              
+              valueFrom:
+                secretKeyRef:
+                  name: dotnetcoreapi-secrets
+                  key: ConnectionStrings__Database
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.dotnetcoreapi.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.dotnetcoreapi.resources.requests.memory | default "512Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.dotnetcoreapi.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.dotnetcoreapi.resources.limits.memory | default "1Gi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
+          volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.global.secretProviderClass false }}
+      volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "dotnetcoreapi" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "dotnetcoreapi" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+---
+# Standard Rolling Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}
+  namespace: {{ .Values.services.electricequipmentdotnetcoreapi.namespace | default .Release.Namespace }}
+  labels:
+    app: frontend
+spec:
+  replicas: {{ .Values.services.electricequipmentdotnetcoreapi.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy-test.name" .)) }}
+      {{- if gt (len .Values.imagePullSecrets) 0 }}
+      imagePullSecrets:
+        {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+        {{- end }}
+      {{- else }}
+      imagePullSecrets:
+        - name: acr-pull-secret
+      {{- end }}
+      containers:
+        - name: electricequipmentdotnetcoreapi
+          image: "{{ .Values.services.electricequipmentdotnetcoreapi.image.repository }}:{{ .Values.services.electricequipmentdotnetcoreapi.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.electricequipmentdotnetcoreapi.image.pullPolicy }}"
+          
+          
+          ports:
+            
+            - containerPort: {{ .Values.services.electricequipmentdotnetcoreapi.containerPort | default 80 }}
+              name: http
+            
+          
+          
+          env:
+            
+            - name: REACT_APP_API_URL
+              
+              value: "http://sqlserver:1433"
+              
+            
+            - name: API_URL
+              
+              value: "http://sqlserver:1433"
+              
+            
+            - name: BACKEND_URL
+              
+              value: "http://sqlserver:1433"
+              
+            
+          
+          resources:
+            requests:
+              cpu: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.requests.memory | default "128Mi" }}"
+            limits:
+              cpu: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.limits.memory | default "128Mi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
+          volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            {{- end }}
+          {{- end }}
+      {{- if or .Values.global.secretProviderClass false }}
+      volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "electricequipmentdotnetcoreapi" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "electricequipmentdotnetcoreapi" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}

@@ -1,0 +1,256 @@
+# ============================================================
+# DaaS Generated values.yaml for dot-net-app-deploy-test
+# Override at deploy time with:
+#   helm upgrade --install dot-net-app-deploy-test ./helm -f values-prod.yaml
+#   or per-value: --set global.namespace=my-namespace
+# ============================================================
+
+global:
+  # Target namespace — defaults to project name
+  namespace: "dot-net-app-deploy-test"
+  # Container registry base URL
+  registry: "testdemo4acr04ca12.azurecr.io"
+  # Ingress hostname
+  ingressHost: "dot-net-app-deploy-test.local"
+  # Deployment strategy: rolling | blue-green | canary
+  deploymentStrategy: "rolling"
+  # Environment label
+  environment: "dev"
+  azureWorkloadIdentityClientId: ""
+  secretProviderClass: ""
+
+# ── Service Account ──────────────────────────────────────
+serviceAccount:
+  create: true
+  name: "dot-net-app-deploy-test-sa"
+  labels: {}
+  annotations:
+    
+
+imagePullSecrets: []
+
+# ── Resources ────────────────────────────────────────────
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts and applications run on clusters
+  # with insufficient resources.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# ── Node Scheduling Defaults ─────────────────────────────
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations: []
+
+# ── Application Services ─────────────────────────────────
+services:
+  
+  angular:
+    namespace: "dot-net-app-deploy-test"
+    enabled: true
+    serviceName: "angular"
+    serviceType: "LoadBalancer"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "testdemo4acr04ca12.azurecr.io/angular-image"
+      tag: "sha-845b6ef9"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+    env:
+      
+      
+      REACT_APP_API_URL: "http://sqlserver:1433"
+      
+      
+      
+      API_URL: "http://sqlserver:1433"
+      
+      
+      
+      BACKEND_URL: "http://sqlserver:1433"
+      
+      
+  
+  sqlserver:
+    namespace: "dot-net-app-deploy-test"
+    enabled: true
+    serviceName: "sqlserver"
+    serviceType: "ClusterIP"
+    containerPort: 1433
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "mcr.microsoft.com/mssql/server"
+      tag: "2019-latest"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 1433
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+      
+      ACCEPT_EULA: "Y"
+      
+      
+      
+      
+      
+      HOME: "/var/opt/mssql"
+      
+      
+  
+  dotnetcoreapi:
+    namespace: "dot-net-app-deploy-test"
+    enabled: true
+    serviceName: "dotnetcoreapi"
+    serviceType: "ClusterIP"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "dotnet-image"
+      tag: "sha-845b6ef9"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+    env:
+      
+      
+      DBHOST: "sqlserver"
+      
+      
+      
+      
+  
+  electricequipmentdotnetcoreapi:
+    namespace: "dot-net-app-deploy-test"
+    enabled: true
+    serviceName: "electricequipmentdotnetcoreapi"
+    serviceType: "LoadBalancer"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "testdemo4acr04ca12.azurecr.io/electricequipmentdotnetcoreapi"
+      tag: "sha-845b6ef9"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+    env:
+      
+      
+      REACT_APP_API_URL: "http://sqlserver:1433"
+      
+      
+      
+      API_URL: "http://sqlserver:1433"
+      
+      
+      
+      BACKEND_URL: "http://sqlserver:1433"
+      
+      
+  
+
+# ── Database ─────────────────────────────────────────────
+
+database:
+  enabled: false
+  inCluster: false
+  connectionString: ""
+  host: "sqlserver"
+  port: 1433
+  name: "appdb"
+  user: "pgadmin"
+  password: ""
+  migrations:
+    enabled: false
+  
+
+
+# ── Ingress ──────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "azure-application-gateway"
+  host: "dot-net-app-deploy-test.local"
+  path: "/"
+  tls: false
+  tlsSecretName: "dot-net-app-deploy-test-tls-secret"
+
+# ── Autoscaling ──────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80

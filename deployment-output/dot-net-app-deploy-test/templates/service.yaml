@@ -58,18 +58,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}
-  namespace: {{ .Values.services.electricequipmentdotnetcoreapi.namespace | default .Release.Namespace }}
+  name: {{ .Values.services.electriceqpmentdotnetcoreapi.serviceName | default "electriceqpmentdotnetcoreapi" }}
+  namespace: {{ .Values.services.electriceqpmentdotnetcoreapi.namespace | default .Release.Namespace }}
   labels:
-    app: frontend
+    app: backend
 spec:
-  type: {{ .Values.services.electricequipmentdotnetcoreapi.serviceType | default "LoadBalancer" }}
+  type: {{ .Values.services.electriceqpmentdotnetcoreapi.serviceType | default "ClusterIP" }}
   ports:
     
-    - port: {{ index .Values.services.electricequipmentdotnetcoreapi.ports 0 | default 80 }}
-      targetPort: {{ .Values.services.electricequipmentdotnetcoreapi.containerPort | default 80 }}
+    - port: {{ index .Values.services.electriceqpmentdotnetcoreapi.ports 0 | default 80 }}
+      targetPort: {{ .Values.services.electriceqpmentdotnetcoreapi.containerPort | default 80 }}
       protocol: TCP
       name: http
     
   selector:
-    app: frontend
+    app: backend

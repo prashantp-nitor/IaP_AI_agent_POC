@@ -71,9 +71,6 @@ spec:
         - protocol: TCP
           port: 80
         
-        - protocol: TCP
-          port: 80
-        
     # Preserve AKS & Kubelet Health Probes
     - from:
         - ipBlock:
@@ -89,9 +86,6 @@ spec:
         - protocol: TCP
           port: 80
         
-        - protocol: TCP
-          port: 80
-        
   egress:
     # Egress to Backend on backend application port only
     - to:
@@ -99,6 +93,9 @@ spec:
             matchLabels:
               app: backend
       ports:
+        
+        - protocol: TCP
+          port: 80
         
         - protocol: TCP
           port: 80
@@ -143,6 +140,9 @@ spec:
         - protocol: TCP
           port: 80
         
+        - protocol: TCP
+          port: 80
+        
     # Preserve AKS & Kubelet Health Probes
     - from:
         - ipBlock:
@@ -154,6 +154,9 @@ spec:
         - ipBlock:
             cidr: 192.168.0.0/16
       ports:
+        
+        - protocol: TCP
+          port: 80
         
         - protocol: TCP
           port: 80

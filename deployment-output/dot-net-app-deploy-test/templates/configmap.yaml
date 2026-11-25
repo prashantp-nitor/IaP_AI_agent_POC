@@ -36,18 +36,3 @@ metadata:
 data:
   
   DBHOST: "sqlserver"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: electricequipmentdotnetcoreapi-config
-  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
-  labels:
-    app: electricequipmentdotnetcoreapi
-data:
-  
-  REACT_APP_API_URL: "http://sqlserver:1433"
-  
-  API_URL: "http://sqlserver:1433"
-  
-  BACKEND_URL: "http://sqlserver:1433"

@@ -79,15 +79,15 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}-hpa
-  namespace: {{ .Values.services.electricequipmentdotnetcoreapi.namespace | default .Release.Namespace }}
+  name: {{ .Values.services.electriceqpmentdotnetcoreapi.serviceName | default "electriceqpmentdotnetcoreapi" }}-hpa
+  namespace: {{ .Values.services.electriceqpmentdotnetcoreapi.namespace | default .Release.Namespace }}
   labels:
-    app: frontend
+    app: backend
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}
+    name: {{ .Values.services.electriceqpmentdotnetcoreapi.serviceName | default "electriceqpmentdotnetcoreapi" }}
   minReplicas: {{ .Values.autoscaling.minReplicas | default 1 }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas | default 10 }}
   metrics:

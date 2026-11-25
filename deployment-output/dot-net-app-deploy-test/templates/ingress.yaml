@@ -27,12 +27,4 @@ spec:
                 port:
                   number: {{ .Values.services.angular.containerPort | default 80 }}
           
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}
-                port:
-                  number: {{ .Values.services.electricequipmentdotnetcoreapi.containerPort | default 80 }}
-          
 {{- end }}

@@ -65,7 +65,7 @@ services:
       
     image:
       repository: "testdemo4acr04ca12.azurecr.io/angular-image"
-      tag: "sha-845b6ef9"
+      tag: "sha-7d277301"
       pullPolicy: IfNotPresent
     ports:
       
@@ -153,7 +153,7 @@ services:
       
     image:
       repository: "dotnet-image"
-      tag: "sha-845b6ef9"
+      tag: "sha-7d277301"
       pullPolicy: IfNotPresent
     ports:
       
@@ -177,11 +177,11 @@ services:
       
       
   
-  electricequipmentdotnetcoreapi:
+  electriceqpmentdotnetcoreapi:
     namespace: "dot-net-app-deploy-test"
     enabled: true
-    serviceName: "electricequipmentdotnetcoreapi"
-    serviceType: "LoadBalancer"
+    serviceName: "electriceqpmentdotnetcoreapi"
+    serviceType: "ClusterIP"
     containerPort: 80
     replicaCount: 2
     nodeSelector:
@@ -191,8 +191,8 @@ services:
       []
       
     image:
-      repository: "testdemo4acr04ca12.azurecr.io/electricequipmentdotnetcoreapi"
-      tag: "sha-845b6ef9"
+      repository: "testdemo4acr04ca12.azurecr.io/electriceqpmentdotnetcoreapi"
+      tag: "sha-7d277301"
       pullPolicy: IfNotPresent
     ports:
       
@@ -202,23 +202,13 @@ services:
       
     resources:
       requests:
-        cpu: "100m"
-        memory: "128Mi"
+        cpu: "500m"
+        memory: "512Mi"
       limits:
-        cpu: "100m"
-        memory: "128Mi"
+        cpu: "1000m"
+        memory: "1Gi"
     env:
       
-      
-      REACT_APP_API_URL: "http://sqlserver:1433"
-      
-      
-      
-      API_URL: "http://sqlserver:1433"
-      
-      
-      
-      BACKEND_URL: "http://sqlserver:1433"
       
       
   
@@ -233,7 +223,7 @@ database:
   port: 1433
   name: "appdb"
   user: "pgadmin"
-  password: ""
+  password: "5lPv7lj0tAJupc!!cq#WHFsX"
   migrations:
     enabled: false
   

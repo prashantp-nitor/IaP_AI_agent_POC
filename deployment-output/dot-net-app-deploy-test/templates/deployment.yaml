@@ -336,19 +336,19 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}
-  namespace: {{ .Values.services.electricequipmentdotnetcoreapi.namespace | default .Release.Namespace }}
+  name: {{ .Values.services.electriceqpmentdotnetcoreapi.serviceName | default "electriceqpmentdotnetcoreapi" }}
+  namespace: {{ .Values.services.electriceqpmentdotnetcoreapi.namespace | default .Release.Namespace }}
   labels:
-    app: frontend
+    app: backend
 spec:
-  replicas: {{ .Values.services.electricequipmentdotnetcoreapi.replicaCount | default 2 }}
+  replicas: {{ .Values.services.electriceqpmentdotnetcoreapi.replicaCount | default 2 }}
   selector:
     matchLabels:
-      app: frontend
+      app: backend
   template:
     metadata:
       labels:
-        app: frontend
+        app: backend
     spec:
       
       serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "dot-net-app-deploy-test.name" .)) }}
@@ -362,43 +362,36 @@ spec:
         - name: acr-pull-secret
       {{- end }}
       containers:
-        - name: electricequipmentdotnetcoreapi
-          image: "{{ .Values.services.electricequipmentdotnetcoreapi.image.repository }}:{{ .Values.services.electricequipmentdotnetcoreapi.image.tag }}"
-          imagePullPolicy: "{{ .Values.services.electricequipmentdotnetcoreapi.image.pullPolicy }}"
+        - name: electriceqpmentdotnetcoreapi
+          image: "{{ .Values.services.electriceqpmentdotnetcoreapi.image.repository }}:{{ .Values.services.electriceqpmentdotnetcoreapi.image.tag }}"
+          imagePullPolicy: "{{ .Values.services.electriceqpmentdotnetcoreapi.image.pullPolicy }}"
           
           
           ports:
             
-            - containerPort: {{ .Values.services.electricequipmentdotnetcoreapi.containerPort | default 80 }}
+            - containerPort: {{ .Values.services.electriceqpmentdotnetcoreapi.containerPort | default 80 }}
               name: http
             
           
           
           env:
             
-            - name: REACT_APP_API_URL
+            - name: ConnectionStrings__Database
               
-              value: "http://sqlserver:1433"
-              
-            
-            - name: API_URL
-              
-              value: "http://sqlserver:1433"
-              
-            
-            - name: BACKEND_URL
-              
-              value: "http://sqlserver:1433"
+              valueFrom:
+                secretKeyRef:
+                  name: electriceqpmentdotnetcoreapi-secrets
+                  key: ConnectionStrings__Database
               
             
           
           resources:
             requests:
-              cpu: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.requests.cpu | default "100m" }}"
-              memory: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.requests.memory | default "128Mi" }}"
+              cpu: "{{ .Values.services.electriceqpmentdotnetcoreapi.resources.requests.cpu | default "500m" }}"
+              memory: "{{ .Values.services.electriceqpmentdotnetcoreapi.resources.requests.memory | default "512Mi" }}"
             limits:
-              cpu: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.limits.cpu | default "100m" }}"
-              memory: "{{ .Values.services.electricequipmentdotnetcoreapi.resources.limits.memory | default "128Mi" }}"
+              cpu: "{{ .Values.services.electriceqpmentdotnetcoreapi.resources.limits.cpu | default "1000m" }}"
+              memory: "{{ .Values.services.electriceqpmentdotnetcoreapi.resources.limits.memory | default "1Gi" }}"
           {{- if or .Values.global.secretProviderClass false }}
           volumeMounts:
             
@@ -420,7 +413,7 @@ spec:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
         {{- end }}
       {{- end }}
-      {{- $svcNodeSelector := index .Values.services "electricequipmentdotnetcoreapi" "nodeSelector" }}
+      {{- $svcNodeSelector := index .Values.services "electriceqpmentdotnetcoreapi" "nodeSelector" }}
       {{- if or $svcNodeSelector .Values.nodeSelector }}
       nodeSelector:
         {{- if $svcNodeSelector }}
@@ -429,7 +422,7 @@ spec:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
         {{- end }}
       {{- end }}
-      {{- $svcTolerations := index .Values.services "electricequipmentdotnetcoreapi" "tolerations" }}
+      {{- $svcTolerations := index .Values.services "electriceqpmentdotnetcoreapi" "tolerations" }}
       {{- if or $svcTolerations .Values.tolerations }}
       tolerations:
         {{- if $svcTolerations }}

@@ -6,7 +6,7 @@ metadata:
   labels:
     app: frontend
 spec:
-  type: {{ .Values.services.angular.serviceType | default "LoadBalancer" }}
+  type: {{ .Values.services.angular.serviceType | default "ClusterIP" }}
   ports:
     
     - port: {{ index .Values.services.angular.ports 0 | default 80 }}
@@ -63,7 +63,7 @@ metadata:
   labels:
     app: frontend
 spec:
-  type: {{ .Values.services.electricequipmentdotnetcoreapi.serviceType | default "LoadBalancer" }}
+  type: {{ .Values.services.electricequipmentdotnetcoreapi.serviceType | default "ClusterIP" }}
   ports:
     
     - port: {{ index .Values.services.electricequipmentdotnetcoreapi.ports 0 | default 80 }}

@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: ec94e5d6-6b9f-4e8f-9e66-18b94d50a4b2 @ 2026-11-25T06:24:04Z
+# DaaS CI Dispatch: 77cb1b04-689c-4069-bc16-8b5cb29dd148 @ 2026-11-25T07:18:59Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "ec94e5d6-6b9f-4e8f-9e66-18b94d50a4b2"
+        default: "77cb1b04-689c-4069-bc16-8b5cb29dd148"
 
 permissions:
   id-token: write
@@ -22,10 +22,10 @@ permissions:
 env:
   REGISTRY: testdemo4acr04ca12.azurecr.io
   NAMESPACE: dot-net-app-deploy
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/ec94e5d6-6b9f-4e8f-9e66-18b94d50a4b2/source.zip?se=2026-12-02T06%3A24%3A03Z&sp=r&sv=2026-06-06&sr=b&sig=b0g8hkdPoIEFjdgf%2BEK1ku7AwDqe5hY0PKnru4SKcBM%3D"
-  JOB_ID: ${{ inputs.job_id || 'ec94e5d6-6b9f-4e8f-9e66-18b94d50a4b2' }}
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/77cb1b04-689c-4069-bc16-8b5cb29dd148/source.zip?se=2026-12-02T07%3A18%3A59Z&sp=r&sv=2026-06-06&sr=b&sig=i3w/pRDrxCqlqCCAn8gMpm3uglX58kPtkz7QIZ2sHpQ%3D"
+  JOB_ID: ${{ inputs.job_id || '77cb1b04-689c-4069-bc16-8b5cb29dd148' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "EC94E5D6_6B9F_4E8F_9E66_18B94D50A4B2"
+  PROJECT_PREFIX: "77CB1B04_689C_4069_BC16_8B5CB29DD148"
 
 jobs:
   ci-security-and-build:
@@ -192,7 +192,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-ec94e5d6-6b9f-4e8f-9e66-18b94d50a4b2
+            -Dsonar.projectKey=daas-77cb1b04-689c-4069-bc16-8b5cb29dd148
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -215,7 +215,7 @@ jobs:
           file: ./app/ElectronicEquipmentAngular/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/angular-image:sha-ec94e5d6
+          tags: ${{ env.REGISTRY }}/angular-image:sha-77cb1b04
           
           
           
@@ -225,13 +225,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for angular..."
-          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-ec94e5d6 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-ec94e5d6 || true
+          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-77cb1b04 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-77cb1b04 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push angular image
         run: |
-          docker push ${{ env.REGISTRY }}/angular-image:sha-ec94e5d6
+          docker push ${{ env.REGISTRY }}/angular-image:sha-77cb1b04
       
       
       
@@ -242,7 +242,7 @@ jobs:
           file: ./app/ElectricEquipmentDotNetCoreAPI/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-ec94e5d6
+          tags: ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-77cb1b04
           
           
           
@@ -252,13 +252,13 @@ jobs:
         run: |
           mkdir -p security-reports
           echo "Executing Trivy container image scan for electricequipmentdotnetcoreapi..."
-          trivy image --format json --output security-reports/image-electricequipmentdotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-ec94e5d6 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-ec94e5d6 || true
+          trivy image --format json --output security-reports/image-electricequipmentdotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-77cb1b04 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-77cb1b04 || true
           sudo chmod -R 777 security-reports || true
 
       - name: Push electricequipmentdotnetcoreapi image
         run: |
-          docker push ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-ec94e5d6
+          docker push ${{ env.REGISTRY }}/electricequipmentdotnetcoreapi:sha-77cb1b04
       
       
 

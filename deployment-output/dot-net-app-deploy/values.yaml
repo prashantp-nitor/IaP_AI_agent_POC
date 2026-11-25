@@ -9,7 +9,7 @@ global:
   # Target namespace — defaults to project name
   namespace: "dot-net-app-deploy"
   # Container registry base URL
-  registry: "dotnetappdeacr00cde1.azurecr.io"
+  registry: "testdemo4acr04ca12.azurecr.io"
   # Ingress hostname
   ingressHost: "dot-net-app-deploy.local"
   # Deployment strategy: rolling | blue-green | canary
@@ -64,8 +64,8 @@ services:
       []
       
     image:
-      repository: "dotnetappdeacr00cde1.azurecr.io/angular-image"
-      tag: "sha-8d22bba4"
+      repository: "testdemo4acr04ca12.azurecr.io/angular-image"
+      tag: "sha-ec94e5d6"
       pullPolicy: IfNotPresent
     ports:
       
@@ -133,6 +133,10 @@ services:
       
       
       
+      
+      HOME: "/var/opt/mssql"
+      
+      
   
   dotnetcoreapi:
     namespace: "dot-net-app-deploy"
@@ -148,8 +152,8 @@ services:
       []
       
     image:
-      repository: "dotnetappdeacr00cde1.azurecr.io/dotnet-image"
-      tag: "sha-8d22bba4"
+      repository: "dotnet-image"
+      tag: "sha-ec94e5d6"
       pullPolicy: IfNotPresent
     ports:
       
@@ -173,6 +177,51 @@ services:
       
       
   
+  electricequipmentdotnetcoreapi:
+    namespace: "dot-net-app-deploy"
+    enabled: true
+    serviceName: "electricequipmentdotnetcoreapi"
+    serviceType: "LoadBalancer"
+    containerPort: 80
+    replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
+    image:
+      repository: "testdemo4acr04ca12.azurecr.io/electricequipmentdotnetcoreapi"
+      tag: "sha-ec94e5d6"
+      pullPolicy: IfNotPresent
+    ports:
+      
+      
+      - 80
+      
+      
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+    env:
+      
+      
+      REACT_APP_API_URL: "http://sqlserver:1433"
+      
+      
+      
+      API_URL: "http://sqlserver:1433"
+      
+      
+      
+      BACKEND_URL: "http://sqlserver:1433"
+      
+      
+  
 
 # ── Database ─────────────────────────────────────────────
 
@@ -184,7 +233,7 @@ database:
   port: 1433
   name: "appdb"
   user: "pgadmin"
-  password: "zHr45VvzjaZphcI4MdV1weL!"
+  password: "aR!W1ipJ8t9e2UDXrx9ouAtn"
   migrations:
     enabled: false
   

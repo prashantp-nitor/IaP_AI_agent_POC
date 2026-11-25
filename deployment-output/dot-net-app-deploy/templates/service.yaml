@@ -54,3 +54,22 @@ spec:
     
   selector:
     app: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.electricequipmentdotnetcoreapi.serviceName | default "electricequipmentdotnetcoreapi" }}
+  namespace: {{ .Values.services.electricequipmentdotnetcoreapi.namespace | default .Release.Namespace }}
+  labels:
+    app: frontend
+spec:
+  type: {{ .Values.services.electricequipmentdotnetcoreapi.serviceType | default "LoadBalancer" }}
+  ports:
+    
+    - port: {{ index .Values.services.electricequipmentdotnetcoreapi.ports 0 | default 80 }}
+      targetPort: {{ .Values.services.electricequipmentdotnetcoreapi.containerPort | default 80 }}
+      protocol: TCP
+      name: http
+    
+  selector:
+    app: frontend

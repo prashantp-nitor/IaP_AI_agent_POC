@@ -1,6 +1,7 @@
 cluster_name: test-demo-4-aks
 resource_group: AZET-RG-Daas-Platform
-region: westus
+region: eastus
 cloud_provider: azure
 namespace: test-demo-4
 registry: testdemo4acr04ca12.azurecr.io
+subscription_id: 37edf351-2797-441e-8f2a-b27c5a9ed9e2

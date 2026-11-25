@@ -15,11 +15,11 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "2853e60b-5cfd-4741-8b1d-0fdd4f093261"
+        default: "5a44c871-a60e-4234-9a4e-e2ea5ba0f3a0"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-2853e60b"
+        default: "sha-5a44c871"
 
 permissions:
   id-token: write
@@ -28,7 +28,7 @@ permissions:
 env:
   REGISTRY: testdemo4acr04ca12.azurecr.io
   NAMESPACE: test-demo-4
-  JOB_ID: ${{ inputs.job_id || '2853e60b-5cfd-4741-8b1d-0fdd4f093261' }}
+  JOB_ID: ${{ inputs.job_id || '5a44c871-a60e-4234-9a4e-e2ea5ba0f3a0' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -118,7 +118,7 @@ jobs:
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-2853e60b' }}" --set-string "services.backend.namespace=test-demo-4" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-2853e60b' }}" --set-string "services.frontend.namespace=test-demo-4" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-5a44c871' }}" --set-string "services.backend.namespace=test-demo-4" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-5a44c871' }}" --set-string "services.frontend.namespace=test-demo-4" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
@@ -188,8 +188,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL || secrets.AZURE_POSTGRES_URL }}
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
-          REGION: "westus"
-          ENVIRONMENT: "production"
+          REGION: "eastus"
+          ENVIRONMENT: "dev"
           NAMESPACE: ${{ env.NAMESPACE }}
           PROJECT_NAME: "test-demo-4"
           DEPLOYMENT_STRATEGY: "rolling"
@@ -198,7 +198,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_kqoj6h", "POSTGRES_PASSWORD": "!QOmFr7DNDh34KrAWWt8LtLr", "POSTGRES_USER": "post_4i9s69"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_ud5piy", "POSTGRES_PASSWORD": "s5^PU#PT7FtKwR4wuMnFSn\u0026w", "POSTGRES_USER": "post_dkvng6"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

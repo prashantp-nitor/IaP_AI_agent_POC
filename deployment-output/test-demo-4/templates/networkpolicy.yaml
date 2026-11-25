@@ -1,160 +1,236 @@
 # ============================================================
-# Calico GlobalNetworkPolicies for Multi-Service Isolation
+# Network Policies for 3-Tier Application Architecture
+# Enforces: Ingress Controller -> Frontend -> Backend -> Database
+# CoreDNS: UDP/TCP 53 to kube-system allowed for all pods
+# Probes: AKS Load Balancer & Kubelet probes preserved
+# All other traffic: DENY
 # ============================================================
 
-# ── 1. Baseline DNS Egress ──────────────────────────────────
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
+# ── 1. Baseline Zero-Trust Default Deny ─────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: test-demo-4-allow-dns
+  name: default-deny-all
+  namespace: test-demo-4
+  labels:
+    app.kubernetes.io/name: test-demo-4
+    app.kubernetes.io/managed-by: daas
 spec:
-  namespaceSelector: projectcalico.org/name == 'test-demo-4'
-  types:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# ── 2. Allow CoreDNS Egress (All Pods -> kube-system:53) ────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-coredns-egress
+  namespace: test-demo-4
+  labels:
+    app.kubernetes.io/name: test-demo-4
+    app.kubernetes.io/managed-by: daas
+spec:
+  podSelector: {}
+  policyTypes:
     - Egress
   egress:
-    - action: Allow
-      protocol: UDP
-      destination:
-        ports:
-          - 53
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 53
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
 ---
-# ── 2. Frontend Tier Policy ─────────────────────────────────
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
+# ── 3. Frontend Tier Policy ─────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: test-demo-4-frontend-policy
+  name: frontend-network-policy
+  namespace: test-demo-4
+  labels:
+    app.kubernetes.io/name: test-demo-4
+    app.kubernetes.io/managed-by: daas
 spec:
-  namespaceSelector: projectcalico.org/name == 'test-demo-4'
-  selector: app == 'frontend'
-  types:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
     - Ingress
     - Egress
   ingress:
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 80
+    # Ingress from Ingress Controller / External Load Balancer
+    - from:
+        - namespaceSelector: {}
+      ports:
+        
+        - protocol: TCP
+          port: 80
+        
+    # Preserve AKS & Kubelet Health Probes
+    - from:
+        - ipBlock:
+            cidr: 168.63.129.16/32
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        
+        - protocol: TCP
+          port: 80
+        
   egress:
-    - action: Allow
-      protocol: TCP
-      destination:
-        selector: app == 'backend'
-        ports:
-          - 8080
-    - action: Allow
-      protocol: UDP
-      destination:
-        ports:
-          - 53
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 53
-
+    # Egress to Backend on backend application port only
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        
+        - protocol: TCP
+          port: 8080
+        
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    
 ---
-# ── 3. Backend Tier Policy ──────────────────────────────────
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
+# ── 4. Backend Tier Policy ──────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: test-demo-4-backend-policy
+  name: backend-network-policy
+  namespace: test-demo-4
+  labels:
+    app.kubernetes.io/name: test-demo-4
+    app.kubernetes.io/managed-by: daas
 spec:
-  namespaceSelector: projectcalico.org/name == 'test-demo-4'
-  selector: app == 'backend'
-  types:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
     - Ingress
     - Egress
   ingress:
-    - action: Allow
-      protocol: TCP
-      source:
-        selector: app == 'frontend'
-      destination:
-        ports:
-          - 8080
-    - action: Allow
-      protocol: TCP
-      source:
-        nets:
-          - 168.63.129.16/32
-          - 10.0.0.0/8
-          - 172.16.0.0/12
-          - 192.168.0.0/16
-      destination:
-        ports:
-          - 8080
+    # Ingress ONLY from Frontend pods on backend application port
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        
+        - protocol: TCP
+          port: 8080
+        
+    # Preserve AKS & Kubelet Health Probes
+    - from:
+        - ipBlock:
+            cidr: 168.63.129.16/32
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        
+        - protocol: TCP
+          port: 8080
+        
   egress:
-
-    - action: Allow
-      protocol: TCP
-      destination:
-        selector: app == 'database'
-        ports:
-          - 5432
-
-
-    - action: Allow
-      protocol: UDP
-      destination:
-        ports:
-          - 53
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 53
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 443
-
-
+    
+    # Egress to in-cluster Database pod ONLY on database port
+    - to:
+        - podSelector:
+            matchLabels:
+              app: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Outbound HTTPS for Azure Key Vault, Entra ID, Storage, and external APIs
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    
 ---
-# ── 4. Database Tier Policy ─────────────────────────────────
-apiVersion: projectcalico.org/v3
-kind: GlobalNetworkPolicy
+# ── 5. Database Tier Policy ─────────────────────────────────
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: test-demo-4-db-5432
+  name: database-network-policy
+  namespace: test-demo-4
+  labels:
+    app.kubernetes.io/name: test-demo-4
+    app.kubernetes.io/managed-by: daas
 spec:
-  namespaceSelector: projectcalico.org/name == 'test-demo-4'
-  selector: app == 'database'
-  types:
+  podSelector:
+    matchLabels:
+      app: database
+  policyTypes:
     - Ingress
     - Egress
   ingress:
-    - action: Allow
-      protocol: TCP
-      source:
-        selector: app == 'backend'
-      destination:
-        ports:
-          - 5432
-    - action: Allow
-      protocol: TCP
-      source:
-        nets:
-          - 168.63.129.16/32
-          - 10.0.0.0/8
-          - 172.16.0.0/12
-          - 192.168.0.0/16
-      destination:
-        ports:
-          - 5432
+    # Ingress ONLY from Backend pods on database port
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Preserve AKS & Kubelet Health Probes
+    - from:
+        - ipBlock:
+            cidr: 168.63.129.16/32
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
   egress:
-    - action: Allow
-      protocol: UDP
-      destination:
-        ports:
-          - 53
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 53
+    # DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

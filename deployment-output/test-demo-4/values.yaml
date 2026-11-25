@@ -15,7 +15,7 @@ global:
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
-  environment: "production"
+  environment: "dev"
   azureWorkloadIdentityClientId: ""
   secretProviderClass: ""
 
@@ -65,7 +65,7 @@ services:
       
     image:
       repository: "testdemo4acr04ca12.azurecr.io/backend"
-      tag: "sha-2853e60b"
+      tag: "sha-5a44c871"
       pullPolicy: IfNotPresent
     ports:
       
@@ -89,7 +89,7 @@ services:
     serviceName: "frontend"
     serviceType: "LoadBalancer"
     containerPort: 80
-    replicaCount: 1
+    replicaCount: 2
     nodeSelector:
       kubernetes.io/os: "linux"
     tolerations:
@@ -98,7 +98,7 @@ services:
       
     image:
       repository: "testdemo4acr04ca12.azurecr.io/frontend"
-      tag: "sha-2853e60b"
+      tag: "sha-5a44c871"
       pullPolicy: IfNotPresent
     ports:
       
@@ -111,9 +111,21 @@ services:
         cpu: "100m"
         memory: "128Mi"
       limits:
-        cpu: "500m"
-        memory: "512Mi"
+        cpu: "100m"
+        memory: "128Mi"
     env:
+      
+      
+      REACT_APP_API_URL: "http://backend:8080"
+      
+      
+      
+      API_URL: "http://backend:8080"
+      
+      
+      
+      BACKEND_URL: "http://backend:8080"
+      
       
   
 
@@ -127,7 +139,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "!QOmFr7DNDh34KrAWWt8LtLr"
+  password: "s5^PU#PT7FtKwR4wuMnFSn&w"
   migrations:
     enabled: false
   
@@ -148,11 +160,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_kqoj6h"
+    POSTGRES_DB: "post_ud5piy"
     
-    POSTGRES_USER: "post_4i9s69"
+    POSTGRES_USER: "post_dkvng6"
     
-    POSTGRES_PASSWORD: "!QOmFr7DNDh34KrAWWt8LtLr"
+    POSTGRES_PASSWORD: "s5^PU#PT7FtKwR4wuMnFSn&w"
     
   
 

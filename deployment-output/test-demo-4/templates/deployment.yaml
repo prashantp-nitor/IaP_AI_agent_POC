@@ -16,6 +16,7 @@ spec:
       labels:
         app: backend
     spec:
+      
       serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "test-demo-4.name" .)) }}
       {{- if gt (len .Values.imagePullSecrets) 0 }}
       imagePullSecrets:
@@ -30,6 +31,7 @@ spec:
         - name: backend
           image: "{{ .Values.services.backend.image.repository }}:{{ .Values.services.backend.image.tag }}"
           imagePullPolicy: "{{ .Values.services.backend.image.pullPolicy }}"
+          
           
           ports:
             
@@ -90,20 +92,26 @@ spec:
             limits:
               cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
               memory: "{{ .Values.services.backend.resources.limits.memory | default "1Gi" }}"
-          {{- if .Values.global.secretProviderClass }}
+          {{- if or .Values.global.secretProviderClass false }}
           volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if .Values.global.secretProviderClass }}
+      {{- if or .Values.global.secretProviderClass false }}
       volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
       {{- end }}
       {{- $svcNodeSelector := index .Values.services "backend" "nodeSelector" }}
       {{- if or $svcNodeSelector .Values.nodeSelector }}
@@ -133,7 +141,7 @@ metadata:
   labels:
     app: frontend
 spec:
-  replicas: {{ .Values.services.frontend.replicaCount | default 1 }}
+  replicas: {{ .Values.services.frontend.replicaCount | default 2 }}
   selector:
     matchLabels:
       app: frontend
@@ -142,6 +150,7 @@ spec:
       labels:
         app: frontend
     spec:
+      
       serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" (include "test-demo-4.name" .)) }}
       {{- if gt (len .Values.imagePullSecrets) 0 }}
       imagePullSecrets:
@@ -157,6 +166,7 @@ spec:
           image: "{{ .Values.services.frontend.image.repository }}:{{ .Values.services.frontend.image.tag }}"
           imagePullPolicy: "{{ .Values.services.frontend.image.pullPolicy }}"
           
+          
           ports:
             
             - containerPort: {{ .Values.services.frontend.containerPort | default 80 }}
@@ -164,27 +174,51 @@ spec:
             
           
           
+          env:
+            
+            - name: REACT_APP_API_URL
+              
+              value: "http://backend:8080"
+              
+            
+            - name: API_URL
+              
+              value: "http://backend:8080"
+              
+            
+            - name: BACKEND_URL
+              
+              value: "http://backend:8080"
+              
+            
+          
           resources:
             requests:
               cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"
               memory: "{{ .Values.services.frontend.resources.requests.memory | default "128Mi" }}"
             limits:
-              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "500m" }}"
-              memory: "{{ .Values.services.frontend.resources.limits.memory | default "512Mi" }}"
-          {{- if .Values.global.secretProviderClass }}
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "128Mi" }}"
+          {{- if or .Values.global.secretProviderClass false }}
           volumeMounts:
+            
+            {{- if .Values.global.secretProviderClass }}
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if .Values.global.secretProviderClass }}
+      {{- if or .Values.global.secretProviderClass false }}
       volumes:
+        
+        {{- if .Values.global.secretProviderClass }}
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+        {{- end }}
       {{- end }}
       {{- $svcNodeSelector := index .Values.services "frontend" "nodeSelector" }}
       {{- if or $svcNodeSelector .Values.nodeSelector }}

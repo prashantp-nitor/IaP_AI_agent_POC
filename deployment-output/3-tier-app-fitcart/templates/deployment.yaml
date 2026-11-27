@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.services.backend.serviceName | default "backend" }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.services.backend.namespace | default .Release.Namespace }}
   labels:
     app: backend
 spec:
@@ -83,44 +83,13 @@ spec:
               
             
           
-          {{- if .Values.probes.readiness.enabled }}
-          readinessProbe:
-            {{ .Values.probes.readiness.type }}:
-              path: {{ .Values.probes.readiness.path }}
-              port: {{ .Values.probes.readiness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
-            successThreshold: {{ .Values.probes.readiness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.liveness.enabled }}
-          livenessProbe:
-            {{ .Values.probes.liveness.type }}:
-              path: {{ .Values.probes.liveness.path }}
-              port: {{ .Values.probes.liveness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
-            successThreshold: {{ .Values.probes.liveness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.startup.enabled }}
-          startupProbe:
-            {{ .Values.probes.startup.type }}:
-              path: {{ .Values.probes.startup.path }}
-              port: {{ .Values.probes.startup.port | default "http" }}
-            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
-          {{- end }}
           resources:
             requests:
               cpu: "{{ .Values.services.backend.resources.requests.cpu | default "500m" }}"
-              memory: "{{ .Values.services.backend.resources.requests.memory | default "2048Mi" }}"
+              memory: "{{ .Values.services.backend.resources.requests.memory | default "512Mi" }}"
             limits:
               cpu: "{{ .Values.services.backend.resources.limits.cpu | default "1000m" }}"
-              memory: "{{ .Values.services.backend.resources.limits.memory | default "4096Mi" }}"
+              memory: "{{ .Values.services.backend.resources.limits.memory | default "1Gi" }}"
           {{- if .Values.global.secretProviderClass }}
           volumeMounts:
             - name: secrets-store-inline
@@ -136,13 +105,31 @@ spec:
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
       {{- end }}
+      {{- $svcNodeSelector := index .Values.services "backend" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "backend" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
 ---
 # Standard Rolling Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.services.frontend.serviceName | default "frontend" }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.services.frontend.namespace | default .Release.Namespace }}
   labels:
     app: frontend
 spec:
@@ -177,44 +164,13 @@ spec:
             
           
           
-          {{- if .Values.probes.readiness.enabled }}
-          readinessProbe:
-            {{ .Values.probes.readiness.type }}:
-              path: {{ .Values.probes.readiness.path }}
-              port: {{ .Values.probes.readiness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
-            successThreshold: {{ .Values.probes.readiness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.liveness.enabled }}
-          livenessProbe:
-            {{ .Values.probes.liveness.type }}:
-              path: {{ .Values.probes.liveness.path }}
-              port: {{ .Values.probes.liveness.port | default "http" }}
-            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
-            successThreshold: {{ .Values.probes.liveness.successThreshold }}
-          {{- end }}
-          {{- if .Values.probes.startup.enabled }}
-          startupProbe:
-            {{ .Values.probes.startup.type }}:
-              path: {{ .Values.probes.startup.path }}
-              port: {{ .Values.probes.startup.port | default "http" }}
-            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
-            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
-            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
-          {{- end }}
           resources:
             requests:
-              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "500m" }}"
-              memory: "{{ .Values.services.frontend.resources.requests.memory | default "2048Mi" }}"
+              cpu: "{{ .Values.services.frontend.resources.requests.cpu | default "100m" }}"
+              memory: "{{ .Values.services.frontend.resources.requests.memory | default "128Mi" }}"
             limits:
-              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "1000m" }}"
-              memory: "{{ .Values.services.frontend.resources.limits.memory | default "4096Mi" }}"
+              cpu: "{{ .Values.services.frontend.resources.limits.cpu | default "500m" }}"
+              memory: "{{ .Values.services.frontend.resources.limits.memory | default "512Mi" }}"
           {{- if .Values.global.secretProviderClass }}
           volumeMounts:
             - name: secrets-store-inline
@@ -229,4 +185,22 @@ spec:
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.global.secretProviderClass | quote }}
+      {{- end }}
+      {{- $svcNodeSelector := index .Values.services "frontend" "nodeSelector" }}
+      {{- if or $svcNodeSelector .Values.nodeSelector }}
+      nodeSelector:
+        {{- if $svcNodeSelector }}
+        {{- toYaml $svcNodeSelector | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- $svcTolerations := index .Values.services "frontend" "tolerations" }}
+      {{- if or $svcTolerations .Values.tolerations }}
+      tolerations:
+        {{- if $svcTolerations }}
+        {{- toYaml $svcTolerations | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.tolerations | nindent 8 }}
+        {{- end }}
       {{- end }}

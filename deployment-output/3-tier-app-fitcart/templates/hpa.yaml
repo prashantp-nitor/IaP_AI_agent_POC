@@ -5,7 +5,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ .Values.services.backend.serviceName | default "backend" }}-hpa
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.services.backend.namespace | default .Release.Namespace }}
   labels:
     app: backend
 spec:
@@ -30,7 +30,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ .Values.services.frontend.serviceName | default "frontend" }}-hpa
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.services.frontend.namespace | default .Release.Namespace }}
   labels:
     app: frontend
 spec:

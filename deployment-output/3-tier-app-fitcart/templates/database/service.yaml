@@ -5,7 +5,7 @@ metadata:
   name: postgresql-db
   namespace: 3-tier-app-fitcart
   labels:
-    app: postgresql-db
+    app: database
 spec:
   # Headless service — StatefulSet pods get stable DNS names
   clusterIP: None
@@ -15,5 +15,5 @@ spec:
       protocol: TCP
       name: db
   selector:
-    app: postgresql-db
+    app: database
 {{- end }}

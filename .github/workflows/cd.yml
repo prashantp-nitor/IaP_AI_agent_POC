@@ -8,27 +8,27 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/dot-net-app-deploy-test/**"
+      - "deployment-output/3-tier-app-fitcart/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd"
+        default: "5d805e0b-7240-415e-a107-2afa3ff1b6a7"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-7d277301"
+        default: "sha-5d805e0b"
 
 permissions:
   id-token: write
   contents: read
 
 env:
-  REGISTRY: testdemo4acr04ca12.azurecr.io
-  NAMESPACE: dot-net-app-deploy-test
-  JOB_ID: ${{ inputs.job_id || '7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd' }}
+  REGISTRY: azdaasdeployment.azurecr.io
+  NAMESPACE: 3-tier-app-fitcart
+  JOB_ID: ${{ inputs.job_id || '5d805e0b-7240-415e-a107-2afa3ff1b6a7' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -45,7 +45,7 @@ jobs:
       - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/dot-net-app-deploy-test/.deploy-target"
+          DEPLOY_TARGET_FILE="deployment-output/3-tier-app-fitcart/.deploy-target"
           if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
             DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
           fi
@@ -91,7 +91,7 @@ jobs:
         run: |
           PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
           if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/dot-net-app-deploy-test"
+            PROJECT_DIR="deployment-output/3-tier-app-fitcart"
           fi
           if [ ! -d "$PROJECT_DIR" ]; then
             PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
@@ -110,22 +110,22 @@ jobs:
           fi
 
           for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "dot-net-app-deploy-test")
+            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "3-tier-app-fitcart")
             if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="dot-net-app-deploy-test"
+              CHART_NAME="3-tier-app-fitcart"
             fi
             echo "=========================================="
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.angular.image.repository=${{ env.REGISTRY }}/angular-image" --set-string "services.angular.image.tag=${{ inputs.image_tag || 'sha-7d277301' }}" --set-string "services.angular.namespace=dot-net-app-deploy-test" --set-string "services.sqlserver.image.repository=mcr.microsoft.com/mssql/server" --set-string "services.sqlserver.image.tag=2019-latest" --set-string "services.sqlserver.namespace=dot-net-app-deploy-test" --set-string "services.dotnetcoreapi.image.repository=dotnet-image" --set-string "services.dotnetcoreapi.image.tag=sha-7d277301" --set-string "services.dotnetcoreapi.namespace=dot-net-app-deploy-test" --set-string "services.electriceqpmentdotnetcoreapi.image.repository=${{ env.REGISTRY }}/electriceqpmentdotnetcoreapi" --set-string "services.electriceqpmentdotnetcoreapi.image.tag=${{ inputs.image_tag || 'sha-7d277301' }}" --set-string "services.electriceqpmentdotnetcoreapi.namespace=dot-net-app-deploy-test" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-5d805e0b' }}" --set-string "services.backend.namespace=3-tier-app-fitcart" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-5d805e0b' }}" --set-string "services.frontend.namespace=3-tier-app-fitcart" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
-          FRONTEND_SVC="angular"
-          FRONTEND_NS="dot-net-app-deploy-test"
+          FRONTEND_SVC="frontend"
+          FRONTEND_NS="3-tier-app-fitcart"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -155,8 +155,8 @@ jobs:
       - name: Retrieve Public IP & Report URL
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
-          FRONTEND_SVC="angular"
-          FRONTEND_NS="dot-net-app-deploy-test"
+          FRONTEND_SVC="frontend"
+          FRONTEND_NS="3-tier-app-fitcart"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -189,16 +189,16 @@ jobs:
           JOB_ID: ${{ env.JOB_ID }}
           PROVIDER: "azure"
           REGION: "eastus"
-          ENVIRONMENT: "dev"
+          ENVIRONMENT: "production"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "dot-net-app-deploy-test"
+          PROJECT_NAME: "3-tier-app-fitcart"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
-          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "angular", "is_frontend": true, "ports": [80]},{"name": "sqlserver", "is_frontend": false, "ports": [1433]},{"name": "dotnetcoreapi", "is_frontend": false, "ports": [80]},{"name": "electriceqpmentdotnetcoreapi", "is_frontend": false, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{}'
+          INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_htzgtm", "POSTGRES_PASSWORD": "H#PO4#LMZv!H4vVDa\u0026qavfh^", "POSTGRES_USER": "post_orywr3"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -214,4 +214,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall dot-net-app-deploy-test -n ${{ env.NAMESPACE }} || true
+          helm uninstall 3-tier-app-fitcart -n ${{ env.NAMESPACE }} || true

@@ -1,10 +1,8 @@
 {
-  "job_id": "7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd",
-  "dispatched_at": "2026-11-25T16:11:34Z",
+  "job_id": "5d805e0b-7240-415e-a107-2afa3ff1b6a7",
+  "dispatched_at": "2026-11-27T09:05:06Z",
   "target_cluster": "test-demo-4-aks",
-  "cluster_name": "test-demo-4-aks",
   "resource_group": "AZET-RG-Daas-Platform",
-  "subscription_id": "37edf351-2797-441e-8f2a-b27c5a9ed9e2",
-  "namespace": "dot-net-app-deploy-test",
-  "image_tag": "sha-7d277301"
+  "namespace": "3-tier-app-fitcart",
+  "image_tag": "sha-5d805e0b"
 }

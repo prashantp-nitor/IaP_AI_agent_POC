@@ -1,6 +1,6 @@
-cluster_name: test-demo-20-aks
+cluster_name: test-demo-4-aks
 resource_group: AZET-RG-Daas-Platform
-region: westus
+region: eastus
 cloud_provider: azure
 namespace: 3-tier-app-fitcart
 registry: azdaasdeployment.azurecr.io

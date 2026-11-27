@@ -1,4 +1,4 @@
-# DaaS CI Dispatch: 7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd @ 2026-11-25T16:05:58Z
+# DaaS CI Dispatch: c83c8318-ae97-4791-ba5f-179dfd92eee1 @ 2026-11-27T05:41:56Z
 name: CI Security Scan and Container Build
 
 on:
@@ -12,7 +12,7 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: true
-        default: "7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd"
+        default: "c83c8318-ae97-4791-ba5f-179dfd92eee1"
 
 permissions:
   id-token: write
@@ -20,12 +20,12 @@ permissions:
   security-events: write
 
 env:
-  REGISTRY: testdemo4acr04ca12.azurecr.io
-  NAMESPACE: dot-net-app-deploy-test
-  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd/source.zip?se=2026-12-02T16%3A05%3A57Z&sp=r&sv=2026-06-06&sr=b&sig=yzYGBcGsmlPIDZ3JOhx3FvOJVFJ2Bhx3mEOw7qkJueo%3D"
-  JOB_ID: ${{ inputs.job_id || '7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd' }}
+  REGISTRY:  testdemo4acr04ca12.azurecr.io
+  NAMESPACE: 3-tier-app-fitcart
+  SOURCE_ZIP_URL: "https://daasstorageacct.blob.core.windows.net/deployment-source/c83c8318-ae97-4791-ba5f-179dfd92eee1/source.zip?se=2026-12-04T05%3A41%3A56Z&sp=r&sv=2026-06-06&sr=b&sig=Krmj7xVCFaE9wlsfq8uNMOC7lGaESOwaqXpqe6DVuto%3D"
+  JOB_ID: ${{ inputs.job_id || 'c83c8318-ae97-4791-ba5f-179dfd92eee1' }}
   AZURE_SECURITY_REPORTS_CONTAINER: "security-reports"
-  PROJECT_PREFIX: "7D277301_8DC2_4EFF_BB5A_A2E1CDDFE5FD"
+  PROJECT_PREFIX: "C83C8318_AE97_4791_BA5F_179DFD92EEE1"
 
 jobs:
   ci-security-and-build:
@@ -192,7 +192,7 @@ jobs:
           args: >
             
             
-            -Dsonar.projectKey=daas-7d277301-8dc2-4eff-bb5a-a2e1cddfe5fd
+            -Dsonar.projectKey=daas-c83c8318-ae97-4791-ba5f-179dfd92eee1
             -Dsonar.sources=${{ env.SONAR_SOURCES || '.' }}
             -Dsonar.exclusions=**/*.tf,deployment-output/**,.github/**
             -Dsonar.scm.exclusions.disabled=true
@@ -208,57 +208,57 @@ jobs:
 
       
       
-      - name: Build angular container image
+      - name: Build backend container image
         uses: docker/build-push-action@v5
         with:
-          context: ./app/ElectronicEquipmentAngular
-          file: ./app/ElectronicEquipmentAngular/Dockerfile
+          context: ./app/backend
+          file: ./app/backend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/angular-image:sha-7d277301
+          tags: ${{ env.REGISTRY }}/backend:sha-c83c8318
           
           
           
 
-      - name: Run Trivy Image Scan for angular (JSON & Summary)
+      - name: Run Trivy Image Scan for backend (JSON & Summary)
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for angular..."
-          trivy image --format json --output security-reports/image-angular.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-7d277301 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/angular-image:sha-7d277301 || true
+          echo "Executing Trivy container image scan for backend..."
+          trivy image --format json --output security-reports/image-backend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-c83c8318 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/backend:sha-c83c8318 || true
           sudo chmod -R 777 security-reports || true
 
-      - name: Push angular image
+      - name: Push backend image
         run: |
-          docker push ${{ env.REGISTRY }}/angular-image:sha-7d277301
+          docker push ${{ env.REGISTRY }}/backend:sha-c83c8318
       
       
       
-      - name: Build electriceqpmentdotnetcoreapi container image
+      - name: Build frontend container image
         uses: docker/build-push-action@v5
         with:
-          context: ./app/ElectricEqpmentDotNetCoreAPI
-          file: ./app/ElectricEqpmentDotNetCoreAPI/Dockerfile
+          context: ./app/frontend
+          file: ./app/frontend/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/electriceqpmentdotnetcoreapi:sha-7d277301
+          tags: ${{ env.REGISTRY }}/frontend:sha-c83c8318
           
           
           
 
-      - name: Run Trivy Image Scan for electriceqpmentdotnetcoreapi (JSON & Summary)
+      - name: Run Trivy Image Scan for frontend (JSON & Summary)
         continue-on-error: true
         run: |
           mkdir -p security-reports
-          echo "Executing Trivy container image scan for electriceqpmentdotnetcoreapi..."
-          trivy image --format json --output security-reports/image-electriceqpmentdotnetcoreapi.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/electriceqpmentdotnetcoreapi:sha-7d277301 || true
-          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/electriceqpmentdotnetcoreapi:sha-7d277301 || true
+          echo "Executing Trivy container image scan for frontend..."
+          trivy image --format json --output security-reports/image-frontend.json --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-c83c8318 || true
+          trivy image --severity CRITICAL,HIGH,MEDIUM,LOW ${{ env.REGISTRY }}/frontend:sha-c83c8318 || true
           sudo chmod -R 777 security-reports || true
 
-      - name: Push electriceqpmentdotnetcoreapi image
+      - name: Push frontend image
         run: |
-          docker push ${{ env.REGISTRY }}/electriceqpmentdotnetcoreapi:sha-7d277301
+          docker push ${{ env.REGISTRY }}/frontend:sha-c83c8318
       
       
 

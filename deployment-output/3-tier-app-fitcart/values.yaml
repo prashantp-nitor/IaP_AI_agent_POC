@@ -29,39 +29,6 @@ serviceAccount:
 
 imagePullSecrets: []
 
-# ── Health Probes ────────────────────────────────────────
-probes:
-  readiness:
-    enabled: true
-    type: httpGet
-    path: /actuator/health/readiness
-    port: http
-    initialDelaySeconds: 10
-    periodSeconds: 5
-    timeoutSeconds: 2
-    failureThreshold: 3
-    successThreshold: 1
-
-  liveness:
-    enabled: true
-    type: httpGet
-    path: /actuator/health/liveness
-    port: http
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 2
-    failureThreshold: 3
-    successThreshold: 1
-
-  startup:
-    enabled: false
-    type: httpGet
-    path: /actuator/health
-    port: http
-    periodSeconds: 10
-    timeoutSeconds: 2
-    failureThreshold: 30
-
 # ── Resources ────────────────────────────────────────────
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -74,17 +41,31 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+# ── Node Scheduling Defaults ─────────────────────────────
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations: []
+
 # ── Application Services ─────────────────────────────────
 services:
   
   backend:
+    namespace: "3-tier-app-fitcart"
     enabled: true
     serviceName: "backend"
+    serviceType: "ClusterIP"
     containerPort: 8080
     replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
     image:
       repository: "azdaasdeployment.azurecr.io/backend"
-      tag: "PLACEHOLDER_SET_BY_CI"
+      tag: "sha-10879dec"
       pullPolicy: IfNotPresent
     ports:
       
@@ -95,23 +76,29 @@ services:
     resources:
       requests:
         cpu: "500m"
-        memory: "2048Mi"
+        memory: "512Mi"
       limits:
         cpu: "1000m"
-        memory: "4096Mi"
-    # Health check path — override if your app uses a different route
-    healthCheckPath: "/actuator/health"
+        memory: "1Gi"
     env:
       
   
   frontend:
+    namespace: "3-tier-app-fitcart"
     enabled: true
     serviceName: "frontend"
+    serviceType: "LoadBalancer"
     containerPort: 80
     replicaCount: 2
+    nodeSelector:
+      kubernetes.io/os: "linux"
+    tolerations:
+      
+      []
+      
     image:
       repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "PLACEHOLDER_SET_BY_CI"
+      tag: "sha-10879dec"
       pullPolicy: IfNotPresent
     ports:
       
@@ -121,13 +108,11 @@ services:
       
     resources:
       requests:
-        cpu: "500m"
-        memory: "2048Mi"
+        cpu: "100m"
+        memory: "128Mi"
       limits:
-        cpu: "1000m"
-        memory: "4096Mi"
-    # Health check path — override if your app uses a different route
-    healthCheckPath: "/"
+        cpu: "500m"
+        memory: "512Mi"
     env:
       
   
@@ -140,9 +125,9 @@ database:
   connectionString: ""
   host: ""
   port: 5432
-  name: ""
-  user: ""
-  password: "I&5dDTe11!OHzu!NKcy6N!Mk"
+  name: "appdb"
+  user: "pgadmin"
+  password: "^7jp^!Y44nkOZWHBuhNJ%zOt"
   migrations:
     enabled: false
   
@@ -156,18 +141,18 @@ database:
     storageClassName: "managed-csi"
   resources:
     requests:
-      cpu: "250m"
-      memory: "512Mi"
+      cpu: "100m"
+      memory: "128Mi"
     limits:
-      cpu: "1000m"
-      memory: "1Gi"
+      cpu: "250m"
+      memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_bikx28"
+    POSTGRES_DB: "post_377ffo"
     
-    POSTGRES_USER: "post_7kee7s"
+    POSTGRES_USER: "post_b3oeez"
     
-    POSTGRES_PASSWORD: "I&5dDTe11!OHzu!NKcy6N!Mk"
+    POSTGRES_PASSWORD: "^7jp^!Y44nkOZWHBuhNJ%zOt"
     
   
 

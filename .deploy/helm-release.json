@@ -1,27 +1,8 @@
 {
-  "schema_version": 2,
-  "dispatch_id": "154cdc08-8bc0-4ab7-b015-131b398b0265",
-  "job_id": "026d6e49-c29b-4138-9b72-9ba94c7a086f",
-  "project_name": "3-tier-application-to-azure-aks-personal",
-  "discovery_revision": "209ba3eb09a1fff4ea97c06474dcd72ff851d5d3e2ad119fe316c1bbfa1d3ea5",
-  "config_digest": "cb69b66cd3eb0b3319319c5289f400c1a21ce4b8ced592824802f38280c60bbe",
-  "manifest_path": "deployment-output/3-tier-application-to-azure-aks-personal/.existing-helm-release.json",
-  "cluster_name": "three-tier-ang-aks",
+  "job_id": "10879dec-3ffd-4c49-b1ad-ae522c9eb809",
+  "dispatched_at": "2026-11-27T10:28:02Z",
+  "target_cluster": "test-demo-4-aks",
   "resource_group": "AZET-RG-Daas-Platform",
-  "namespace": "",
-  "acr_registry": "azdaasdeployment.azurecr.io",
-  "target_key": "azet-rg-daas-platform/three-tier-ang-aks",
-  "ci_dispatch_id": "78b06070-57b9-4f30-9b79-2b8d5e286ea9",
-  "ci_commit_sha": "7e4557ab07fa656807ded32b61ea19c48ef35f6f",
-  "ci_run_id": "7e4557ab07fa656807ded32b61ea19c48ef35f6f",
-  "dispatched_at": "2026-11-20T08:46:02.109514+00:00",
-  "source_revision": "209ba3eb09a1fff4ea97c06474dcd72ff851d5d3e2ad119fe316c1bbfa1d3ea5",
-  "pipeline_mode": "ci_then_cd",
-  "candidate_revision": 1,
-  "candidate_inventory_sha256": "4293a7eb9e32d31f4b979d6a27beb700f11ba07dfcd7e0252a9c0d79051fde9f",
-  "validation_identity": "89690afc5eeb08da03ec2529656fc080e97ab8d8609f5bea982f3e0c22ae80d6",
-  "build_image_references": {
-    "backend": "azdaasdeployment.azurecr.io/fitcart-backend:sha-026d6e49",
-    "frontend": "azdaasdeployment.azurecr.io/fitcart-frontend:sha-026d6e49"
-  }
+  "namespace": "3-tier-app-fitcart",
+  "image_tag": "sha-10879dec"
 }

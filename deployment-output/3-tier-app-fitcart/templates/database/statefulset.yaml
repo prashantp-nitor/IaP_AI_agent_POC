@@ -5,18 +5,18 @@ metadata:
   name: postgresql-db
   namespace: 3-tier-app-fitcart
   labels:
-    app: postgresql-db
+    app: database
     managed-by: daas
 spec:
   serviceName: postgresql-db
   replicas: 1
   selector:
     matchLabels:
-      app: postgresql-db
+      app: database
   template:
     metadata:
       labels:
-        app: postgresql-db
+        app: database
     spec:
       containers:
         - name: postgresql
@@ -54,11 +54,11 @@ spec:
               mountPath: /var/lib/postgresql/data
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: "100m"
+              memory: "128Mi"
             limits:
-              cpu: "1000m"
-              memory: "1Gi"
+              cpu: "250m"
+              memory: "256Mi"
           livenessProbe:
             tcpSocket:
               port: 5432

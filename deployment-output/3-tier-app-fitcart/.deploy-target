@@ -1,4 +1,4 @@
-cluster_name: test-demo-4-aks
+cluster_name: aks-3-tier-app-fitcart-aks
 resource_group: AZET-RG-Daas-Platform
 region: eastus
 cloud_provider: azure

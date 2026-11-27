@@ -15,11 +15,11 @@ on:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "5d805e0b-7240-415e-a107-2afa3ff1b6a7"
+        default: "2ed274b6-f639-4a71-b737-3c0ab0a2df71"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-5d805e0b"
+        default: "sha-2ed274b6"
 
 permissions:
   id-token: write
@@ -28,7 +28,7 @@ permissions:
 env:
   REGISTRY: azdaasdeployment.azurecr.io
   NAMESPACE: 3-tier-app-fitcart
-  JOB_ID: ${{ inputs.job_id || '5d805e0b-7240-415e-a107-2afa3ff1b6a7' }}
+  JOB_ID: ${{ inputs.job_id || '2ed274b6-f639-4a71-b737-3c0ab0a2df71' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -118,7 +118,7 @@ jobs:
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-5d805e0b' }}" --set-string "services.backend.namespace=3-tier-app-fitcart" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-5d805e0b' }}" --set-string "services.frontend.namespace=3-tier-app-fitcart" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-2ed274b6' }}" --set-string "services.backend.namespace=3-tier-app-fitcart" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-2ed274b6' }}" --set-string "services.frontend.namespace=3-tier-app-fitcart" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
@@ -198,7 +198,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_htzgtm", "POSTGRES_PASSWORD": "H#PO4#LMZv!H4vVDa\u0026qavfh^", "POSTGRES_USER": "post_orywr3"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_jlm584", "POSTGRES_PASSWORD": "3zV!x1TSL*OQ#MV1H\u0026DQMj8D", "POSTGRES_USER": "post_i8wcce"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then

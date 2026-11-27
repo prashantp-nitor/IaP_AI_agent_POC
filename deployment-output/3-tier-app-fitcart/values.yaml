@@ -15,7 +15,7 @@ global:
   # Deployment strategy: rolling | blue-green | canary
   deploymentStrategy: "rolling"
   # Environment label
-  environment: "production"
+  environment: "dev"
   azureWorkloadIdentityClientId: ""
   secretProviderClass: ""
 
@@ -65,7 +65,7 @@ services:
       
     image:
       repository: "azdaasdeployment.azurecr.io/backend"
-      tag: "sha-2ed274b6"
+      tag: "sha-e4b7bf99"
       pullPolicy: IfNotPresent
     ports:
       
@@ -87,7 +87,7 @@ services:
     namespace: "3-tier-app-fitcart"
     enabled: true
     serviceName: "frontend"
-    serviceType: "ClusterIP"
+    serviceType: "LoadBalancer"
     containerPort: 80
     replicaCount: 2
     nodeSelector:
@@ -98,7 +98,7 @@ services:
       
     image:
       repository: "azdaasdeployment.azurecr.io/frontend"
-      tag: "sha-2ed274b6"
+      tag: "sha-e4b7bf99"
       pullPolicy: IfNotPresent
     ports:
       
@@ -127,7 +127,7 @@ database:
   port: 5432
   name: "appdb"
   user: "pgadmin"
-  password: "3zV!x1TSL*OQ#MV1H&DQMj8D"
+  password: "GTzm6^dP2GcsNjV%qG056*Q2"
   migrations:
     enabled: false
   
@@ -148,11 +148,11 @@ database:
       memory: "256Mi"
   auth:
     
-    POSTGRES_DB: "post_jlm584"
+    POSTGRES_DB: "post_ik833e"
     
-    POSTGRES_USER: "post_i8wcce"
+    POSTGRES_USER: "post_t5dlfq"
     
-    POSTGRES_PASSWORD: "3zV!x1TSL*OQ#MV1H&DQMj8D"
+    POSTGRES_PASSWORD: "GTzm6^dP2GcsNjV%qG056*Q2"
     
   
 

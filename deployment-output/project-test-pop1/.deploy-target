@@ -1,0 +1,6 @@
+cluster_name: aks-3-tier-app-fitcart-aks
+resource_group: AZET-RG-Daas-Platform
+region: eastus
+cloud_provider: azure
+namespace: project-test-pop1
+registry: azdaasdeployment.azurecr.io

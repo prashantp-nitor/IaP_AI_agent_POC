@@ -8,18 +8,18 @@ on:
       - "networking"
       
     paths:
-      - "deployment-output/3-tier-app-fitcart/**"
+      - "deployment-output/project-test-pop1/**"
       - "deployment-output/**"
   workflow_dispatch:
     inputs:
       job_id:
         description: "DaaS Job ID"
         required: false
-        default: "e4b7bf99-c655-49d5-bee1-9e25645c5d9c"
+        default: "fae49542-40c3-4aba-a547-101443f08bf6"
       image_tag:
         description: "Container Image Tag"
         required: false
-        default: "sha-e4b7bf99"
+        default: "sha-fae49542"
 
 permissions:
   id-token: write
@@ -27,8 +27,8 @@ permissions:
 
 env:
   REGISTRY: azdaasdeployment.azurecr.io
-  NAMESPACE: 3-tier-app-fitcart
-  JOB_ID: ${{ inputs.job_id || 'e4b7bf99-c655-49d5-bee1-9e25645c5d9c' }}
+  NAMESPACE: project-test-pop1
+  JOB_ID: ${{ inputs.job_id || 'fae49542-40c3-4aba-a547-101443f08bf6' }}
 
 jobs:
   deploy-to-kubernetes:
@@ -45,7 +45,7 @@ jobs:
       - name: Resolve Target Cluster & Key Vault
         id: resolve_target
         run: |
-          DEPLOY_TARGET_FILE="deployment-output/3-tier-app-fitcart/.deploy-target"
+          DEPLOY_TARGET_FILE="deployment-output/project-test-pop1/.deploy-target"
           if [ ! -f "$DEPLOY_TARGET_FILE" ]; then
             DEPLOY_TARGET_FILE="deployment-output/${{ env.NAMESPACE }}/.deploy-target"
           fi
@@ -91,7 +91,7 @@ jobs:
         run: |
           PROJECT_DIR="${{ steps.resolve_target.outputs.project_dir }}"
           if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
-            PROJECT_DIR="deployment-output/3-tier-app-fitcart"
+            PROJECT_DIR="deployment-output/project-test-pop1"
           fi
           if [ ! -d "$PROJECT_DIR" ]; then
             PROJECT_DIR="deployment-output/${{ env.NAMESPACE }}"
@@ -110,22 +110,22 @@ jobs:
           fi
 
           for chart_path in $CHART_DIRS; do
-            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "3-tier-app-fitcart")
+            CHART_NAME=$(yq e '.name' "$chart_path/Chart.yaml" 2>/dev/null || echo "project-test-pop1")
             if [ -z "$CHART_NAME" ] || [ "$CHART_NAME" = "null" ]; then
-              CHART_NAME="3-tier-app-fitcart"
+              CHART_NAME="project-test-pop1"
             fi
             echo "=========================================="
             echo "Deploying Helm chart: $CHART_NAME from $chart_path"
             echo "=========================================="
 
-            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-e4b7bf99' }}" --set-string "services.backend.namespace=3-tier-app-fitcart" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-e4b7bf99' }}" --set-string "services.frontend.namespace=3-tier-app-fitcart" --timeout 5m0s
+            helm upgrade --install "$CHART_NAME" "$chart_path" --namespace "${{ env.NAMESPACE }}" --create-namespace --set-string "global.registry=${{ env.REGISTRY }}" --set-string "global.deploymentStrategy=rolling" --set-string "services.backend.image.repository=${{ env.REGISTRY }}/backend" --set-string "services.backend.image.tag=${{ inputs.image_tag || 'sha-fae49542' }}" --set-string "services.backend.namespace=project-test-pop1" --set-string "services.frontend.image.repository=${{ env.REGISTRY }}/frontend" --set-string "services.frontend.image.tag=${{ inputs.image_tag || 'sha-fae49542' }}" --set-string "services.frontend.namespace=project-test-pop1" --timeout 5m0s
           done
 
       - name: Wait for Frontend LoadBalancer IP
         run: |
           echo "Waiting for Frontend LoadBalancer external IP..."
           FRONTEND_SVC="frontend"
-          FRONTEND_NS="3-tier-app-fitcart"
+          FRONTEND_NS="project-test-pop1"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -156,7 +156,7 @@ jobs:
         run: |
           echo "Retrieving public IP/hostname from frontend service..."
           FRONTEND_SVC="frontend"
-          FRONTEND_NS="3-tier-app-fitcart"
+          FRONTEND_NS="project-test-pop1"
           if [ -z "$FRONTEND_NS" ]; then
             FRONTEND_NS="${{ env.NAMESPACE }}"
           fi
@@ -191,14 +191,14 @@ jobs:
           REGION: "eastus"
           ENVIRONMENT: "dev"
           NAMESPACE: ${{ env.NAMESPACE }}
-          PROJECT_NAME: "3-tier-app-fitcart"
+          PROJECT_NAME: "project-test-pop1"
           DEPLOYMENT_STRATEGY: "rolling"
           COMMIT_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           JOB_STATUS: ${{ job.status }}
           PUBLIC_URL: ${{ env.URL }}
           INFRA_OUTPUTS_JSON: '{"endpoints": [{"name": "backend", "is_frontend": false, "ports": [8080]},{"name": "frontend", "is_frontend": true, "ports": [80]}]}'
-          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_ik833e", "POSTGRES_PASSWORD": "GTzm6^dP2GcsNjV%qG056*Q2", "POSTGRES_USER": "post_t5dlfq"}'
+          DB_CONFIG_JSON: '{"POSTGRES_DB": "post_dmjohs", "POSTGRES_PASSWORD": "s0WLANvzaMM!jZ3IPunf3FUX", "POSTGRES_USER": "post_omaafb"}'
         run: |
           echo "Saving deployment execution outputs directly to database via DATABASE_URL..."
           if [ -z "$DATABASE_URL" ]; then
@@ -214,4 +214,4 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed! Cleaning up resources to avoid inherited failures..."
-          helm uninstall 3-tier-app-fitcart -n ${{ env.NAMESPACE }} || true
+          helm uninstall project-test-pop1 -n ${{ env.NAMESPACE }} || true

@@ -1,0 +1,57 @@
+{
+  "vnet_name": "3-tier-app-fitcart-network",
+  "address_space": [
+    "10.0.0.0/16"
+  ],
+  "region": "eastus",
+  "subnets": [
+    {
+      "name": "app-subnet",
+      "cidr_block": "10.0.1.0/24",
+      "type": "private"
+    },
+    {
+      "name": "db-subnet",
+      "cidr_block": "10.0.2.0/24",
+      "type": "private"
+    },
+    {
+      "name": "ingress-subnet",
+      "cidr_block": "10.0.3.0/24",
+      "type": "public"
+    }
+  ],
+  "resource_group": "AZET-RG-Daas-Platform",
+  "tags": {
+    "ManagedBy": "IAAP",
+    "environment": "prod",
+    "owner": "user@company.com",
+    "project": "3-tier-app-fitcart",
+    "job_id": "5d805e0b-7240-415e-a107-2afa3ff1b6a7",
+    "project_folder": "3-tier-app-fitcart-5d805e"
+  },
+  "cluster_name": "aks-3-tier-app-fitcart-aks",
+  "kubernetes_version": "1.34",
+  "node_count": "3",
+  "node_vm_size": "Standard_D2s_v3",
+  "os_disk_size_gb": "30",
+  "enable_auto_scaling": false,
+  "high_availability": true,
+  "subnet_name": "db-subnet",
+  "min_count": 3,
+  "max_count": 5,
+  "server_name": "3-tier-app-fitcart-db",
+  "storage_mb": "32768",
+  "engine": "PostgreSQL",
+  "sku_name": "standard",
+  "sku": "Standard",
+  "backup_retention_days": "14",
+  "vault_name": "kv-3-tier-app-fit-kv-5d8",
+  "soft_delete_retention_days": 90,
+  "registry_name": "3tierappfitcartacr5d805e",
+  "admin_enabled": "False",
+  "frontend_repo": "3-tier-app-fitcart-frontend",
+  "backend_repo": "3-tier-app-fitcart-backend",
+  "_provider": "azure",
+  "_resource_type": "kubernetes_service"
+}
